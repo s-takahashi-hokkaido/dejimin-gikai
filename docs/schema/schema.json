@@ -1,0 +1,4765 @@
+{
+  "name": "postgres",
+  "tables": [
+    {
+      "name": "auth.users",
+      "type": "BASE TABLE",
+      "comment": "Auth: Stores user login data within a secure schema.",
+      "columns": [
+        {
+          "name": "instance_id",
+          "type": "uuid",
+          "nullable": true
+        },
+        {
+          "name": "id",
+          "type": "uuid",
+          "nullable": false
+        },
+        {
+          "name": "aud",
+          "type": "varchar(255)",
+          "nullable": true
+        },
+        {
+          "name": "role",
+          "type": "varchar(255)",
+          "nullable": true
+        },
+        {
+          "name": "email",
+          "type": "varchar(255)",
+          "nullable": true
+        },
+        {
+          "name": "encrypted_password",
+          "type": "varchar(255)",
+          "nullable": true
+        },
+        {
+          "name": "email_confirmed_at",
+          "type": "timestamp with time zone",
+          "nullable": true
+        },
+        {
+          "name": "invited_at",
+          "type": "timestamp with time zone",
+          "nullable": true
+        },
+        {
+          "name": "confirmation_token",
+          "type": "varchar(255)",
+          "nullable": true
+        },
+        {
+          "name": "confirmation_sent_at",
+          "type": "timestamp with time zone",
+          "nullable": true
+        },
+        {
+          "name": "recovery_token",
+          "type": "varchar(255)",
+          "nullable": true
+        },
+        {
+          "name": "recovery_sent_at",
+          "type": "timestamp with time zone",
+          "nullable": true
+        },
+        {
+          "name": "email_change_token_new",
+          "type": "varchar(255)",
+          "nullable": true
+        },
+        {
+          "name": "email_change",
+          "type": "varchar(255)",
+          "nullable": true
+        },
+        {
+          "name": "email_change_sent_at",
+          "type": "timestamp with time zone",
+          "nullable": true
+        },
+        {
+          "name": "last_sign_in_at",
+          "type": "timestamp with time zone",
+          "nullable": true
+        },
+        {
+          "name": "raw_app_meta_data",
+          "type": "jsonb",
+          "nullable": true
+        },
+        {
+          "name": "raw_user_meta_data",
+          "type": "jsonb",
+          "nullable": true
+        },
+        {
+          "name": "is_super_admin",
+          "type": "boolean",
+          "nullable": true
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "nullable": true
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "nullable": true
+        },
+        {
+          "name": "phone",
+          "type": "text",
+          "nullable": true,
+          "default": "NULL::character varying"
+        },
+        {
+          "name": "phone_confirmed_at",
+          "type": "timestamp with time zone",
+          "nullable": true
+        },
+        {
+          "name": "phone_change",
+          "type": "text",
+          "nullable": true,
+          "default": "''::character varying"
+        },
+        {
+          "name": "phone_change_token",
+          "type": "varchar(255)",
+          "nullable": true,
+          "default": "''::character varying"
+        },
+        {
+          "name": "phone_change_sent_at",
+          "type": "timestamp with time zone",
+          "nullable": true
+        },
+        {
+          "name": "confirmed_at",
+          "type": "timestamp with time zone",
+          "nullable": true,
+          "extra_def": "GENERATED ALWAYS AS LEAST(email_confirmed_at, phone_confirmed_at) STORED"
+        },
+        {
+          "name": "email_change_token_current",
+          "type": "varchar(255)",
+          "nullable": true,
+          "default": "''::character varying"
+        },
+        {
+          "name": "email_change_confirm_status",
+          "type": "smallint",
+          "nullable": true,
+          "default": "0"
+        },
+        {
+          "name": "banned_until",
+          "type": "timestamp with time zone",
+          "nullable": true
+        },
+        {
+          "name": "reauthentication_token",
+          "type": "varchar(255)",
+          "nullable": true,
+          "default": "''::character varying"
+        },
+        {
+          "name": "reauthentication_sent_at",
+          "type": "timestamp with time zone",
+          "nullable": true
+        },
+        {
+          "name": "is_sso_user",
+          "type": "boolean",
+          "nullable": false,
+          "default": "false",
+          "comment": "Auth: Set this column to true when the account comes from SSO. These accounts can have duplicate emails."
+        },
+        {
+          "name": "deleted_at",
+          "type": "timestamp with time zone",
+          "nullable": true
+        },
+        {
+          "name": "is_anonymous",
+          "type": "boolean",
+          "nullable": false,
+          "default": "false"
+        }
+      ],
+      "indexes": [
+        {
+          "name": "users_pkey",
+          "def": "CREATE UNIQUE INDEX users_pkey ON auth.users USING btree (id)",
+          "table": "auth.users",
+          "columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "users_instance_id_idx",
+          "def": "CREATE INDEX users_instance_id_idx ON auth.users USING btree (instance_id)",
+          "table": "auth.users",
+          "columns": [
+            "instance_id"
+          ]
+        },
+        {
+          "name": "users_instance_id_email_idx",
+          "def": "CREATE INDEX users_instance_id_email_idx ON auth.users USING btree (instance_id, lower((email)::text))",
+          "table": "auth.users",
+          "columns": [
+            "instance_id",
+            "lower"
+          ]
+        },
+        {
+          "name": "confirmation_token_idx",
+          "def": "CREATE UNIQUE INDEX confirmation_token_idx ON auth.users USING btree (confirmation_token) WHERE ((confirmation_token)::text !~ '^[0-9 ]*$'::text)",
+          "table": "auth.users",
+          "columns": [
+            "confirmation_token"
+          ]
+        },
+        {
+          "name": "recovery_token_idx",
+          "def": "CREATE UNIQUE INDEX recovery_token_idx ON auth.users USING btree (recovery_token) WHERE ((recovery_token)::text !~ '^[0-9 ]*$'::text)",
+          "table": "auth.users",
+          "columns": [
+            "recovery_token"
+          ]
+        },
+        {
+          "name": "email_change_token_current_idx",
+          "def": "CREATE UNIQUE INDEX email_change_token_current_idx ON auth.users USING btree (email_change_token_current) WHERE ((email_change_token_current)::text !~ '^[0-9 ]*$'::text)",
+          "table": "auth.users",
+          "columns": [
+            "email_change_token_current"
+          ]
+        },
+        {
+          "name": "email_change_token_new_idx",
+          "def": "CREATE UNIQUE INDEX email_change_token_new_idx ON auth.users USING btree (email_change_token_new) WHERE ((email_change_token_new)::text !~ '^[0-9 ]*$'::text)",
+          "table": "auth.users",
+          "columns": [
+            "email_change_token_new"
+          ]
+        },
+        {
+          "name": "reauthentication_token_idx",
+          "def": "CREATE UNIQUE INDEX reauthentication_token_idx ON auth.users USING btree (reauthentication_token) WHERE ((reauthentication_token)::text !~ '^[0-9 ]*$'::text)",
+          "table": "auth.users",
+          "columns": [
+            "reauthentication_token"
+          ]
+        },
+        {
+          "name": "users_email_partial_key",
+          "def": "CREATE UNIQUE INDEX users_email_partial_key ON auth.users USING btree (email) WHERE (is_sso_user = false)",
+          "table": "auth.users",
+          "columns": [
+            "email"
+          ],
+          "comment": "Auth: A partial unique index that applies only when is_sso_user is false"
+        },
+        {
+          "name": "users_phone_key",
+          "def": "CREATE UNIQUE INDEX users_phone_key ON auth.users USING btree (phone)",
+          "table": "auth.users",
+          "columns": [
+            "phone"
+          ]
+        },
+        {
+          "name": "users_is_anonymous_idx",
+          "def": "CREATE INDEX users_is_anonymous_idx ON auth.users USING btree (is_anonymous)",
+          "table": "auth.users",
+          "columns": [
+            "is_anonymous"
+          ]
+        }
+      ],
+      "constraints": [
+        {
+          "name": "users_email_change_confirm_status_check",
+          "type": "CHECK",
+          "def": "CHECK (((email_change_confirm_status \u003e= 0) AND (email_change_confirm_status \u003c= 2)))",
+          "table": "auth.users",
+          "referenced_table": "",
+          "columns": [
+            "email_change_confirm_status"
+          ]
+        },
+        {
+          "name": "users_pkey",
+          "type": "PRIMARY KEY",
+          "def": "PRIMARY KEY (id)",
+          "table": "auth.users",
+          "referenced_table": "",
+          "columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "users_phone_key",
+          "type": "UNIQUE",
+          "def": "UNIQUE (phone)",
+          "table": "auth.users",
+          "referenced_table": "",
+          "columns": [
+            "phone"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "public.bill_contents",
+      "type": "BASE TABLE",
+      "comment": "議案の難易度別コンテンツを管理するテーブル",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "nullable": false,
+          "default": "uuid_generate_v4()",
+          "comment": "ID"
+        },
+        {
+          "name": "bill_id",
+          "type": "uuid",
+          "nullable": false,
+          "comment": "議案ID"
+        },
+        {
+          "name": "difficulty_level",
+          "type": "difficulty_level_enum",
+          "nullable": false,
+          "comment": "難易度レベル（normal:ふつう, hard:難しい）"
+        },
+        {
+          "name": "title",
+          "type": "text",
+          "nullable": false,
+          "comment": "タイトル"
+        },
+        {
+          "name": "summary",
+          "type": "text",
+          "nullable": false,
+          "comment": "要約"
+        },
+        {
+          "name": "content",
+          "type": "text",
+          "nullable": false,
+          "comment": "Markdown形式の議案内容"
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "nullable": false,
+          "default": "now()",
+          "comment": "作成日時"
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "nullable": false,
+          "default": "now()",
+          "comment": "更新日時"
+        }
+      ],
+      "indexes": [
+        {
+          "name": "bill_contents_bill_id_difficulty_level_key",
+          "def": "CREATE UNIQUE INDEX bill_contents_bill_id_difficulty_level_key ON public.bill_contents USING btree (bill_id, difficulty_level)",
+          "table": "public.bill_contents",
+          "columns": [
+            "bill_id",
+            "difficulty_level"
+          ]
+        },
+        {
+          "name": "bill_contents_pkey",
+          "def": "CREATE UNIQUE INDEX bill_contents_pkey ON public.bill_contents USING btree (id)",
+          "table": "public.bill_contents",
+          "columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "idx_bill_contents_bill_id",
+          "def": "CREATE INDEX idx_bill_contents_bill_id ON public.bill_contents USING btree (bill_id)",
+          "table": "public.bill_contents",
+          "columns": [
+            "bill_id"
+          ]
+        },
+        {
+          "name": "idx_bill_contents_difficulty",
+          "def": "CREATE INDEX idx_bill_contents_difficulty ON public.bill_contents USING btree (difficulty_level)",
+          "table": "public.bill_contents",
+          "columns": [
+            "difficulty_level"
+          ]
+        }
+      ],
+      "constraints": [
+        {
+          "name": "bill_contents_bill_id_difficulty_level_key",
+          "type": "UNIQUE",
+          "def": "UNIQUE (bill_id, difficulty_level)",
+          "table": "public.bill_contents",
+          "referenced_table": "",
+          "columns": [
+            "bill_id",
+            "difficulty_level"
+          ]
+        },
+        {
+          "name": "bill_contents_pkey",
+          "type": "PRIMARY KEY",
+          "def": "PRIMARY KEY (id)",
+          "table": "public.bill_contents",
+          "referenced_table": "",
+          "columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "bill_contents_bill_id_fkey",
+          "type": "FOREIGN KEY",
+          "def": "FOREIGN KEY (bill_id) REFERENCES bills(id) ON DELETE CASCADE",
+          "table": "public.bill_contents",
+          "referenced_table": "public.bills",
+          "columns": [
+            "bill_id"
+          ],
+          "referenced_columns": [
+            "id"
+          ]
+        }
+      ],
+      "triggers": [
+        {
+          "name": "update_bill_contents_updated_at",
+          "def": "CREATE TRIGGER update_bill_contents_updated_at BEFORE UPDATE ON public.bill_contents FOR EACH ROW EXECUTE FUNCTION update_updated_at_column()"
+        }
+      ]
+    },
+    {
+      "name": "public.bill_discussions",
+      "type": "BASE TABLE",
+      "comment": "議案討論記録",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "nullable": false,
+          "default": "gen_random_uuid()"
+        },
+        {
+          "name": "bill_id",
+          "type": "uuid",
+          "nullable": false,
+          "comment": "議案ID"
+        },
+        {
+          "name": "session_day",
+          "type": "integer",
+          "nullable": false,
+          "comment": "開催日番号"
+        },
+        {
+          "name": "questioner_name",
+          "type": "text",
+          "nullable": false,
+          "comment": "質問者氏名"
+        },
+        {
+          "name": "questioner_number",
+          "type": "text",
+          "nullable": true,
+          "comment": "質問者番号"
+        },
+        {
+          "name": "questioner_party",
+          "type": "text",
+          "nullable": true,
+          "comment": "質問者会派"
+        },
+        {
+          "name": "question_summary",
+          "type": "text",
+          "nullable": true,
+          "comment": "質問要約"
+        },
+        {
+          "name": "question_raw",
+          "type": "text",
+          "nullable": true,
+          "comment": "質問原文"
+        },
+        {
+          "name": "answerer_role",
+          "type": "text",
+          "nullable": true,
+          "comment": "回答者役職"
+        },
+        {
+          "name": "answerer_name",
+          "type": "text",
+          "nullable": true,
+          "comment": "回答者氏名"
+        },
+        {
+          "name": "answer_summary",
+          "type": "text",
+          "nullable": true,
+          "comment": "回答要約"
+        },
+        {
+          "name": "answer_raw",
+          "type": "text",
+          "nullable": true,
+          "comment": "回答原文"
+        },
+        {
+          "name": "exchange_count",
+          "type": "integer",
+          "nullable": false,
+          "default": "1",
+          "comment": "質疑回数"
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "nullable": false,
+          "default": "now()"
+        }
+      ],
+      "indexes": [
+        {
+          "name": "bill_discussions_bill_id_questioner_name_key",
+          "def": "CREATE UNIQUE INDEX bill_discussions_bill_id_questioner_name_key ON public.bill_discussions USING btree (bill_id, questioner_name)",
+          "table": "public.bill_discussions",
+          "columns": [
+            "bill_id",
+            "questioner_name"
+          ]
+        },
+        {
+          "name": "bill_discussions_pkey",
+          "def": "CREATE UNIQUE INDEX bill_discussions_pkey ON public.bill_discussions USING btree (id)",
+          "table": "public.bill_discussions",
+          "columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "bill_discussions_bill_id_idx",
+          "def": "CREATE INDEX bill_discussions_bill_id_idx ON public.bill_discussions USING btree (bill_id)",
+          "table": "public.bill_discussions",
+          "columns": [
+            "bill_id"
+          ]
+        }
+      ],
+      "constraints": [
+        {
+          "name": "bill_discussions_bill_id_questioner_name_key",
+          "type": "UNIQUE",
+          "def": "UNIQUE (bill_id, questioner_name)",
+          "table": "public.bill_discussions",
+          "referenced_table": "",
+          "columns": [
+            "bill_id",
+            "questioner_name"
+          ]
+        },
+        {
+          "name": "bill_discussions_pkey",
+          "type": "PRIMARY KEY",
+          "def": "PRIMARY KEY (id)",
+          "table": "public.bill_discussions",
+          "referenced_table": "",
+          "columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "bill_discussions_bill_id_fkey",
+          "type": "FOREIGN KEY",
+          "def": "FOREIGN KEY (bill_id) REFERENCES bills(id) ON DELETE CASCADE",
+          "table": "public.bill_discussions",
+          "referenced_table": "public.bills",
+          "columns": [
+            "bill_id"
+          ],
+          "referenced_columns": [
+            "id"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "public.bills",
+      "type": "BASE TABLE",
+      "comment": "議案の基本情報を格納するテーブル。コンテンツはbill_contentsテーブルで管理。",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "nullable": false,
+          "default": "uuid_generate_v4()",
+          "comment": "ID"
+        },
+        {
+          "name": "name",
+          "type": "text",
+          "nullable": false,
+          "comment": "議案名"
+        },
+        {
+          "name": "status",
+          "type": "bill_status_enum",
+          "nullable": false,
+          "comment": "議案のステータス"
+        },
+        {
+          "name": "status_note",
+          "type": "text",
+          "nullable": true,
+          "comment": "ステータス備考"
+        },
+        {
+          "name": "published_at",
+          "type": "timestamp with time zone",
+          "nullable": true,
+          "comment": "サービスでの議案公開日時"
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "nullable": false,
+          "default": "now()",
+          "comment": "作成日時"
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "nullable": false,
+          "default": "now()",
+          "comment": "更新日時"
+        },
+        {
+          "name": "thumbnail_url",
+          "type": "text",
+          "nullable": true,
+          "comment": "URL to the bill thumbnail image stored in Supabase Storage"
+        },
+        {
+          "name": "publish_status",
+          "type": "bill_publish_status",
+          "nullable": false,
+          "default": "'draft'::bill_publish_status",
+          "comment": "Publication status: draft (private) or published (public)"
+        },
+        {
+          "name": "is_featured",
+          "type": "boolean",
+          "nullable": false,
+          "default": "false",
+          "comment": "Flag to indicate if this bill is featured on the homepage"
+        },
+        {
+          "name": "share_thumbnail_url",
+          "type": "text",
+          "nullable": true,
+          "comment": "シェア用OGP画像URL"
+        },
+        {
+          "name": "council_session_id",
+          "type": "uuid",
+          "nullable": true,
+          "comment": "紐付けられた国会会期ID"
+        },
+        {
+          "name": "committee_id",
+          "type": "uuid",
+          "nullable": true,
+          "comment": "委員会ID"
+        },
+        {
+          "name": "publish_status_order",
+          "type": "integer",
+          "nullable": true,
+          "extra_def": "GENERATED ALWAYS AS \nCASE publish_status\n    WHEN 'draft'::bill_publish_status THEN 0\n    WHEN 'coming_soon'::bill_publish_status THEN 1\n    WHEN 'published'::bill_publish_status THEN 2\n    ELSE NULL::integer\nEND STORED",
+          "comment": "公開状態ソート順(draft → coming_soon → published の順。Generated Column)"
+        },
+        {
+          "name": "bill_number",
+          "type": "text",
+          "nullable": false,
+          "default": "''::text",
+          "comment": "議案番号（例: 「第1号」「報告第1号」など）。空文字は未設定を示す。"
+        },
+        {
+          "name": "status_order",
+          "type": "integer",
+          "nullable": true,
+          "extra_def": "GENERATED ALWAYS AS \nCASE status\n    WHEN 'approved'::bill_status_enum THEN 0\n    WHEN 'adopted'::bill_status_enum THEN 0\n    WHEN 'reported'::bill_status_enum THEN 0\n    WHEN 'partially_adopted'::bill_status_enum THEN 1\n    WHEN 'rejected'::bill_status_enum THEN 2\n    WHEN 'plenary_session'::bill_status_enum THEN 3\n    WHEN 'in_committee'::bill_status_enum THEN 4\n    WHEN 'submitted'::bill_status_enum THEN 5\n    WHEN 'preparing'::bill_status_enum THEN 6\n    ELSE NULL::integer\nEND STORED"
+        },
+        {
+          "name": "source_url",
+          "type": "text",
+          "nullable": true,
+          "comment": "出典URL（議案のPDF等）"
+        },
+        {
+          "name": "bill_type",
+          "type": "text",
+          "nullable": false,
+          "default": "'bill'::text",
+          "comment": "議案種別(bill:通常議案 / bill_settlement:決算認定 / bill_personnel:人事同意 / bill_ratification:専決処分承認 / consultation:諮問 / opinion:意見書案 / petition:請願 / appeal:陳情 / report:報告 / resolution:決議 / member_bill:議員提出議案)"
+        },
+        {
+          "name": "discussion_overview_points",
+          "type": "text[]",
+          "nullable": false,
+          "default": "'{}'::text[]",
+          "comment": "議論概要ポイント"
+        }
+      ],
+      "indexes": [
+        {
+          "name": "bills_pkey",
+          "def": "CREATE UNIQUE INDEX bills_pkey ON public.bills USING btree (id)",
+          "table": "public.bills",
+          "columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "bills_session_number_type_unique",
+          "def": "CREATE UNIQUE INDEX bills_session_number_type_unique ON public.bills USING btree (council_session_id, bill_number, bill_type) WHERE (bill_number \u003c\u003e ''::text)",
+          "table": "public.bills",
+          "columns": [
+            "council_session_id",
+            "bill_number",
+            "bill_type"
+          ]
+        },
+        {
+          "name": "idx_bills_committee_id",
+          "def": "CREATE INDEX idx_bills_committee_id ON public.bills USING btree (committee_id)",
+          "table": "public.bills",
+          "columns": [
+            "committee_id"
+          ]
+        },
+        {
+          "name": "idx_bills_council_session_id",
+          "def": "CREATE INDEX idx_bills_council_session_id ON public.bills USING btree (council_session_id)",
+          "table": "public.bills",
+          "columns": [
+            "council_session_id"
+          ]
+        },
+        {
+          "name": "idx_bills_is_featured",
+          "def": "CREATE INDEX idx_bills_is_featured ON public.bills USING btree (is_featured) WHERE (is_featured = true)",
+          "table": "public.bills",
+          "columns": [
+            "is_featured"
+          ]
+        },
+        {
+          "name": "idx_bills_publish_status",
+          "def": "CREATE INDEX idx_bills_publish_status ON public.bills USING btree (publish_status)",
+          "table": "public.bills",
+          "columns": [
+            "publish_status"
+          ]
+        },
+        {
+          "name": "idx_bills_publish_status_order",
+          "def": "CREATE INDEX idx_bills_publish_status_order ON public.bills USING btree (publish_status_order)",
+          "table": "public.bills",
+          "columns": [
+            "publish_status_order"
+          ]
+        },
+        {
+          "name": "idx_bills_published_at",
+          "def": "CREATE INDEX idx_bills_published_at ON public.bills USING btree (published_at DESC)",
+          "table": "public.bills",
+          "columns": [
+            "published_at"
+          ]
+        },
+        {
+          "name": "idx_bills_status",
+          "def": "CREATE INDEX idx_bills_status ON public.bills USING btree (status)",
+          "table": "public.bills",
+          "columns": [
+            "status"
+          ]
+        },
+        {
+          "name": "idx_bills_status_order",
+          "def": "CREATE INDEX idx_bills_status_order ON public.bills USING btree (status_order)",
+          "table": "public.bills",
+          "columns": [
+            "status_order"
+          ]
+        }
+      ],
+      "constraints": [
+        {
+          "name": "bills_bill_type_check",
+          "type": "CHECK",
+          "def": "CHECK ((bill_type = ANY (ARRAY['bill'::text, 'bill_settlement'::text, 'bill_personnel'::text, 'bill_ratification'::text, 'consultation'::text, 'opinion'::text, 'petition'::text, 'appeal'::text, 'report'::text, 'resolution'::text, 'member_bill'::text])))",
+          "table": "public.bills",
+          "referenced_table": "",
+          "columns": [
+            "bill_type"
+          ]
+        },
+        {
+          "name": "bills_pkey",
+          "type": "PRIMARY KEY",
+          "def": "PRIMARY KEY (id)",
+          "table": "public.bills",
+          "referenced_table": "",
+          "columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "bills_committee_id_fkey",
+          "type": "FOREIGN KEY",
+          "def": "FOREIGN KEY (committee_id) REFERENCES committees(id)",
+          "table": "public.bills",
+          "referenced_table": "public.committees",
+          "columns": [
+            "committee_id"
+          ],
+          "referenced_columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "bills_diet_session_id_fkey",
+          "type": "FOREIGN KEY",
+          "def": "FOREIGN KEY (council_session_id) REFERENCES council_sessions(id) ON DELETE SET NULL",
+          "table": "public.bills",
+          "referenced_table": "public.council_sessions",
+          "columns": [
+            "council_session_id"
+          ],
+          "referenced_columns": [
+            "id"
+          ]
+        }
+      ],
+      "triggers": [
+        {
+          "name": "update_bills_updated_at",
+          "def": "CREATE TRIGGER update_bills_updated_at BEFORE UPDATE ON public.bills FOR EACH ROW EXECUTE FUNCTION update_updated_at_column()"
+        }
+      ]
+    },
+    {
+      "name": "public.bills_tags",
+      "type": "BASE TABLE",
+      "comment": "Junction table for bills and tags relationship",
+      "columns": [
+        {
+          "name": "bill_id",
+          "type": "uuid",
+          "nullable": false,
+          "comment": "Bill ID"
+        },
+        {
+          "name": "tag_id",
+          "type": "uuid",
+          "nullable": false,
+          "comment": "Tag ID"
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "nullable": false,
+          "default": "now()",
+          "comment": "作成日時"
+        }
+      ],
+      "indexes": [
+        {
+          "name": "bills_tags_pkey",
+          "def": "CREATE UNIQUE INDEX bills_tags_pkey ON public.bills_tags USING btree (bill_id, tag_id)",
+          "table": "public.bills_tags",
+          "columns": [
+            "bill_id",
+            "tag_id"
+          ]
+        }
+      ],
+      "constraints": [
+        {
+          "name": "bills_tags_bill_id_fkey",
+          "type": "FOREIGN KEY",
+          "def": "FOREIGN KEY (bill_id) REFERENCES bills(id) ON DELETE CASCADE",
+          "table": "public.bills_tags",
+          "referenced_table": "public.bills",
+          "columns": [
+            "bill_id"
+          ],
+          "referenced_columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "bills_tags_pkey",
+          "type": "PRIMARY KEY",
+          "def": "PRIMARY KEY (bill_id, tag_id)",
+          "table": "public.bills_tags",
+          "referenced_table": "",
+          "columns": [
+            "bill_id",
+            "tag_id"
+          ]
+        },
+        {
+          "name": "bills_tags_tag_id_fkey",
+          "type": "FOREIGN KEY",
+          "def": "FOREIGN KEY (tag_id) REFERENCES tags(id) ON DELETE CASCADE",
+          "table": "public.bills_tags",
+          "referenced_table": "public.tags",
+          "columns": [
+            "tag_id"
+          ],
+          "referenced_columns": [
+            "id"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "public.budget_initiatives",
+      "type": "BASE TABLE",
+      "comment": "予算施策(テーマごとの個別施策)",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "nullable": false,
+          "default": "gen_random_uuid()"
+        },
+        {
+          "name": "theme_id",
+          "type": "uuid",
+          "nullable": false,
+          "comment": "予算テーマID"
+        },
+        {
+          "name": "title",
+          "type": "text",
+          "nullable": false,
+          "comment": "施策タイトル"
+        },
+        {
+          "name": "budget_amount",
+          "type": "bigint",
+          "nullable": true,
+          "comment": "予算額"
+        },
+        {
+          "name": "badge",
+          "type": "text",
+          "nullable": true,
+          "comment": "バッジ種別(new/expanded/continued)"
+        },
+        {
+          "name": "description",
+          "type": "text",
+          "nullable": true,
+          "comment": "施策説明"
+        },
+        {
+          "name": "sort_order",
+          "type": "integer",
+          "nullable": false,
+          "default": "0",
+          "comment": "表示順"
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "nullable": false,
+          "default": "now()"
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "nullable": false,
+          "default": "now()"
+        }
+      ],
+      "indexes": [
+        {
+          "name": "budget_initiatives_pkey",
+          "def": "CREATE UNIQUE INDEX budget_initiatives_pkey ON public.budget_initiatives USING btree (id)",
+          "table": "public.budget_initiatives",
+          "columns": [
+            "id"
+          ]
+        }
+      ],
+      "constraints": [
+        {
+          "name": "budget_initiatives_badge_check",
+          "type": "CHECK",
+          "def": "CHECK ((badge = ANY (ARRAY['new'::text, 'expanded'::text, 'continued'::text, NULL::text])))",
+          "table": "public.budget_initiatives",
+          "referenced_table": "",
+          "columns": [
+            "badge"
+          ]
+        },
+        {
+          "name": "budget_initiatives_pkey",
+          "type": "PRIMARY KEY",
+          "def": "PRIMARY KEY (id)",
+          "table": "public.budget_initiatives",
+          "referenced_table": "",
+          "columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "budget_initiatives_theme_id_fkey",
+          "type": "FOREIGN KEY",
+          "def": "FOREIGN KEY (theme_id) REFERENCES budget_themes(id) ON DELETE CASCADE",
+          "table": "public.budget_initiatives",
+          "referenced_table": "public.budget_themes",
+          "columns": [
+            "theme_id"
+          ],
+          "referenced_columns": [
+            "id"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "public.budget_overviews",
+      "type": "BASE TABLE",
+      "comment": "予算概要(部局ごと×定例会ごと)",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "nullable": false,
+          "default": "gen_random_uuid()"
+        },
+        {
+          "name": "council_session_id",
+          "type": "uuid",
+          "nullable": false,
+          "comment": "市議会定例会ID"
+        },
+        {
+          "name": "department_name",
+          "type": "text",
+          "nullable": false,
+          "comment": "部局名"
+        },
+        {
+          "name": "department_slug",
+          "type": "text",
+          "nullable": false,
+          "comment": "部局スラッグ"
+        },
+        {
+          "name": "direction",
+          "type": "text",
+          "nullable": true,
+          "comment": "方針"
+        },
+        {
+          "name": "total_budget",
+          "type": "bigint",
+          "nullable": true,
+          "comment": "当年度予算総額"
+        },
+        {
+          "name": "prev_budget",
+          "type": "bigint",
+          "nullable": true,
+          "comment": "前年度予算総額"
+        },
+        {
+          "name": "source_url",
+          "type": "text",
+          "nullable": true,
+          "comment": "出典URL"
+        },
+        {
+          "name": "publish_status",
+          "type": "text",
+          "nullable": false,
+          "default": "'draft'::text",
+          "comment": "公開状態(draft/published)"
+        },
+        {
+          "name": "sort_order",
+          "type": "integer",
+          "nullable": false,
+          "default": "0",
+          "comment": "表示順"
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "nullable": false,
+          "default": "now()"
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "nullable": false,
+          "default": "now()"
+        }
+      ],
+      "indexes": [
+        {
+          "name": "budget_overviews_council_session_id_department_slug_key",
+          "def": "CREATE UNIQUE INDEX budget_overviews_council_session_id_department_slug_key ON public.budget_overviews USING btree (council_session_id, department_slug)",
+          "table": "public.budget_overviews",
+          "columns": [
+            "council_session_id",
+            "department_slug"
+          ]
+        },
+        {
+          "name": "budget_overviews_pkey",
+          "def": "CREATE UNIQUE INDEX budget_overviews_pkey ON public.budget_overviews USING btree (id)",
+          "table": "public.budget_overviews",
+          "columns": [
+            "id"
+          ]
+        }
+      ],
+      "constraints": [
+        {
+          "name": "budget_overviews_publish_status_check",
+          "type": "CHECK",
+          "def": "CHECK ((publish_status = ANY (ARRAY['draft'::text, 'published'::text])))",
+          "table": "public.budget_overviews",
+          "referenced_table": "",
+          "columns": [
+            "publish_status"
+          ]
+        },
+        {
+          "name": "budget_overviews_council_session_id_department_slug_key",
+          "type": "UNIQUE",
+          "def": "UNIQUE (council_session_id, department_slug)",
+          "table": "public.budget_overviews",
+          "referenced_table": "",
+          "columns": [
+            "council_session_id",
+            "department_slug"
+          ]
+        },
+        {
+          "name": "budget_overviews_pkey",
+          "type": "PRIMARY KEY",
+          "def": "PRIMARY KEY (id)",
+          "table": "public.budget_overviews",
+          "referenced_table": "",
+          "columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "budget_overviews_council_session_id_fkey",
+          "type": "FOREIGN KEY",
+          "def": "FOREIGN KEY (council_session_id) REFERENCES council_sessions(id)",
+          "table": "public.budget_overviews",
+          "referenced_table": "public.council_sessions",
+          "columns": [
+            "council_session_id"
+          ],
+          "referenced_columns": [
+            "id"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "public.budget_themes",
+      "type": "BASE TABLE",
+      "comment": "予算テーマ(部局の主要テーマ。例:「福岡100の推進」)",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "nullable": false,
+          "default": "gen_random_uuid()"
+        },
+        {
+          "name": "overview_id",
+          "type": "uuid",
+          "nullable": false,
+          "comment": "予算概要ID"
+        },
+        {
+          "name": "title",
+          "type": "text",
+          "nullable": false,
+          "comment": "テーマタイトル"
+        },
+        {
+          "name": "budget_amount",
+          "type": "bigint",
+          "nullable": true,
+          "comment": "予算額"
+        },
+        {
+          "name": "ai_summary",
+          "type": "text",
+          "nullable": true,
+          "comment": "AI要約"
+        },
+        {
+          "name": "sort_order",
+          "type": "integer",
+          "nullable": false,
+          "default": "0",
+          "comment": "表示順"
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "nullable": false,
+          "default": "now()"
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "nullable": false,
+          "default": "now()"
+        }
+      ],
+      "indexes": [
+        {
+          "name": "budget_themes_pkey",
+          "def": "CREATE UNIQUE INDEX budget_themes_pkey ON public.budget_themes USING btree (id)",
+          "table": "public.budget_themes",
+          "columns": [
+            "id"
+          ]
+        }
+      ],
+      "constraints": [
+        {
+          "name": "budget_themes_overview_id_fkey",
+          "type": "FOREIGN KEY",
+          "def": "FOREIGN KEY (overview_id) REFERENCES budget_overviews(id) ON DELETE CASCADE",
+          "table": "public.budget_themes",
+          "referenced_table": "public.budget_overviews",
+          "columns": [
+            "overview_id"
+          ],
+          "referenced_columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "budget_themes_pkey",
+          "type": "PRIMARY KEY",
+          "def": "PRIMARY KEY (id)",
+          "table": "public.budget_themes",
+          "referenced_table": "",
+          "columns": [
+            "id"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "public.chat_usage_events",
+      "type": "BASE TABLE",
+      "comment": "チャットAI利用ログ",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "nullable": false,
+          "default": "gen_random_uuid()"
+        },
+        {
+          "name": "user_id",
+          "type": "uuid",
+          "nullable": false,
+          "comment": "ユーザーID"
+        },
+        {
+          "name": "session_id",
+          "type": "text",
+          "nullable": true,
+          "comment": "セッションID"
+        },
+        {
+          "name": "prompt_name",
+          "type": "text",
+          "nullable": true,
+          "comment": "プロンプト名"
+        },
+        {
+          "name": "model",
+          "type": "text",
+          "nullable": false,
+          "comment": "モデルID"
+        },
+        {
+          "name": "input_tokens",
+          "type": "integer",
+          "nullable": false,
+          "default": "0",
+          "comment": "入力トークン数"
+        },
+        {
+          "name": "output_tokens",
+          "type": "integer",
+          "nullable": false,
+          "default": "0",
+          "comment": "出力トークン数"
+        },
+        {
+          "name": "total_tokens",
+          "type": "integer",
+          "nullable": false,
+          "default": "0",
+          "comment": "合計トークン数"
+        },
+        {
+          "name": "cost_usd",
+          "type": "numeric(12,6)",
+          "nullable": false,
+          "default": "0",
+          "comment": "コスト(USD)"
+        },
+        {
+          "name": "metadata",
+          "type": "jsonb",
+          "nullable": true,
+          "comment": "メタデータ"
+        },
+        {
+          "name": "occurred_at",
+          "type": "timestamp with time zone",
+          "nullable": false,
+          "default": "now()",
+          "comment": "発生日時"
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "nullable": false,
+          "default": "now()",
+          "comment": "作成日時"
+        }
+      ],
+      "indexes": [
+        {
+          "name": "chat_usage_events_pkey",
+          "def": "CREATE UNIQUE INDEX chat_usage_events_pkey ON public.chat_usage_events USING btree (id)",
+          "table": "public.chat_usage_events",
+          "columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "chat_usage_events_user_id_occurred_at_idx",
+          "def": "CREATE INDEX chat_usage_events_user_id_occurred_at_idx ON public.chat_usage_events USING btree (user_id, occurred_at)",
+          "table": "public.chat_usage_events",
+          "columns": [
+            "user_id",
+            "occurred_at"
+          ]
+        },
+        {
+          "name": "chat_usage_events_occurred_at_idx",
+          "def": "CREATE INDEX chat_usage_events_occurred_at_idx ON public.chat_usage_events USING btree (occurred_at)",
+          "table": "public.chat_usage_events",
+          "columns": [
+            "occurred_at"
+          ]
+        }
+      ],
+      "constraints": [
+        {
+          "name": "chat_usage_events_pkey",
+          "type": "PRIMARY KEY",
+          "def": "PRIMARY KEY (id)",
+          "table": "public.chat_usage_events",
+          "referenced_table": "",
+          "columns": [
+            "id"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "public.chats",
+      "type": "BASE TABLE",
+      "comment": "AIとの対話履歴を管理するテーブル",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "nullable": false,
+          "default": "uuid_generate_v4()",
+          "comment": "ID"
+        },
+        {
+          "name": "bill_id",
+          "type": "uuid",
+          "nullable": false,
+          "comment": "議案ID"
+        },
+        {
+          "name": "user_id",
+          "type": "uuid",
+          "nullable": true,
+          "comment": "ユーザーID（Supabase匿名認証）"
+        },
+        {
+          "name": "role",
+          "type": "chat_role_enum",
+          "nullable": false,
+          "comment": "メッセージの送信者役割"
+        },
+        {
+          "name": "message",
+          "type": "text",
+          "nullable": false,
+          "comment": "メッセージ本文"
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "nullable": false,
+          "default": "now()",
+          "comment": "作成日時"
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "nullable": false,
+          "default": "now()",
+          "comment": "更新日時"
+        }
+      ],
+      "indexes": [
+        {
+          "name": "chats_pkey",
+          "def": "CREATE UNIQUE INDEX chats_pkey ON public.chats USING btree (id)",
+          "table": "public.chats",
+          "columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "idx_chats_bill_id",
+          "def": "CREATE INDEX idx_chats_bill_id ON public.chats USING btree (bill_id)",
+          "table": "public.chats",
+          "columns": [
+            "bill_id"
+          ]
+        },
+        {
+          "name": "idx_chats_bill_user",
+          "def": "CREATE INDEX idx_chats_bill_user ON public.chats USING btree (bill_id, user_id)",
+          "table": "public.chats",
+          "columns": [
+            "bill_id",
+            "user_id"
+          ]
+        },
+        {
+          "name": "idx_chats_created_at",
+          "def": "CREATE INDEX idx_chats_created_at ON public.chats USING btree (created_at DESC)",
+          "table": "public.chats",
+          "columns": [
+            "created_at"
+          ]
+        },
+        {
+          "name": "idx_chats_user_id",
+          "def": "CREATE INDEX idx_chats_user_id ON public.chats USING btree (user_id)",
+          "table": "public.chats",
+          "columns": [
+            "user_id"
+          ]
+        }
+      ],
+      "constraints": [
+        {
+          "name": "chats_bill_id_fkey",
+          "type": "FOREIGN KEY",
+          "def": "FOREIGN KEY (bill_id) REFERENCES bills(id) ON DELETE CASCADE",
+          "table": "public.chats",
+          "referenced_table": "public.bills",
+          "columns": [
+            "bill_id"
+          ],
+          "referenced_columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "chats_pkey",
+          "type": "PRIMARY KEY",
+          "def": "PRIMARY KEY (id)",
+          "table": "public.chats",
+          "referenced_table": "",
+          "columns": [
+            "id"
+          ]
+        }
+      ],
+      "triggers": [
+        {
+          "name": "update_chats_updated_at",
+          "def": "CREATE TRIGGER update_chats_updated_at BEFORE UPDATE ON public.chats FOR EACH ROW EXECUTE FUNCTION update_updated_at_column()"
+        }
+      ]
+    },
+    {
+      "name": "public.committees",
+      "type": "BASE TABLE",
+      "comment": "委員会マスター",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "nullable": false,
+          "default": "gen_random_uuid()"
+        },
+        {
+          "name": "name",
+          "type": "text",
+          "nullable": false,
+          "comment": "委員会名"
+        },
+        {
+          "name": "committee_type",
+          "type": "committee_type_enum",
+          "nullable": false,
+          "default": "'standing'::committee_type_enum",
+          "comment": "委員会種別（standing: 常任, parliamentary: 議会運営, special: 調査特別）"
+        },
+        {
+          "name": "description",
+          "type": "text",
+          "nullable": true,
+          "comment": "委員会説明"
+        },
+        {
+          "name": "sort_order",
+          "type": "integer",
+          "nullable": false,
+          "default": "0",
+          "comment": "表示順"
+        },
+        {
+          "name": "is_active",
+          "type": "boolean",
+          "nullable": false,
+          "default": "true",
+          "comment": "有効フラグ"
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "nullable": false,
+          "default": "now()"
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "nullable": false,
+          "default": "now()"
+        }
+      ],
+      "indexes": [
+        {
+          "name": "committees_pkey",
+          "def": "CREATE UNIQUE INDEX committees_pkey ON public.committees USING btree (id)",
+          "table": "public.committees",
+          "columns": [
+            "id"
+          ]
+        }
+      ],
+      "constraints": [
+        {
+          "name": "committees_pkey",
+          "type": "PRIMARY KEY",
+          "def": "PRIMARY KEY (id)",
+          "table": "public.committees",
+          "referenced_table": "",
+          "columns": [
+            "id"
+          ]
+        }
+      ],
+      "triggers": [
+        {
+          "name": "set_committees_updated_at",
+          "def": "CREATE TRIGGER set_committees_updated_at BEFORE UPDATE ON public.committees FOR EACH ROW EXECUTE FUNCTION update_updated_at_column()"
+        }
+      ]
+    },
+    {
+      "name": "public.council_sessions",
+      "type": "BASE TABLE",
+      "comment": "国会会期マスタテーブル",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "nullable": false,
+          "default": "gen_random_uuid()",
+          "comment": "ID"
+        },
+        {
+          "name": "name",
+          "type": "text",
+          "nullable": false,
+          "comment": "会期名"
+        },
+        {
+          "name": "start_date",
+          "type": "date",
+          "nullable": false,
+          "comment": "開始日"
+        },
+        {
+          "name": "end_date",
+          "type": "date",
+          "nullable": true,
+          "comment": "終了日"
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "nullable": false,
+          "default": "now()",
+          "comment": "作成日時"
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "nullable": false,
+          "default": "now()",
+          "comment": "更新日時"
+        },
+        {
+          "name": "slug",
+          "type": "text",
+          "nullable": true,
+          "comment": "URL用のスラッグ（例: 219-rinji, 218-jokai）"
+        },
+        {
+          "name": "council_url",
+          "type": "text",
+          "nullable": true,
+          "comment": "衆議院の国会議案情報ページURL"
+        },
+        {
+          "name": "is_active",
+          "type": "boolean",
+          "nullable": false,
+          "default": "false",
+          "comment": "Whether this session is the active one displayed on the top page. Only one session can be active at a time."
+        }
+      ],
+      "indexes": [
+        {
+          "name": "diet_sessions_pkey",
+          "def": "CREATE UNIQUE INDEX diet_sessions_pkey ON public.council_sessions USING btree (id)",
+          "table": "public.council_sessions",
+          "columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "diet_sessions_slug_key",
+          "def": "CREATE UNIQUE INDEX diet_sessions_slug_key ON public.council_sessions USING btree (slug)",
+          "table": "public.council_sessions",
+          "columns": [
+            "slug"
+          ]
+        },
+        {
+          "name": "idx_council_sessions_date_range",
+          "def": "CREATE INDEX idx_council_sessions_date_range ON public.council_sessions USING btree (start_date, end_date)",
+          "table": "public.council_sessions",
+          "columns": [
+            "start_date",
+            "end_date"
+          ]
+        },
+        {
+          "name": "idx_diet_sessions_slug",
+          "def": "CREATE INDEX idx_diet_sessions_slug ON public.council_sessions USING btree (slug)",
+          "table": "public.council_sessions",
+          "columns": [
+            "slug"
+          ]
+        }
+      ],
+      "constraints": [
+        {
+          "name": "end_date_after_start_date",
+          "type": "CHECK",
+          "def": "CHECK ((end_date \u003e= start_date))",
+          "table": "public.council_sessions",
+          "referenced_table": "",
+          "columns": [
+            "end_date",
+            "start_date"
+          ]
+        },
+        {
+          "name": "diet_sessions_pkey",
+          "type": "PRIMARY KEY",
+          "def": "PRIMARY KEY (id)",
+          "table": "public.council_sessions",
+          "referenced_table": "",
+          "columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "diet_sessions_slug_key",
+          "type": "UNIQUE",
+          "def": "UNIQUE (slug)",
+          "table": "public.council_sessions",
+          "referenced_table": "",
+          "columns": [
+            "slug"
+          ]
+        }
+      ],
+      "triggers": [
+        {
+          "name": "set_updated_at",
+          "def": "CREATE TRIGGER set_updated_at BEFORE UPDATE ON public.council_sessions FOR EACH ROW EXECUTE FUNCTION update_updated_at_column()"
+        }
+      ]
+    },
+    {
+      "name": "public.expert_registrations",
+      "type": "BASE TABLE",
+      "comment": "有識者リスト登録情報を管理するテーブル",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "nullable": false,
+          "default": "gen_random_uuid()"
+        },
+        {
+          "name": "name",
+          "type": "text",
+          "nullable": false,
+          "comment": "有識者の氏名"
+        },
+        {
+          "name": "affiliation",
+          "type": "text",
+          "nullable": false,
+          "comment": "所属・肩書"
+        },
+        {
+          "name": "email",
+          "type": "text",
+          "nullable": false,
+          "comment": "メールアドレス"
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "nullable": false,
+          "default": "now()"
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "nullable": false,
+          "default": "now()"
+        },
+        {
+          "name": "user_id",
+          "type": "uuid",
+          "nullable": false,
+          "comment": "登録したユーザーのID"
+        }
+      ],
+      "indexes": [
+        {
+          "name": "expert_registrations_pkey",
+          "def": "CREATE UNIQUE INDEX expert_registrations_pkey ON public.expert_registrations USING btree (id)",
+          "table": "public.expert_registrations",
+          "columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "idx_expert_registrations_email",
+          "def": "CREATE UNIQUE INDEX idx_expert_registrations_email ON public.expert_registrations USING btree (email)",
+          "table": "public.expert_registrations",
+          "columns": [
+            "email"
+          ]
+        },
+        {
+          "name": "idx_expert_registrations_user_id",
+          "def": "CREATE UNIQUE INDEX idx_expert_registrations_user_id ON public.expert_registrations USING btree (user_id)",
+          "table": "public.expert_registrations",
+          "columns": [
+            "user_id"
+          ]
+        }
+      ],
+      "constraints": [
+        {
+          "name": "expert_registrations_user_id_fkey",
+          "type": "FOREIGN KEY",
+          "def": "FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE",
+          "table": "public.expert_registrations",
+          "referenced_table": "auth.users",
+          "columns": [
+            "user_id"
+          ],
+          "referenced_columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "expert_registrations_pkey",
+          "type": "PRIMARY KEY",
+          "def": "PRIMARY KEY (id)",
+          "table": "public.expert_registrations",
+          "referenced_table": "",
+          "columns": [
+            "id"
+          ]
+        }
+      ],
+      "triggers": [
+        {
+          "name": "update_expert_registrations_updated_at",
+          "def": "CREATE TRIGGER update_expert_registrations_updated_at BEFORE UPDATE ON public.expert_registrations FOR EACH ROW EXECUTE FUNCTION update_updated_at_column()"
+        }
+      ]
+    },
+    {
+      "name": "public.faction_stances",
+      "type": "BASE TABLE",
+      "comment": "会派見解（1議案に複数会派の見解を登録可能）",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "nullable": false,
+          "default": "gen_random_uuid()"
+        },
+        {
+          "name": "bill_id",
+          "type": "uuid",
+          "nullable": false,
+          "comment": "議案ID"
+        },
+        {
+          "name": "faction_id",
+          "type": "uuid",
+          "nullable": false,
+          "comment": "会派ID"
+        },
+        {
+          "name": "type",
+          "type": "stance_type_enum",
+          "nullable": false,
+          "comment": "スタンス種別"
+        },
+        {
+          "name": "comment",
+          "type": "text",
+          "nullable": true,
+          "comment": "コメント"
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "nullable": false,
+          "default": "now()"
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "nullable": false,
+          "default": "now()"
+        }
+      ],
+      "indexes": [
+        {
+          "name": "faction_stances_bill_id_faction_id_key",
+          "def": "CREATE UNIQUE INDEX faction_stances_bill_id_faction_id_key ON public.faction_stances USING btree (bill_id, faction_id)",
+          "table": "public.faction_stances",
+          "columns": [
+            "bill_id",
+            "faction_id"
+          ]
+        },
+        {
+          "name": "faction_stances_pkey",
+          "def": "CREATE UNIQUE INDEX faction_stances_pkey ON public.faction_stances USING btree (id)",
+          "table": "public.faction_stances",
+          "columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "idx_faction_stances_bill_id",
+          "def": "CREATE INDEX idx_faction_stances_bill_id ON public.faction_stances USING btree (bill_id)",
+          "table": "public.faction_stances",
+          "columns": [
+            "bill_id"
+          ]
+        },
+        {
+          "name": "idx_faction_stances_faction_id",
+          "def": "CREATE INDEX idx_faction_stances_faction_id ON public.faction_stances USING btree (faction_id)",
+          "table": "public.faction_stances",
+          "columns": [
+            "faction_id"
+          ]
+        }
+      ],
+      "constraints": [
+        {
+          "name": "faction_stances_bill_id_fkey",
+          "type": "FOREIGN KEY",
+          "def": "FOREIGN KEY (bill_id) REFERENCES bills(id) ON DELETE CASCADE",
+          "table": "public.faction_stances",
+          "referenced_table": "public.bills",
+          "columns": [
+            "bill_id"
+          ],
+          "referenced_columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "faction_stances_bill_id_faction_id_key",
+          "type": "UNIQUE",
+          "def": "UNIQUE (bill_id, faction_id)",
+          "table": "public.faction_stances",
+          "referenced_table": "",
+          "columns": [
+            "bill_id",
+            "faction_id"
+          ]
+        },
+        {
+          "name": "faction_stances_pkey",
+          "type": "PRIMARY KEY",
+          "def": "PRIMARY KEY (id)",
+          "table": "public.faction_stances",
+          "referenced_table": "",
+          "columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "faction_stances_faction_id_fkey",
+          "type": "FOREIGN KEY",
+          "def": "FOREIGN KEY (faction_id) REFERENCES factions(id) ON DELETE CASCADE",
+          "table": "public.faction_stances",
+          "referenced_table": "public.factions",
+          "columns": [
+            "faction_id"
+          ],
+          "referenced_columns": [
+            "id"
+          ]
+        }
+      ],
+      "triggers": [
+        {
+          "name": "set_faction_stances_updated_at",
+          "def": "CREATE TRIGGER set_faction_stances_updated_at BEFORE UPDATE ON public.faction_stances FOR EACH ROW EXECUTE FUNCTION update_updated_at_column()"
+        }
+      ]
+    },
+    {
+      "name": "public.factions",
+      "type": "BASE TABLE",
+      "comment": "会派マスター",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "nullable": false,
+          "default": "gen_random_uuid()"
+        },
+        {
+          "name": "name",
+          "type": "text",
+          "nullable": false,
+          "comment": "会派名"
+        },
+        {
+          "name": "display_name",
+          "type": "text",
+          "nullable": false,
+          "comment": "会派表示名"
+        },
+        {
+          "name": "logo_url",
+          "type": "text",
+          "nullable": true,
+          "comment": "ロゴ画像URL"
+        },
+        {
+          "name": "sort_order",
+          "type": "integer",
+          "nullable": false,
+          "default": "0",
+          "comment": "表示順"
+        },
+        {
+          "name": "is_active",
+          "type": "boolean",
+          "nullable": false,
+          "default": "true",
+          "comment": "有効フラグ"
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "nullable": false,
+          "default": "now()"
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "nullable": false,
+          "default": "now()"
+        },
+        {
+          "name": "alternative_names",
+          "type": "text[]",
+          "nullable": false,
+          "default": "'{}'::text[]",
+          "comment": "別名一覧(略称・旧称等)"
+        }
+      ],
+      "indexes": [
+        {
+          "name": "factions_pkey",
+          "def": "CREATE UNIQUE INDEX factions_pkey ON public.factions USING btree (id)",
+          "table": "public.factions",
+          "columns": [
+            "id"
+          ]
+        }
+      ],
+      "constraints": [
+        {
+          "name": "factions_pkey",
+          "type": "PRIMARY KEY",
+          "def": "PRIMARY KEY (id)",
+          "table": "public.factions",
+          "referenced_table": "",
+          "columns": [
+            "id"
+          ]
+        }
+      ],
+      "triggers": [
+        {
+          "name": "set_factions_updated_at",
+          "def": "CREATE TRIGGER set_factions_updated_at BEFORE UPDATE ON public.factions FOR EACH ROW EXECUTE FUNCTION update_updated_at_column()"
+        }
+      ]
+    },
+    {
+      "name": "public.general_questions",
+      "type": "BASE TABLE",
+      "comment": "一般質問",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "nullable": false,
+          "default": "gen_random_uuid()"
+        },
+        {
+          "name": "council_session_id",
+          "type": "uuid",
+          "nullable": false,
+          "comment": "市議会定例会ID"
+        },
+        {
+          "name": "questioner_name",
+          "type": "text",
+          "nullable": false,
+          "comment": "質問者氏名"
+        },
+        {
+          "name": "questioner_party",
+          "type": "text",
+          "nullable": true,
+          "comment": "質問者会派"
+        },
+        {
+          "name": "questioner_number",
+          "type": "integer",
+          "nullable": true,
+          "comment": "質問者番号"
+        },
+        {
+          "name": "session_day",
+          "type": "integer",
+          "nullable": false,
+          "default": "1",
+          "comment": "開催日番号"
+        },
+        {
+          "name": "question_order",
+          "type": "integer",
+          "nullable": false,
+          "default": "1",
+          "comment": "質問順序"
+        },
+        {
+          "name": "summary",
+          "type": "text",
+          "nullable": true,
+          "comment": "質問要約"
+        },
+        {
+          "name": "topics",
+          "type": "jsonb",
+          "nullable": false,
+          "default": "'[]'::jsonb",
+          "comment": "トピック一覧(JSON配列)"
+        },
+        {
+          "name": "raw_text",
+          "type": "text",
+          "nullable": true,
+          "comment": "原文"
+        },
+        {
+          "name": "source_url",
+          "type": "text",
+          "nullable": true,
+          "comment": "出典URL"
+        },
+        {
+          "name": "publish_status",
+          "type": "text",
+          "nullable": false,
+          "default": "'draft'::text",
+          "comment": "公開状態(draft/published)"
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "nullable": true,
+          "default": "now()"
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "nullable": true,
+          "default": "now()"
+        }
+      ],
+      "indexes": [
+        {
+          "name": "general_questions_pkey",
+          "def": "CREATE UNIQUE INDEX general_questions_pkey ON public.general_questions USING btree (id)",
+          "table": "public.general_questions",
+          "columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "general_questions_council_session_id_session_day_question_o_idx",
+          "def": "CREATE INDEX general_questions_council_session_id_session_day_question_o_idx ON public.general_questions USING btree (council_session_id, session_day, question_order)",
+          "table": "public.general_questions",
+          "columns": [
+            "council_session_id",
+            "session_day",
+            "question_order"
+          ]
+        },
+        {
+          "name": "general_questions_publish_status_idx",
+          "def": "CREATE INDEX general_questions_publish_status_idx ON public.general_questions USING btree (publish_status)",
+          "table": "public.general_questions",
+          "columns": [
+            "publish_status"
+          ]
+        }
+      ],
+      "constraints": [
+        {
+          "name": "general_questions_publish_status_check",
+          "type": "CHECK",
+          "def": "CHECK ((publish_status = ANY (ARRAY['draft'::text, 'published'::text])))",
+          "table": "public.general_questions",
+          "referenced_table": "",
+          "columns": [
+            "publish_status"
+          ]
+        },
+        {
+          "name": "general_questions_council_session_id_fkey",
+          "type": "FOREIGN KEY",
+          "def": "FOREIGN KEY (council_session_id) REFERENCES council_sessions(id) ON DELETE CASCADE",
+          "table": "public.general_questions",
+          "referenced_table": "public.council_sessions",
+          "columns": [
+            "council_session_id"
+          ],
+          "referenced_columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "general_questions_pkey",
+          "type": "PRIMARY KEY",
+          "def": "PRIMARY KEY (id)",
+          "table": "public.general_questions",
+          "referenced_table": "",
+          "columns": [
+            "id"
+          ]
+        }
+      ],
+      "triggers": [
+        {
+          "name": "update_general_questions_updated_at",
+          "def": "CREATE TRIGGER update_general_questions_updated_at BEFORE UPDATE ON public.general_questions FOR EACH ROW EXECUTE FUNCTION update_updated_at_column()"
+        }
+      ]
+    },
+    {
+      "name": "public.interview_configs",
+      "type": "BASE TABLE",
+      "comment": "議案ごとのインタビュー設定を管理するテーブル",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "nullable": false,
+          "default": "gen_random_uuid()"
+        },
+        {
+          "name": "bill_id",
+          "type": "uuid",
+          "nullable": false,
+          "comment": "対象議案ID（複数設定可、ただしpublicは1つのみ）"
+        },
+        {
+          "name": "status",
+          "type": "interview_config_status_enum",
+          "nullable": false,
+          "default": "'closed'::interview_config_status_enum",
+          "comment": "設定ステータス（public: 公開/有効, closed: 非公開/無効）"
+        },
+        {
+          "name": "themes",
+          "type": "text[]",
+          "nullable": true,
+          "comment": "テーマの配列"
+        },
+        {
+          "name": "knowledge_source",
+          "type": "text",
+          "nullable": true,
+          "comment": "議案のコンテキスト情報"
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "nullable": false,
+          "default": "now()",
+          "comment": "作成日時"
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "nullable": false,
+          "default": "now()",
+          "comment": "更新日時"
+        },
+        {
+          "name": "name",
+          "type": "text",
+          "nullable": false,
+          "comment": "設定名（識別用）"
+        },
+        {
+          "name": "mode",
+          "type": "interview_mode_enum",
+          "nullable": false,
+          "default": "'loop'::interview_mode_enum",
+          "comment": "インタビューモード: loop（逐次深掘り）または bulk（一括深掘り）"
+        },
+        {
+          "name": "chat_model",
+          "type": "text",
+          "nullable": true,
+          "comment": "チャット用AIモデルID（Vercel AI Gateway形式 例:\"openai/gpt-4o-mini\" NULL=デフォルト）"
+        },
+        {
+          "name": "estimated_duration",
+          "type": "integer",
+          "nullable": true,
+          "comment": "目安所要時間(分・NULLはタイムマネジメントしない)"
+        }
+      ],
+      "indexes": [
+        {
+          "name": "interview_configs_pkey",
+          "def": "CREATE UNIQUE INDEX interview_configs_pkey ON public.interview_configs USING btree (id)",
+          "table": "public.interview_configs",
+          "columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "idx_interview_configs_bill_id",
+          "def": "CREATE INDEX idx_interview_configs_bill_id ON public.interview_configs USING btree (bill_id)",
+          "table": "public.interview_configs",
+          "columns": [
+            "bill_id"
+          ]
+        },
+        {
+          "name": "idx_interview_configs_bill_public",
+          "def": "CREATE UNIQUE INDEX idx_interview_configs_bill_public ON public.interview_configs USING btree (bill_id) WHERE (status = 'public'::interview_config_status_enum)",
+          "table": "public.interview_configs",
+          "columns": [
+            "bill_id"
+          ]
+        },
+        {
+          "name": "idx_interview_configs_status",
+          "def": "CREATE INDEX idx_interview_configs_status ON public.interview_configs USING btree (status)",
+          "table": "public.interview_configs",
+          "columns": [
+            "status"
+          ]
+        }
+      ],
+      "constraints": [
+        {
+          "name": "interview_configs_bill_id_fkey",
+          "type": "FOREIGN KEY",
+          "def": "FOREIGN KEY (bill_id) REFERENCES bills(id) ON DELETE CASCADE",
+          "table": "public.interview_configs",
+          "referenced_table": "public.bills",
+          "columns": [
+            "bill_id"
+          ],
+          "referenced_columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "interview_configs_pkey",
+          "type": "PRIMARY KEY",
+          "def": "PRIMARY KEY (id)",
+          "table": "public.interview_configs",
+          "referenced_table": "",
+          "columns": [
+            "id"
+          ]
+        }
+      ],
+      "triggers": [
+        {
+          "name": "update_interview_configs_updated_at",
+          "def": "CREATE TRIGGER update_interview_configs_updated_at BEFORE UPDATE ON public.interview_configs FOR EACH ROW EXECUTE FUNCTION update_updated_at_column()"
+        }
+      ]
+    },
+    {
+      "name": "public.interview_messages",
+      "type": "BASE TABLE",
+      "comment": "インタビュー内の質問と回答を保存するテーブル",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "nullable": false,
+          "default": "gen_random_uuid()"
+        },
+        {
+          "name": "interview_session_id",
+          "type": "uuid",
+          "nullable": false,
+          "comment": "インタビューセッションID"
+        },
+        {
+          "name": "role",
+          "type": "interview_role_enum",
+          "nullable": false,
+          "comment": "メッセージの役割（assistant: AIからの質問, user: ユーザーからの回答）"
+        },
+        {
+          "name": "content",
+          "type": "text",
+          "nullable": false,
+          "comment": "メッセージ内容"
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "nullable": false,
+          "default": "now()",
+          "comment": "作成日時"
+        }
+      ],
+      "indexes": [
+        {
+          "name": "interview_messages_pkey",
+          "def": "CREATE UNIQUE INDEX interview_messages_pkey ON public.interview_messages USING btree (id)",
+          "table": "public.interview_messages",
+          "columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "idx_interview_messages_session_created",
+          "def": "CREATE INDEX idx_interview_messages_session_created ON public.interview_messages USING btree (interview_session_id, created_at)",
+          "table": "public.interview_messages",
+          "columns": [
+            "interview_session_id",
+            "created_at"
+          ]
+        },
+        {
+          "name": "idx_interview_messages_session_id",
+          "def": "CREATE INDEX idx_interview_messages_session_id ON public.interview_messages USING btree (interview_session_id)",
+          "table": "public.interview_messages",
+          "columns": [
+            "interview_session_id"
+          ]
+        }
+      ],
+      "constraints": [
+        {
+          "name": "interview_messages_pkey",
+          "type": "PRIMARY KEY",
+          "def": "PRIMARY KEY (id)",
+          "table": "public.interview_messages",
+          "referenced_table": "",
+          "columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "interview_messages_interview_session_id_fkey",
+          "type": "FOREIGN KEY",
+          "def": "FOREIGN KEY (interview_session_id) REFERENCES interview_sessions(id) ON DELETE CASCADE",
+          "table": "public.interview_messages",
+          "referenced_table": "public.interview_sessions",
+          "columns": [
+            "interview_session_id"
+          ],
+          "referenced_columns": [
+            "id"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "public.interview_questions",
+      "type": "BASE TABLE",
+      "comment": "事前定義されたインタビュー質問を管理するテーブル",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "nullable": false,
+          "default": "gen_random_uuid()"
+        },
+        {
+          "name": "interview_config_id",
+          "type": "uuid",
+          "nullable": false,
+          "comment": "インタビュー設定ID"
+        },
+        {
+          "name": "question",
+          "type": "text",
+          "nullable": false,
+          "comment": "質問文"
+        },
+        {
+          "name": "follow_up_guide",
+          "type": "text",
+          "nullable": true,
+          "comment": "回答後のフォローアップ指針（深掘り方法など）"
+        },
+        {
+          "name": "quick_replies",
+          "type": "text[]",
+          "nullable": true,
+          "comment": "ユーザーが選択できるクイックリプライ"
+        },
+        {
+          "name": "question_order",
+          "type": "integer",
+          "nullable": false,
+          "comment": "質問の順序"
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "nullable": false,
+          "default": "now()",
+          "comment": "作成日時"
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "nullable": false,
+          "default": "now()",
+          "comment": "更新日時"
+        }
+      ],
+      "indexes": [
+        {
+          "name": "interview_questions_pkey",
+          "def": "CREATE UNIQUE INDEX interview_questions_pkey ON public.interview_questions USING btree (id)",
+          "table": "public.interview_questions",
+          "columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "idx_interview_questions_config_id",
+          "def": "CREATE INDEX idx_interview_questions_config_id ON public.interview_questions USING btree (interview_config_id)",
+          "table": "public.interview_questions",
+          "columns": [
+            "interview_config_id"
+          ]
+        },
+        {
+          "name": "idx_interview_questions_config_order",
+          "def": "CREATE INDEX idx_interview_questions_config_order ON public.interview_questions USING btree (interview_config_id, question_order)",
+          "table": "public.interview_questions",
+          "columns": [
+            "interview_config_id",
+            "question_order"
+          ]
+        }
+      ],
+      "constraints": [
+        {
+          "name": "interview_questions_interview_config_id_fkey",
+          "type": "FOREIGN KEY",
+          "def": "FOREIGN KEY (interview_config_id) REFERENCES interview_configs(id) ON DELETE CASCADE",
+          "table": "public.interview_questions",
+          "referenced_table": "public.interview_configs",
+          "columns": [
+            "interview_config_id"
+          ],
+          "referenced_columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "interview_questions_pkey",
+          "type": "PRIMARY KEY",
+          "def": "PRIMARY KEY (id)",
+          "table": "public.interview_questions",
+          "referenced_table": "",
+          "columns": [
+            "id"
+          ]
+        }
+      ],
+      "triggers": [
+        {
+          "name": "update_interview_questions_updated_at",
+          "def": "CREATE TRIGGER update_interview_questions_updated_at BEFORE UPDATE ON public.interview_questions FOR EACH ROW EXECUTE FUNCTION update_updated_at_column()"
+        }
+      ]
+    },
+    {
+      "name": "public.interview_report",
+      "type": "BASE TABLE",
+      "comment": "インタビュー結果のレポートを保存するテーブル（AIが自動生成）",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "nullable": false,
+          "default": "gen_random_uuid()"
+        },
+        {
+          "name": "interview_session_id",
+          "type": "uuid",
+          "nullable": false,
+          "comment": "インタビューセッションID（1セッション1レポート）"
+        },
+        {
+          "name": "summary",
+          "type": "text",
+          "nullable": true,
+          "comment": "インタビュー要約"
+        },
+        {
+          "name": "stance",
+          "type": "stance_type_enum",
+          "nullable": true,
+          "comment": "AIが分析したユーザーのスタンス"
+        },
+        {
+          "name": "role",
+          "type": "interview_report_role_enum",
+          "nullable": true,
+          "comment": "AIが推論したユーザーの役割・属性（ENUM型）"
+        },
+        {
+          "name": "role_description",
+          "type": "text",
+          "nullable": true,
+          "comment": "役割の説明"
+        },
+        {
+          "name": "opinions",
+          "type": "jsonb",
+          "nullable": true,
+          "comment": "意見の配列 [{title: string, content: string}, ...]"
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "nullable": false,
+          "default": "now()",
+          "comment": "作成日時"
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "nullable": false,
+          "default": "now()",
+          "comment": "更新日時"
+        },
+        {
+          "name": "is_public_by_admin",
+          "type": "boolean",
+          "nullable": false,
+          "default": "false",
+          "comment": "管理者によるレポートの公開状態（true: 公開, false: 非公開）"
+        },
+        {
+          "name": "scores",
+          "type": "jsonb",
+          "nullable": true,
+          "comment": "インタビューの評価スコア（total, clarity, specificity, impact, constructiveness, reasoning）"
+        },
+        {
+          "name": "total_score",
+          "type": "integer",
+          "nullable": true,
+          "extra_def": "GENERATED ALWAYS AS \nCASE\n    WHEN ((scores IS NOT NULL) AND ((scores -\u003e\u003e 'total'::text) IS NOT NULL) AND ((scores -\u003e\u003e 'total'::text) ~ '^\\d+$'::text)) THEN ((scores -\u003e\u003e 'total'::text))::integer\n    ELSE NULL::integer\nEND STORED",
+          "comment": "総合スコア（0-100）- scoresから自動生成されるGenerated Column"
+        },
+        {
+          "name": "role_title",
+          "type": "text",
+          "nullable": true,
+          "comment": "A short title (10 characters or less) summarizing the user role, e.g., \"物流業者\", \"主婦\""
+        },
+        {
+          "name": "is_public_by_user",
+          "type": "boolean",
+          "nullable": false,
+          "default": "false",
+          "comment": "Whether the user has consented to making their interview report public"
+        }
+      ],
+      "indexes": [
+        {
+          "name": "interview_report_interview_session_id_key",
+          "def": "CREATE UNIQUE INDEX interview_report_interview_session_id_key ON public.interview_report USING btree (interview_session_id)",
+          "table": "public.interview_report",
+          "columns": [
+            "interview_session_id"
+          ]
+        },
+        {
+          "name": "interview_report_pkey",
+          "def": "CREATE UNIQUE INDEX interview_report_pkey ON public.interview_report USING btree (id)",
+          "table": "public.interview_report",
+          "columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "idx_interview_report_is_public_by_admin",
+          "def": "CREATE INDEX idx_interview_report_is_public_by_admin ON public.interview_report USING btree (is_public_by_admin)",
+          "table": "public.interview_report",
+          "columns": [
+            "is_public_by_admin"
+          ]
+        },
+        {
+          "name": "idx_interview_report_total_score",
+          "def": "CREATE INDEX idx_interview_report_total_score ON public.interview_report USING btree (total_score DESC NULLS LAST)",
+          "table": "public.interview_report",
+          "columns": [
+            "total_score"
+          ]
+        }
+      ],
+      "constraints": [
+        {
+          "name": "interview_report_interview_session_id_key",
+          "type": "UNIQUE",
+          "def": "UNIQUE (interview_session_id)",
+          "table": "public.interview_report",
+          "referenced_table": "",
+          "columns": [
+            "interview_session_id"
+          ]
+        },
+        {
+          "name": "interview_report_pkey",
+          "type": "PRIMARY KEY",
+          "def": "PRIMARY KEY (id)",
+          "table": "public.interview_report",
+          "referenced_table": "",
+          "columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "interview_report_interview_session_id_fkey",
+          "type": "FOREIGN KEY",
+          "def": "FOREIGN KEY (interview_session_id) REFERENCES interview_sessions(id) ON DELETE CASCADE",
+          "table": "public.interview_report",
+          "referenced_table": "public.interview_sessions",
+          "columns": [
+            "interview_session_id"
+          ],
+          "referenced_columns": [
+            "id"
+          ]
+        }
+      ],
+      "triggers": [
+        {
+          "name": "update_interview_report_updated_at",
+          "def": "CREATE TRIGGER update_interview_report_updated_at BEFORE UPDATE ON public.interview_report FOR EACH ROW EXECUTE FUNCTION update_updated_at_column()"
+        }
+      ]
+    },
+    {
+      "name": "public.interview_sessions",
+      "type": "BASE TABLE",
+      "comment": "インタビューセッションを管理するテーブル",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "nullable": false,
+          "default": "gen_random_uuid()"
+        },
+        {
+          "name": "interview_config_id",
+          "type": "uuid",
+          "nullable": false,
+          "comment": "インタビュー設定ID"
+        },
+        {
+          "name": "user_id",
+          "type": "uuid",
+          "nullable": false,
+          "comment": "ユーザーID（匿名認証）"
+        },
+        {
+          "name": "langfuse_session_id",
+          "type": "text",
+          "nullable": true,
+          "comment": "LangfuseセッションID"
+        },
+        {
+          "name": "started_at",
+          "type": "timestamp with time zone",
+          "nullable": false,
+          "default": "now()",
+          "comment": "開始日時"
+        },
+        {
+          "name": "completed_at",
+          "type": "timestamp with time zone",
+          "nullable": true,
+          "comment": "完了日時"
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "nullable": false,
+          "default": "now()",
+          "comment": "作成日時"
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "nullable": false,
+          "default": "now()",
+          "comment": "更新日時"
+        },
+        {
+          "name": "archived_at",
+          "type": "timestamp with time zone",
+          "nullable": true,
+          "comment": "アーカイブ日時（やり直し時に設定）"
+        },
+        {
+          "name": "rating",
+          "type": "smallint",
+          "nullable": true,
+          "comment": "セッション評価(1-5)"
+        }
+      ],
+      "indexes": [
+        {
+          "name": "interview_sessions_pkey",
+          "def": "CREATE UNIQUE INDEX interview_sessions_pkey ON public.interview_sessions USING btree (id)",
+          "table": "public.interview_sessions",
+          "columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "idx_interview_sessions_config_id",
+          "def": "CREATE INDEX idx_interview_sessions_config_id ON public.interview_sessions USING btree (interview_config_id)",
+          "table": "public.interview_sessions",
+          "columns": [
+            "interview_config_id"
+          ]
+        },
+        {
+          "name": "idx_interview_sessions_config_user",
+          "def": "CREATE INDEX idx_interview_sessions_config_user ON public.interview_sessions USING btree (interview_config_id, user_id)",
+          "table": "public.interview_sessions",
+          "columns": [
+            "interview_config_id",
+            "user_id"
+          ]
+        },
+        {
+          "name": "idx_interview_sessions_started_at",
+          "def": "CREATE INDEX idx_interview_sessions_started_at ON public.interview_sessions USING btree (started_at)",
+          "table": "public.interview_sessions",
+          "columns": [
+            "started_at"
+          ]
+        },
+        {
+          "name": "idx_interview_sessions_user_id",
+          "def": "CREATE INDEX idx_interview_sessions_user_id ON public.interview_sessions USING btree (user_id)",
+          "table": "public.interview_sessions",
+          "columns": [
+            "user_id"
+          ]
+        }
+      ],
+      "constraints": [
+        {
+          "name": "interview_sessions_rating_check",
+          "type": "CHECK",
+          "def": "CHECK (((rating \u003e= 1) AND (rating \u003c= 5)))",
+          "table": "public.interview_sessions",
+          "referenced_table": "",
+          "columns": [
+            "rating"
+          ]
+        },
+        {
+          "name": "interview_sessions_interview_config_id_fkey",
+          "type": "FOREIGN KEY",
+          "def": "FOREIGN KEY (interview_config_id) REFERENCES interview_configs(id) ON DELETE CASCADE",
+          "table": "public.interview_sessions",
+          "referenced_table": "public.interview_configs",
+          "columns": [
+            "interview_config_id"
+          ],
+          "referenced_columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "interview_sessions_pkey",
+          "type": "PRIMARY KEY",
+          "def": "PRIMARY KEY (id)",
+          "table": "public.interview_sessions",
+          "referenced_table": "",
+          "columns": [
+            "id"
+          ]
+        }
+      ],
+      "triggers": [
+        {
+          "name": "update_interview_sessions_updated_at",
+          "def": "CREATE TRIGGER update_interview_sessions_updated_at BEFORE UPDATE ON public.interview_sessions FOR EACH ROW EXECUTE FUNCTION update_updated_at_column()"
+        }
+      ]
+    },
+    {
+      "name": "public.press_conference_items",
+      "type": "BASE TABLE",
+      "comment": "記者会見項目",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "nullable": false,
+          "default": "gen_random_uuid()"
+        },
+        {
+          "name": "press_conference_id",
+          "type": "uuid",
+          "nullable": false,
+          "comment": "記者会見ID"
+        },
+        {
+          "name": "item_type",
+          "type": "text",
+          "nullable": false,
+          "comment": "項目種別(announcement:発表 / qa:質疑応答)"
+        },
+        {
+          "name": "order_index",
+          "type": "integer",
+          "nullable": false,
+          "comment": "表示順"
+        },
+        {
+          "name": "title",
+          "type": "text",
+          "nullable": false,
+          "comment": "項目タイトル"
+        },
+        {
+          "name": "summary",
+          "type": "text",
+          "nullable": true,
+          "comment": "要約"
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "nullable": true,
+          "default": "now()"
+        }
+      ],
+      "indexes": [
+        {
+          "name": "press_conference_items_pkey",
+          "def": "CREATE UNIQUE INDEX press_conference_items_pkey ON public.press_conference_items USING btree (id)",
+          "table": "public.press_conference_items",
+          "columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "press_conference_items_press_conference_id_order_index_idx",
+          "def": "CREATE INDEX press_conference_items_press_conference_id_order_index_idx ON public.press_conference_items USING btree (press_conference_id, order_index)",
+          "table": "public.press_conference_items",
+          "columns": [
+            "press_conference_id",
+            "order_index"
+          ]
+        }
+      ],
+      "constraints": [
+        {
+          "name": "press_conference_items_item_type_check",
+          "type": "CHECK",
+          "def": "CHECK ((item_type = ANY (ARRAY['announcement'::text, 'qa'::text])))",
+          "table": "public.press_conference_items",
+          "referenced_table": "",
+          "columns": [
+            "item_type"
+          ]
+        },
+        {
+          "name": "press_conference_items_pkey",
+          "type": "PRIMARY KEY",
+          "def": "PRIMARY KEY (id)",
+          "table": "public.press_conference_items",
+          "referenced_table": "",
+          "columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "press_conference_items_press_conference_id_fkey",
+          "type": "FOREIGN KEY",
+          "def": "FOREIGN KEY (press_conference_id) REFERENCES press_conferences(id) ON DELETE CASCADE",
+          "table": "public.press_conference_items",
+          "referenced_table": "public.press_conferences",
+          "columns": [
+            "press_conference_id"
+          ],
+          "referenced_columns": [
+            "id"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "public.press_conference_turns",
+      "type": "BASE TABLE",
+      "comment": "記者会見の発言ターン",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "nullable": false,
+          "default": "gen_random_uuid()"
+        },
+        {
+          "name": "press_conference_item_id",
+          "type": "uuid",
+          "nullable": false,
+          "comment": "記者会見項目ID"
+        },
+        {
+          "name": "speaker",
+          "type": "text",
+          "nullable": false,
+          "comment": "発話者(mayor:市長 / reporter:記者)"
+        },
+        {
+          "name": "speaker_name",
+          "type": "text",
+          "nullable": true,
+          "comment": "発話者名"
+        },
+        {
+          "name": "content",
+          "type": "text",
+          "nullable": false,
+          "comment": "発言内容"
+        },
+        {
+          "name": "order_index",
+          "type": "integer",
+          "nullable": false,
+          "comment": "表示順"
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "nullable": true,
+          "default": "now()"
+        }
+      ],
+      "indexes": [
+        {
+          "name": "press_conference_turns_pkey",
+          "def": "CREATE UNIQUE INDEX press_conference_turns_pkey ON public.press_conference_turns USING btree (id)",
+          "table": "public.press_conference_turns",
+          "columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "press_conference_turns_press_conference_item_id_order_index_idx",
+          "def": "CREATE INDEX press_conference_turns_press_conference_item_id_order_index_idx ON public.press_conference_turns USING btree (press_conference_item_id, order_index)",
+          "table": "public.press_conference_turns",
+          "columns": [
+            "press_conference_item_id",
+            "order_index"
+          ]
+        }
+      ],
+      "constraints": [
+        {
+          "name": "press_conference_turns_speaker_check",
+          "type": "CHECK",
+          "def": "CHECK ((speaker = ANY (ARRAY['mayor'::text, 'reporter'::text])))",
+          "table": "public.press_conference_turns",
+          "referenced_table": "",
+          "columns": [
+            "speaker"
+          ]
+        },
+        {
+          "name": "press_conference_turns_press_conference_item_id_fkey",
+          "type": "FOREIGN KEY",
+          "def": "FOREIGN KEY (press_conference_item_id) REFERENCES press_conference_items(id) ON DELETE CASCADE",
+          "table": "public.press_conference_turns",
+          "referenced_table": "public.press_conference_items",
+          "columns": [
+            "press_conference_item_id"
+          ],
+          "referenced_columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "press_conference_turns_pkey",
+          "type": "PRIMARY KEY",
+          "def": "PRIMARY KEY (id)",
+          "table": "public.press_conference_turns",
+          "referenced_table": "",
+          "columns": [
+            "id"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "public.press_conferences",
+      "type": "BASE TABLE",
+      "comment": "記者会見",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "nullable": false,
+          "default": "gen_random_uuid()"
+        },
+        {
+          "name": "slug",
+          "type": "text",
+          "nullable": false,
+          "comment": "URL用スラッグ"
+        },
+        {
+          "name": "title",
+          "type": "text",
+          "nullable": false,
+          "comment": "会見タイトル"
+        },
+        {
+          "name": "held_at",
+          "type": "date",
+          "nullable": false,
+          "comment": "開催日"
+        },
+        {
+          "name": "youtube_url",
+          "type": "text",
+          "nullable": true,
+          "comment": "YouTube動画URL"
+        },
+        {
+          "name": "status",
+          "type": "text",
+          "nullable": false,
+          "default": "'draft'::text",
+          "comment": "ステータス(draft/structuring/review/published/error)"
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "nullable": true,
+          "default": "now()"
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "nullable": true,
+          "default": "now()"
+        }
+      ],
+      "indexes": [
+        {
+          "name": "press_conferences_pkey",
+          "def": "CREATE UNIQUE INDEX press_conferences_pkey ON public.press_conferences USING btree (id)",
+          "table": "public.press_conferences",
+          "columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "press_conferences_slug_key",
+          "def": "CREATE UNIQUE INDEX press_conferences_slug_key ON public.press_conferences USING btree (slug)",
+          "table": "public.press_conferences",
+          "columns": [
+            "slug"
+          ]
+        },
+        {
+          "name": "press_conferences_held_at_idx",
+          "def": "CREATE INDEX press_conferences_held_at_idx ON public.press_conferences USING btree (held_at DESC)",
+          "table": "public.press_conferences",
+          "columns": [
+            "held_at"
+          ]
+        },
+        {
+          "name": "press_conferences_slug_idx",
+          "def": "CREATE INDEX press_conferences_slug_idx ON public.press_conferences USING btree (slug)",
+          "table": "public.press_conferences",
+          "columns": [
+            "slug"
+          ]
+        },
+        {
+          "name": "press_conferences_status_idx",
+          "def": "CREATE INDEX press_conferences_status_idx ON public.press_conferences USING btree (status)",
+          "table": "public.press_conferences",
+          "columns": [
+            "status"
+          ]
+        }
+      ],
+      "constraints": [
+        {
+          "name": "press_conferences_status_check",
+          "type": "CHECK",
+          "def": "CHECK ((status = ANY (ARRAY['draft'::text, 'structuring'::text, 'review'::text, 'published'::text, 'error'::text])))",
+          "table": "public.press_conferences",
+          "referenced_table": "",
+          "columns": [
+            "status"
+          ]
+        },
+        {
+          "name": "press_conferences_pkey",
+          "type": "PRIMARY KEY",
+          "def": "PRIMARY KEY (id)",
+          "table": "public.press_conferences",
+          "referenced_table": "",
+          "columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "press_conferences_slug_key",
+          "type": "UNIQUE",
+          "def": "UNIQUE (slug)",
+          "table": "public.press_conferences",
+          "referenced_table": "",
+          "columns": [
+            "slug"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "public.preview_tokens",
+      "type": "BASE TABLE",
+      "comment": "Preview tokens for bill access management",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "nullable": false,
+          "default": "uuid_generate_v4()",
+          "comment": "ID"
+        },
+        {
+          "name": "bill_id",
+          "type": "uuid",
+          "nullable": false,
+          "comment": "議案ID"
+        },
+        {
+          "name": "token",
+          "type": "text",
+          "nullable": false,
+          "comment": "Unique preview access token"
+        },
+        {
+          "name": "expires_at",
+          "type": "timestamp with time zone",
+          "nullable": false,
+          "comment": "Token expiration date (30 days)"
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "nullable": false,
+          "default": "now()",
+          "comment": "作成日時"
+        },
+        {
+          "name": "created_by",
+          "type": "text",
+          "nullable": true,
+          "comment": "作成者"
+        }
+      ],
+      "indexes": [
+        {
+          "name": "preview_tokens_pkey",
+          "def": "CREATE UNIQUE INDEX preview_tokens_pkey ON public.preview_tokens USING btree (id)",
+          "table": "public.preview_tokens",
+          "columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "preview_tokens_token_key",
+          "def": "CREATE UNIQUE INDEX preview_tokens_token_key ON public.preview_tokens USING btree (token)",
+          "table": "public.preview_tokens",
+          "columns": [
+            "token"
+          ]
+        },
+        {
+          "name": "idx_preview_tokens_bill_id",
+          "def": "CREATE INDEX idx_preview_tokens_bill_id ON public.preview_tokens USING btree (bill_id)",
+          "table": "public.preview_tokens",
+          "columns": [
+            "bill_id"
+          ]
+        },
+        {
+          "name": "idx_preview_tokens_expires_at",
+          "def": "CREATE INDEX idx_preview_tokens_expires_at ON public.preview_tokens USING btree (expires_at)",
+          "table": "public.preview_tokens",
+          "columns": [
+            "expires_at"
+          ]
+        },
+        {
+          "name": "idx_preview_tokens_token",
+          "def": "CREATE INDEX idx_preview_tokens_token ON public.preview_tokens USING btree (token)",
+          "table": "public.preview_tokens",
+          "columns": [
+            "token"
+          ]
+        }
+      ],
+      "constraints": [
+        {
+          "name": "preview_tokens_bill_id_fkey",
+          "type": "FOREIGN KEY",
+          "def": "FOREIGN KEY (bill_id) REFERENCES bills(id) ON DELETE CASCADE",
+          "table": "public.preview_tokens",
+          "referenced_table": "public.bills",
+          "columns": [
+            "bill_id"
+          ],
+          "referenced_columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "preview_tokens_pkey",
+          "type": "PRIMARY KEY",
+          "def": "PRIMARY KEY (id)",
+          "table": "public.preview_tokens",
+          "referenced_table": "",
+          "columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "preview_tokens_token_key",
+          "type": "UNIQUE",
+          "def": "UNIQUE (token)",
+          "table": "public.preview_tokens",
+          "referenced_table": "",
+          "columns": [
+            "token"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "public.report_reactions",
+      "type": "BASE TABLE",
+      "comment": "レポートへのリアクション",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "nullable": false,
+          "default": "gen_random_uuid()"
+        },
+        {
+          "name": "interview_report_id",
+          "type": "uuid",
+          "nullable": false,
+          "comment": "インタビューレポートID"
+        },
+        {
+          "name": "user_id",
+          "type": "uuid",
+          "nullable": false,
+          "comment": "ユーザーID"
+        },
+        {
+          "name": "reaction_type",
+          "type": "text",
+          "nullable": false,
+          "comment": "リアクション種別(helpful or hmm)"
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "nullable": false,
+          "default": "now()"
+        }
+      ],
+      "indexes": [
+        {
+          "name": "report_reactions_interview_report_id_user_id_key",
+          "def": "CREATE UNIQUE INDEX report_reactions_interview_report_id_user_id_key ON public.report_reactions USING btree (interview_report_id, user_id)",
+          "table": "public.report_reactions",
+          "columns": [
+            "interview_report_id",
+            "user_id"
+          ]
+        },
+        {
+          "name": "report_reactions_pkey",
+          "def": "CREATE UNIQUE INDEX report_reactions_pkey ON public.report_reactions USING btree (id)",
+          "table": "public.report_reactions",
+          "columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "idx_report_reactions_report_id",
+          "def": "CREATE INDEX idx_report_reactions_report_id ON public.report_reactions USING btree (interview_report_id)",
+          "table": "public.report_reactions",
+          "columns": [
+            "interview_report_id"
+          ]
+        },
+        {
+          "name": "idx_report_reactions_user_id",
+          "def": "CREATE INDEX idx_report_reactions_user_id ON public.report_reactions USING btree (user_id)",
+          "table": "public.report_reactions",
+          "columns": [
+            "user_id"
+          ]
+        }
+      ],
+      "constraints": [
+        {
+          "name": "report_reactions_reaction_type_check",
+          "type": "CHECK",
+          "def": "CHECK ((reaction_type = ANY (ARRAY['helpful'::text, 'hmm'::text])))",
+          "table": "public.report_reactions",
+          "referenced_table": "",
+          "columns": [
+            "reaction_type"
+          ]
+        },
+        {
+          "name": "report_reactions_interview_report_id_fkey",
+          "type": "FOREIGN KEY",
+          "def": "FOREIGN KEY (interview_report_id) REFERENCES interview_report(id) ON DELETE CASCADE",
+          "table": "public.report_reactions",
+          "referenced_table": "public.interview_report",
+          "columns": [
+            "interview_report_id"
+          ],
+          "referenced_columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "report_reactions_interview_report_id_user_id_key",
+          "type": "UNIQUE",
+          "def": "UNIQUE (interview_report_id, user_id)",
+          "table": "public.report_reactions",
+          "referenced_table": "",
+          "columns": [
+            "interview_report_id",
+            "user_id"
+          ]
+        },
+        {
+          "name": "report_reactions_pkey",
+          "type": "PRIMARY KEY",
+          "def": "PRIMARY KEY (id)",
+          "table": "public.report_reactions",
+          "referenced_table": "",
+          "columns": [
+            "id"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "public.tags",
+      "type": "BASE TABLE",
+      "comment": "Master table for tags",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "nullable": false,
+          "default": "gen_random_uuid()",
+          "comment": "ID"
+        },
+        {
+          "name": "label",
+          "type": "text",
+          "nullable": false,
+          "comment": "Tag label (display name)"
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "nullable": false,
+          "default": "now()",
+          "comment": "作成日時"
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "nullable": false,
+          "default": "now()",
+          "comment": "更新日時"
+        },
+        {
+          "name": "featured_priority",
+          "type": "integer",
+          "nullable": true,
+          "comment": "Featured表示の優先度（数値が小さいほど優先度が高い）。NULLの場合は非表示"
+        },
+        {
+          "name": "description",
+          "type": "text",
+          "nullable": true,
+          "comment": "タグ説明文"
+        }
+      ],
+      "indexes": [
+        {
+          "name": "tags_label_key",
+          "def": "CREATE UNIQUE INDEX tags_label_key ON public.tags USING btree (label)",
+          "table": "public.tags",
+          "columns": [
+            "label"
+          ]
+        },
+        {
+          "name": "tags_pkey",
+          "def": "CREATE UNIQUE INDEX tags_pkey ON public.tags USING btree (id)",
+          "table": "public.tags",
+          "columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "idx_tags_featured_priority",
+          "def": "CREATE INDEX idx_tags_featured_priority ON public.tags USING btree (featured_priority) WHERE (featured_priority IS NOT NULL)",
+          "table": "public.tags",
+          "columns": [
+            "featured_priority"
+          ]
+        }
+      ],
+      "constraints": [
+        {
+          "name": "tags_label_key",
+          "type": "UNIQUE",
+          "def": "UNIQUE (label)",
+          "table": "public.tags",
+          "referenced_table": "",
+          "columns": [
+            "label"
+          ]
+        },
+        {
+          "name": "tags_pkey",
+          "type": "PRIMARY KEY",
+          "def": "PRIMARY KEY (id)",
+          "table": "public.tags",
+          "referenced_table": "",
+          "columns": [
+            "id"
+          ]
+        }
+      ],
+      "triggers": [
+        {
+          "name": "update_tags_updated_at",
+          "def": "CREATE TRIGGER update_tags_updated_at BEFORE UPDATE ON public.tags FOR EACH ROW EXECUTE FUNCTION update_updated_at_column()"
+        }
+      ]
+    },
+    {
+      "name": "public.topic_analysis_classifications",
+      "type": "BASE TABLE",
+      "comment": "意見とトピックの分類（多対多）",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "nullable": false,
+          "default": "gen_random_uuid()"
+        },
+        {
+          "name": "version_id",
+          "type": "uuid",
+          "nullable": false,
+          "comment": "所属バージョンID"
+        },
+        {
+          "name": "interview_report_id",
+          "type": "uuid",
+          "nullable": false,
+          "comment": "インタビューレポートID"
+        },
+        {
+          "name": "topic_id",
+          "type": "uuid",
+          "nullable": false,
+          "comment": "トピックID"
+        },
+        {
+          "name": "opinion_index",
+          "type": "integer",
+          "nullable": false,
+          "comment": "レポート内の意見インデックス"
+        }
+      ],
+      "indexes": [
+        {
+          "name": "topic_analysis_classification_version_id_interview_report_i_key",
+          "def": "CREATE UNIQUE INDEX topic_analysis_classification_version_id_interview_report_i_key ON public.topic_analysis_classifications USING btree (version_id, interview_report_id, topic_id, opinion_index)",
+          "table": "public.topic_analysis_classifications",
+          "columns": [
+            "version_id",
+            "interview_report_id",
+            "topic_id",
+            "opinion_index"
+          ]
+        },
+        {
+          "name": "topic_analysis_classifications_pkey",
+          "def": "CREATE UNIQUE INDEX topic_analysis_classifications_pkey ON public.topic_analysis_classifications USING btree (id)",
+          "table": "public.topic_analysis_classifications",
+          "columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "idx_topic_analysis_classifications_topic_id",
+          "def": "CREATE INDEX idx_topic_analysis_classifications_topic_id ON public.topic_analysis_classifications USING btree (topic_id)",
+          "table": "public.topic_analysis_classifications",
+          "columns": [
+            "topic_id"
+          ]
+        },
+        {
+          "name": "idx_topic_analysis_classifications_version_id",
+          "def": "CREATE INDEX idx_topic_analysis_classifications_version_id ON public.topic_analysis_classifications USING btree (version_id)",
+          "table": "public.topic_analysis_classifications",
+          "columns": [
+            "version_id"
+          ]
+        }
+      ],
+      "constraints": [
+        {
+          "name": "topic_analysis_classifications_interview_report_id_fkey",
+          "type": "FOREIGN KEY",
+          "def": "FOREIGN KEY (interview_report_id) REFERENCES interview_report(id) ON DELETE CASCADE",
+          "table": "public.topic_analysis_classifications",
+          "referenced_table": "public.interview_report",
+          "columns": [
+            "interview_report_id"
+          ],
+          "referenced_columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "topic_analysis_classification_version_id_interview_report_i_key",
+          "type": "UNIQUE",
+          "def": "UNIQUE (version_id, interview_report_id, topic_id, opinion_index)",
+          "table": "public.topic_analysis_classifications",
+          "referenced_table": "",
+          "columns": [
+            "version_id",
+            "interview_report_id",
+            "topic_id",
+            "opinion_index"
+          ]
+        },
+        {
+          "name": "topic_analysis_classifications_pkey",
+          "type": "PRIMARY KEY",
+          "def": "PRIMARY KEY (id)",
+          "table": "public.topic_analysis_classifications",
+          "referenced_table": "",
+          "columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "topic_analysis_classifications_topic_id_fkey",
+          "type": "FOREIGN KEY",
+          "def": "FOREIGN KEY (topic_id) REFERENCES topic_analysis_topics(id) ON DELETE CASCADE",
+          "table": "public.topic_analysis_classifications",
+          "referenced_table": "public.topic_analysis_topics",
+          "columns": [
+            "topic_id"
+          ],
+          "referenced_columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "topic_analysis_classifications_version_id_fkey",
+          "type": "FOREIGN KEY",
+          "def": "FOREIGN KEY (version_id) REFERENCES topic_analysis_versions(id) ON DELETE CASCADE",
+          "table": "public.topic_analysis_classifications",
+          "referenced_table": "public.topic_analysis_versions",
+          "columns": [
+            "version_id"
+          ],
+          "referenced_columns": [
+            "id"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "public.topic_analysis_topics",
+      "type": "BASE TABLE",
+      "comment": "トピック解析で抽出されたトピック",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "nullable": false,
+          "default": "gen_random_uuid()"
+        },
+        {
+          "name": "version_id",
+          "type": "uuid",
+          "nullable": false,
+          "comment": "所属バージョンID"
+        },
+        {
+          "name": "name",
+          "type": "text",
+          "nullable": false,
+          "comment": "トピック名"
+        },
+        {
+          "name": "description_md",
+          "type": "text",
+          "nullable": false,
+          "comment": "トピックの説明文（markdown形式）"
+        },
+        {
+          "name": "representative_opinions",
+          "type": "jsonb",
+          "nullable": false,
+          "default": "'[]'::jsonb",
+          "comment": "代表的な意見（JSON配列、最大5件）"
+        },
+        {
+          "name": "sort_order",
+          "type": "integer",
+          "nullable": false,
+          "default": "0",
+          "comment": "表示順"
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "nullable": false,
+          "default": "now()"
+        }
+      ],
+      "indexes": [
+        {
+          "name": "topic_analysis_topics_pkey",
+          "def": "CREATE UNIQUE INDEX topic_analysis_topics_pkey ON public.topic_analysis_topics USING btree (id)",
+          "table": "public.topic_analysis_topics",
+          "columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "idx_topic_analysis_topics_version_id",
+          "def": "CREATE INDEX idx_topic_analysis_topics_version_id ON public.topic_analysis_topics USING btree (version_id)",
+          "table": "public.topic_analysis_topics",
+          "columns": [
+            "version_id"
+          ]
+        }
+      ],
+      "constraints": [
+        {
+          "name": "topic_analysis_topics_pkey",
+          "type": "PRIMARY KEY",
+          "def": "PRIMARY KEY (id)",
+          "table": "public.topic_analysis_topics",
+          "referenced_table": "",
+          "columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "topic_analysis_topics_version_id_fkey",
+          "type": "FOREIGN KEY",
+          "def": "FOREIGN KEY (version_id) REFERENCES topic_analysis_versions(id) ON DELETE CASCADE",
+          "table": "public.topic_analysis_topics",
+          "referenced_table": "public.topic_analysis_versions",
+          "columns": [
+            "version_id"
+          ],
+          "referenced_columns": [
+            "id"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "public.topic_analysis_versions",
+      "type": "BASE TABLE",
+      "comment": "トピック解析のバージョン管理",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "nullable": false,
+          "default": "gen_random_uuid()"
+        },
+        {
+          "name": "bill_id",
+          "type": "uuid",
+          "nullable": false,
+          "comment": "対象議案ID"
+        },
+        {
+          "name": "version",
+          "type": "integer",
+          "nullable": false,
+          "comment": "バージョン番号（議案ごとにインクリメント）"
+        },
+        {
+          "name": "status",
+          "type": "text",
+          "nullable": false,
+          "default": "'pending'::text",
+          "comment": "解析ステータス: pending, running, completed, failed"
+        },
+        {
+          "name": "summary_md",
+          "type": "text",
+          "nullable": true,
+          "comment": "全体サマリ（markdown形式）"
+        },
+        {
+          "name": "intermediate_results",
+          "type": "jsonb",
+          "nullable": true,
+          "comment": "中間結果（デバッグ・参照用）"
+        },
+        {
+          "name": "error_message",
+          "type": "text",
+          "nullable": true,
+          "comment": "エラー時のメッセージ"
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "nullable": false,
+          "default": "now()"
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "nullable": false,
+          "default": "now()"
+        },
+        {
+          "name": "current_step",
+          "type": "text",
+          "nullable": true,
+          "comment": "現在のステップ"
+        },
+        {
+          "name": "started_at",
+          "type": "timestamp with time zone",
+          "nullable": true,
+          "comment": "開始日時"
+        },
+        {
+          "name": "completed_at",
+          "type": "timestamp with time zone",
+          "nullable": true,
+          "comment": "完了日時"
+        },
+        {
+          "name": "phase_data",
+          "type": "jsonb",
+          "nullable": true,
+          "comment": "フェーズ間データ受け渡し用"
+        }
+      ],
+      "indexes": [
+        {
+          "name": "topic_analysis_versions_bill_id_version_key",
+          "def": "CREATE UNIQUE INDEX topic_analysis_versions_bill_id_version_key ON public.topic_analysis_versions USING btree (bill_id, version)",
+          "table": "public.topic_analysis_versions",
+          "columns": [
+            "bill_id",
+            "version"
+          ]
+        },
+        {
+          "name": "topic_analysis_versions_pkey",
+          "def": "CREATE UNIQUE INDEX topic_analysis_versions_pkey ON public.topic_analysis_versions USING btree (id)",
+          "table": "public.topic_analysis_versions",
+          "columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "idx_topic_analysis_versions_bill_id",
+          "def": "CREATE INDEX idx_topic_analysis_versions_bill_id ON public.topic_analysis_versions USING btree (bill_id)",
+          "table": "public.topic_analysis_versions",
+          "columns": [
+            "bill_id"
+          ]
+        }
+      ],
+      "constraints": [
+        {
+          "name": "topic_analysis_versions_status_check",
+          "type": "CHECK",
+          "def": "CHECK ((status = ANY (ARRAY['pending'::text, 'running'::text, 'completed'::text, 'failed'::text])))",
+          "table": "public.topic_analysis_versions",
+          "referenced_table": "",
+          "columns": [
+            "status"
+          ]
+        },
+        {
+          "name": "topic_analysis_versions_bill_id_fkey",
+          "type": "FOREIGN KEY",
+          "def": "FOREIGN KEY (bill_id) REFERENCES bills(id) ON DELETE CASCADE",
+          "table": "public.topic_analysis_versions",
+          "referenced_table": "public.bills",
+          "columns": [
+            "bill_id"
+          ],
+          "referenced_columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "topic_analysis_versions_bill_id_version_key",
+          "type": "UNIQUE",
+          "def": "UNIQUE (bill_id, version)",
+          "table": "public.topic_analysis_versions",
+          "referenced_table": "",
+          "columns": [
+            "bill_id",
+            "version"
+          ]
+        },
+        {
+          "name": "topic_analysis_versions_pkey",
+          "type": "PRIMARY KEY",
+          "def": "PRIMARY KEY (id)",
+          "table": "public.topic_analysis_versions",
+          "referenced_table": "",
+          "columns": [
+            "id"
+          ]
+        }
+      ],
+      "triggers": [
+        {
+          "name": "set_topic_analysis_versions_updated_at",
+          "def": "CREATE TRIGGER set_topic_analysis_versions_updated_at BEFORE UPDATE ON public.topic_analysis_versions FOR EACH ROW EXECUTE FUNCTION update_updated_at_column()"
+        }
+      ]
+    },
+    {
+      "name": "public.admin_profiles",
+      "type": "BASE TABLE",
+      "comment": "管理画面利用者のロールと所属会派",
+      "columns": [
+        {
+          "name": "user_id",
+          "type": "uuid",
+          "nullable": false
+        },
+        {
+          "name": "role",
+          "type": "text",
+          "nullable": false,
+          "comment": "ロール(admin:運営者 / legislator:議員 / candidate:出馬者)"
+        },
+        {
+          "name": "faction_id",
+          "type": "uuid",
+          "nullable": true,
+          "comment": "所属会派ID(legislatorのみ必須)"
+        },
+        {
+          "name": "display_name",
+          "type": "text",
+          "nullable": false,
+          "comment": "表示名(監査ログや画面表示に使用)"
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "nullable": false,
+          "default": "now()"
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "nullable": false,
+          "default": "now()"
+        }
+      ],
+      "indexes": [
+        {
+          "name": "admin_profiles_pkey",
+          "def": "CREATE UNIQUE INDEX admin_profiles_pkey ON public.admin_profiles USING btree (user_id)",
+          "table": "public.admin_profiles",
+          "columns": [
+            "user_id"
+          ]
+        },
+        {
+          "name": "admin_profiles_role_idx",
+          "def": "CREATE INDEX admin_profiles_role_idx ON public.admin_profiles USING btree (role)",
+          "table": "public.admin_profiles",
+          "columns": [
+            "role"
+          ]
+        },
+        {
+          "name": "admin_profiles_faction_id_idx",
+          "def": "CREATE INDEX admin_profiles_faction_id_idx ON public.admin_profiles USING btree (faction_id)",
+          "table": "public.admin_profiles",
+          "columns": [
+            "faction_id"
+          ]
+        }
+      ],
+      "constraints": [
+        {
+          "name": "admin_profiles_faction_required",
+          "type": "CHECK",
+          "def": "CHECK ((((role = 'legislator'::text) AND (faction_id IS NOT NULL)) OR ((role \u003c\u003e 'legislator'::text) AND (faction_id IS NULL))))",
+          "table": "public.admin_profiles",
+          "referenced_table": "",
+          "columns": [
+            "role",
+            "faction_id"
+          ]
+        },
+        {
+          "name": "admin_profiles_role_check",
+          "type": "CHECK",
+          "def": "CHECK ((role = ANY (ARRAY['admin'::text, 'legislator'::text, 'candidate'::text])))",
+          "table": "public.admin_profiles",
+          "referenced_table": "",
+          "columns": [
+            "role"
+          ]
+        },
+        {
+          "name": "admin_profiles_user_id_fkey",
+          "type": "FOREIGN KEY",
+          "def": "FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE",
+          "table": "public.admin_profiles",
+          "referenced_table": "auth.users",
+          "columns": [
+            "user_id"
+          ],
+          "referenced_columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "admin_profiles_faction_id_fkey",
+          "type": "FOREIGN KEY",
+          "def": "FOREIGN KEY (faction_id) REFERENCES factions(id) ON DELETE RESTRICT",
+          "table": "public.admin_profiles",
+          "referenced_table": "public.factions",
+          "columns": [
+            "faction_id"
+          ],
+          "referenced_columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "admin_profiles_pkey",
+          "type": "PRIMARY KEY",
+          "def": "PRIMARY KEY (user_id)",
+          "table": "public.admin_profiles",
+          "referenced_table": "",
+          "columns": [
+            "user_id"
+          ]
+        }
+      ]
+    }
+  ],
+  "relations": [
+    {
+      "table": "public.bill_contents",
+      "columns": [
+        "bill_id"
+      ],
+      "cardinality": "zero_or_more",
+      "parent_table": "public.bills",
+      "parent_columns": [
+        "id"
+      ],
+      "parent_cardinality": "exactly_one",
+      "def": "FOREIGN KEY (bill_id) REFERENCES bills(id) ON DELETE CASCADE"
+    },
+    {
+      "table": "public.bill_discussions",
+      "columns": [
+        "bill_id"
+      ],
+      "cardinality": "zero_or_more",
+      "parent_table": "public.bills",
+      "parent_columns": [
+        "id"
+      ],
+      "parent_cardinality": "exactly_one",
+      "def": "FOREIGN KEY (bill_id) REFERENCES bills(id) ON DELETE CASCADE"
+    },
+    {
+      "table": "public.bills",
+      "columns": [
+        "committee_id"
+      ],
+      "cardinality": "zero_or_more",
+      "parent_table": "public.committees",
+      "parent_columns": [
+        "id"
+      ],
+      "parent_cardinality": "zero_or_one",
+      "def": "FOREIGN KEY (committee_id) REFERENCES committees(id)"
+    },
+    {
+      "table": "public.bills",
+      "columns": [
+        "council_session_id"
+      ],
+      "cardinality": "zero_or_more",
+      "parent_table": "public.council_sessions",
+      "parent_columns": [
+        "id"
+      ],
+      "parent_cardinality": "zero_or_one",
+      "def": "FOREIGN KEY (council_session_id) REFERENCES council_sessions(id) ON DELETE SET NULL"
+    },
+    {
+      "table": "public.bills_tags",
+      "columns": [
+        "bill_id"
+      ],
+      "cardinality": "zero_or_more",
+      "parent_table": "public.bills",
+      "parent_columns": [
+        "id"
+      ],
+      "parent_cardinality": "exactly_one",
+      "def": "FOREIGN KEY (bill_id) REFERENCES bills(id) ON DELETE CASCADE"
+    },
+    {
+      "table": "public.bills_tags",
+      "columns": [
+        "tag_id"
+      ],
+      "cardinality": "zero_or_more",
+      "parent_table": "public.tags",
+      "parent_columns": [
+        "id"
+      ],
+      "parent_cardinality": "exactly_one",
+      "def": "FOREIGN KEY (tag_id) REFERENCES tags(id) ON DELETE CASCADE"
+    },
+    {
+      "table": "public.budget_initiatives",
+      "columns": [
+        "theme_id"
+      ],
+      "cardinality": "zero_or_more",
+      "parent_table": "public.budget_themes",
+      "parent_columns": [
+        "id"
+      ],
+      "parent_cardinality": "exactly_one",
+      "def": "FOREIGN KEY (theme_id) REFERENCES budget_themes(id) ON DELETE CASCADE"
+    },
+    {
+      "table": "public.budget_overviews",
+      "columns": [
+        "council_session_id"
+      ],
+      "cardinality": "zero_or_more",
+      "parent_table": "public.council_sessions",
+      "parent_columns": [
+        "id"
+      ],
+      "parent_cardinality": "exactly_one",
+      "def": "FOREIGN KEY (council_session_id) REFERENCES council_sessions(id)"
+    },
+    {
+      "table": "public.budget_themes",
+      "columns": [
+        "overview_id"
+      ],
+      "cardinality": "zero_or_more",
+      "parent_table": "public.budget_overviews",
+      "parent_columns": [
+        "id"
+      ],
+      "parent_cardinality": "exactly_one",
+      "def": "FOREIGN KEY (overview_id) REFERENCES budget_overviews(id) ON DELETE CASCADE"
+    },
+    {
+      "table": "public.chats",
+      "columns": [
+        "bill_id"
+      ],
+      "cardinality": "zero_or_more",
+      "parent_table": "public.bills",
+      "parent_columns": [
+        "id"
+      ],
+      "parent_cardinality": "exactly_one",
+      "def": "FOREIGN KEY (bill_id) REFERENCES bills(id) ON DELETE CASCADE"
+    },
+    {
+      "table": "public.expert_registrations",
+      "columns": [
+        "user_id"
+      ],
+      "cardinality": "zero_or_more",
+      "parent_table": "auth.users",
+      "parent_columns": [
+        "id"
+      ],
+      "parent_cardinality": "exactly_one",
+      "def": "FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE"
+    },
+    {
+      "table": "public.faction_stances",
+      "columns": [
+        "bill_id"
+      ],
+      "cardinality": "zero_or_more",
+      "parent_table": "public.bills",
+      "parent_columns": [
+        "id"
+      ],
+      "parent_cardinality": "exactly_one",
+      "def": "FOREIGN KEY (bill_id) REFERENCES bills(id) ON DELETE CASCADE"
+    },
+    {
+      "table": "public.faction_stances",
+      "columns": [
+        "faction_id"
+      ],
+      "cardinality": "zero_or_more",
+      "parent_table": "public.factions",
+      "parent_columns": [
+        "id"
+      ],
+      "parent_cardinality": "exactly_one",
+      "def": "FOREIGN KEY (faction_id) REFERENCES factions(id) ON DELETE CASCADE"
+    },
+    {
+      "table": "public.general_questions",
+      "columns": [
+        "council_session_id"
+      ],
+      "cardinality": "zero_or_more",
+      "parent_table": "public.council_sessions",
+      "parent_columns": [
+        "id"
+      ],
+      "parent_cardinality": "exactly_one",
+      "def": "FOREIGN KEY (council_session_id) REFERENCES council_sessions(id) ON DELETE CASCADE"
+    },
+    {
+      "table": "public.interview_configs",
+      "columns": [
+        "bill_id"
+      ],
+      "cardinality": "zero_or_more",
+      "parent_table": "public.bills",
+      "parent_columns": [
+        "id"
+      ],
+      "parent_cardinality": "exactly_one",
+      "def": "FOREIGN KEY (bill_id) REFERENCES bills(id) ON DELETE CASCADE"
+    },
+    {
+      "table": "public.interview_messages",
+      "columns": [
+        "interview_session_id"
+      ],
+      "cardinality": "zero_or_more",
+      "parent_table": "public.interview_sessions",
+      "parent_columns": [
+        "id"
+      ],
+      "parent_cardinality": "exactly_one",
+      "def": "FOREIGN KEY (interview_session_id) REFERENCES interview_sessions(id) ON DELETE CASCADE"
+    },
+    {
+      "table": "public.interview_questions",
+      "columns": [
+        "interview_config_id"
+      ],
+      "cardinality": "zero_or_more",
+      "parent_table": "public.interview_configs",
+      "parent_columns": [
+        "id"
+      ],
+      "parent_cardinality": "exactly_one",
+      "def": "FOREIGN KEY (interview_config_id) REFERENCES interview_configs(id) ON DELETE CASCADE"
+    },
+    {
+      "table": "public.interview_report",
+      "columns": [
+        "interview_session_id"
+      ],
+      "cardinality": "zero_or_one",
+      "parent_table": "public.interview_sessions",
+      "parent_columns": [
+        "id"
+      ],
+      "parent_cardinality": "exactly_one",
+      "def": "FOREIGN KEY (interview_session_id) REFERENCES interview_sessions(id) ON DELETE CASCADE"
+    },
+    {
+      "table": "public.interview_sessions",
+      "columns": [
+        "interview_config_id"
+      ],
+      "cardinality": "zero_or_more",
+      "parent_table": "public.interview_configs",
+      "parent_columns": [
+        "id"
+      ],
+      "parent_cardinality": "exactly_one",
+      "def": "FOREIGN KEY (interview_config_id) REFERENCES interview_configs(id) ON DELETE CASCADE"
+    },
+    {
+      "table": "public.press_conference_items",
+      "columns": [
+        "press_conference_id"
+      ],
+      "cardinality": "zero_or_more",
+      "parent_table": "public.press_conferences",
+      "parent_columns": [
+        "id"
+      ],
+      "parent_cardinality": "exactly_one",
+      "def": "FOREIGN KEY (press_conference_id) REFERENCES press_conferences(id) ON DELETE CASCADE"
+    },
+    {
+      "table": "public.press_conference_turns",
+      "columns": [
+        "press_conference_item_id"
+      ],
+      "cardinality": "zero_or_more",
+      "parent_table": "public.press_conference_items",
+      "parent_columns": [
+        "id"
+      ],
+      "parent_cardinality": "exactly_one",
+      "def": "FOREIGN KEY (press_conference_item_id) REFERENCES press_conference_items(id) ON DELETE CASCADE"
+    },
+    {
+      "table": "public.preview_tokens",
+      "columns": [
+        "bill_id"
+      ],
+      "cardinality": "zero_or_more",
+      "parent_table": "public.bills",
+      "parent_columns": [
+        "id"
+      ],
+      "parent_cardinality": "exactly_one",
+      "def": "FOREIGN KEY (bill_id) REFERENCES bills(id) ON DELETE CASCADE"
+    },
+    {
+      "table": "public.report_reactions",
+      "columns": [
+        "interview_report_id"
+      ],
+      "cardinality": "zero_or_more",
+      "parent_table": "public.interview_report",
+      "parent_columns": [
+        "id"
+      ],
+      "parent_cardinality": "exactly_one",
+      "def": "FOREIGN KEY (interview_report_id) REFERENCES interview_report(id) ON DELETE CASCADE"
+    },
+    {
+      "table": "public.topic_analysis_classifications",
+      "columns": [
+        "interview_report_id"
+      ],
+      "cardinality": "zero_or_more",
+      "parent_table": "public.interview_report",
+      "parent_columns": [
+        "id"
+      ],
+      "parent_cardinality": "exactly_one",
+      "def": "FOREIGN KEY (interview_report_id) REFERENCES interview_report(id) ON DELETE CASCADE"
+    },
+    {
+      "table": "public.topic_analysis_classifications",
+      "columns": [
+        "topic_id"
+      ],
+      "cardinality": "zero_or_more",
+      "parent_table": "public.topic_analysis_topics",
+      "parent_columns": [
+        "id"
+      ],
+      "parent_cardinality": "exactly_one",
+      "def": "FOREIGN KEY (topic_id) REFERENCES topic_analysis_topics(id) ON DELETE CASCADE"
+    },
+    {
+      "table": "public.topic_analysis_classifications",
+      "columns": [
+        "version_id"
+      ],
+      "cardinality": "zero_or_more",
+      "parent_table": "public.topic_analysis_versions",
+      "parent_columns": [
+        "id"
+      ],
+      "parent_cardinality": "exactly_one",
+      "def": "FOREIGN KEY (version_id) REFERENCES topic_analysis_versions(id) ON DELETE CASCADE"
+    },
+    {
+      "table": "public.topic_analysis_topics",
+      "columns": [
+        "version_id"
+      ],
+      "cardinality": "zero_or_more",
+      "parent_table": "public.topic_analysis_versions",
+      "parent_columns": [
+        "id"
+      ],
+      "parent_cardinality": "exactly_one",
+      "def": "FOREIGN KEY (version_id) REFERENCES topic_analysis_versions(id) ON DELETE CASCADE"
+    },
+    {
+      "table": "public.topic_analysis_versions",
+      "columns": [
+        "bill_id"
+      ],
+      "cardinality": "zero_or_more",
+      "parent_table": "public.bills",
+      "parent_columns": [
+        "id"
+      ],
+      "parent_cardinality": "exactly_one",
+      "def": "FOREIGN KEY (bill_id) REFERENCES bills(id) ON DELETE CASCADE"
+    },
+    {
+      "table": "public.admin_profiles",
+      "columns": [
+        "user_id"
+      ],
+      "cardinality": "zero_or_one",
+      "parent_table": "auth.users",
+      "parent_columns": [
+        "id"
+      ],
+      "parent_cardinality": "exactly_one",
+      "def": "FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE"
+    },
+    {
+      "table": "public.admin_profiles",
+      "columns": [
+        "faction_id"
+      ],
+      "cardinality": "zero_or_more",
+      "parent_table": "public.factions",
+      "parent_columns": [
+        "id"
+      ],
+      "parent_cardinality": "zero_or_one",
+      "def": "FOREIGN KEY (faction_id) REFERENCES factions(id) ON DELETE RESTRICT"
+    }
+  ],
+  "functions": [
+    {
+      "name": "public.count_reactions_by_report_ids",
+      "return_type": "record",
+      "arguments": "report_ids uuid[]",
+      "type": "FUNCTION"
+    },
+    {
+      "name": "public.get_admin_users",
+      "return_type": "record",
+      "arguments": "",
+      "type": "FUNCTION"
+    },
+    {
+      "name": "public.get_interview_message_counts",
+      "return_type": "record",
+      "arguments": "session_ids uuid[]",
+      "type": "FUNCTION"
+    },
+    {
+      "name": "public.is_admin",
+      "return_type": "bool",
+      "arguments": "",
+      "type": "FUNCTION"
+    },
+    {
+      "name": "public.set_active_council_session",
+      "return_type": "void",
+      "arguments": "target_session_id uuid",
+      "type": "FUNCTION"
+    },
+    {
+      "name": "public.update_updated_at_column",
+      "return_type": "trigger",
+      "arguments": "",
+      "type": "FUNCTION"
+    },
+    {
+      "name": "public.get_ai_usage_cost_usd",
+      "return_type": "numeric",
+      "arguments": "from_ts timestamp with time zone, to_ts timestamp with time zone, target_user_id uuid DEFAULT NULL::uuid",
+      "type": "FUNCTION"
+    }
+  ],
+  "enums": [
+    {
+      "name": "auth.aal_level",
+      "values": [
+        "aal1",
+        "aal2",
+        "aal3"
+      ]
+    },
+    {
+      "name": "auth.code_challenge_method",
+      "values": [
+        "plain",
+        "s256"
+      ]
+    },
+    {
+      "name": "auth.factor_status",
+      "values": [
+        "unverified",
+        "verified"
+      ]
+    },
+    {
+      "name": "auth.factor_type",
+      "values": [
+        "phone",
+        "totp",
+        "webauthn"
+      ]
+    },
+    {
+      "name": "auth.oauth_authorization_status",
+      "values": [
+        "approved",
+        "denied",
+        "expired",
+        "pending"
+      ]
+    },
+    {
+      "name": "auth.oauth_client_type",
+      "values": [
+        "confidential",
+        "public"
+      ]
+    },
+    {
+      "name": "auth.oauth_registration_type",
+      "values": [
+        "dynamic",
+        "manual"
+      ]
+    },
+    {
+      "name": "auth.oauth_response_type",
+      "values": [
+        "code"
+      ]
+    },
+    {
+      "name": "auth.one_time_token_type",
+      "values": [
+        "confirmation_token",
+        "email_change_token_current",
+        "email_change_token_new",
+        "phone_change_token",
+        "reauthentication_token",
+        "recovery_token"
+      ]
+    },
+    {
+      "name": "public.bill_publish_status",
+      "values": [
+        "coming_soon",
+        "draft",
+        "published"
+      ]
+    },
+    {
+      "name": "public.bill_status_enum",
+      "values": [
+        "adopted",
+        "approved",
+        "in_committee",
+        "partially_adopted",
+        "plenary_session",
+        "preparing",
+        "rejected",
+        "reported",
+        "submitted"
+      ]
+    },
+    {
+      "name": "public.chat_role_enum",
+      "values": [
+        "assistant",
+        "system",
+        "user"
+      ]
+    },
+    {
+      "name": "public.committee_type_enum",
+      "values": [
+        "parliamentary",
+        "special",
+        "standing"
+      ]
+    },
+    {
+      "name": "public.difficulty_level_enum",
+      "values": [
+        "hard",
+        "normal"
+      ]
+    },
+    {
+      "name": "public.interview_config_status_enum",
+      "values": [
+        "closed",
+        "public"
+      ]
+    },
+    {
+      "name": "public.interview_mode_enum",
+      "values": [
+        "bulk",
+        "loop"
+      ]
+    },
+    {
+      "name": "public.interview_report_role_enum",
+      "values": [
+        "daily_life_affected",
+        "general_citizen",
+        "subject_expert",
+        "work_related"
+      ]
+    },
+    {
+      "name": "public.interview_role_enum",
+      "values": [
+        "assistant",
+        "user"
+      ]
+    },
+    {
+      "name": "public.stance_type_enum",
+      "values": [
+        "against",
+        "conditional_against",
+        "conditional_for",
+        "considering",
+        "continued_deliberation",
+        "for",
+        "neutral"
+      ]
+    },
+    {
+      "name": "storage.buckettype",
+      "values": [
+        "ANALYTICS",
+        "STANDARD",
+        "VECTOR"
+      ]
+    }
+  ],
+  "driver": {
+    "name": "postgres",
+    "database_version": "PostgreSQL 17.6 on x86_64-pc-linux-gnu, compiled by gcc (GCC) 15.2.0, 64-bit",
+    "meta": {
+      "current_schema": "public",
+      "search_paths": [
+        "\"\\$user\"",
+        "public",
+        "extensions"
+      ],
+      "dict": {
+        "Functions": "Stored procedures and functions"
+      }
+    }
+  }
+}

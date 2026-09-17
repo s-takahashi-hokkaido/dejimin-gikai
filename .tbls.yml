@@ -1,0 +1,17 @@
+# tbls: https://github.com/k1LoW/tbls
+# ローカル Supabase の DB から docs/schema/ にテーブル定義書と ER 図を生成する。
+# 実行は `pnpm db:docs`（docker で tbls を起動するため、ホストの DB は host.docker.internal で参照する）
+
+dsn: postgres://postgres:postgres@host.docker.internal:54132/postgres?sslmode=disable
+docPath: docs/schema
+
+include:
+  - public.*
+  # 利用者との紐付き（admin_profiles.user_id など）を図に出すため auth.users だけ含める
+  - auth.users
+
+er:
+  # GitHub / VS Code の Markdown プレビューでそのまま描画される
+  format: mermaid
+  # 各テーブルのページには直接つながるテーブルだけを描く（30テーブルを1枚にすると読めないため）
+  distance: 1

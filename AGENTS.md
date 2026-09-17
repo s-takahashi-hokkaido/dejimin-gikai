@@ -96,6 +96,7 @@ Repository レイヤーの詳細は [docs/repository-layer.md](docs/repository-l
 - `pnpm test` でワークスペース横断の Vitest を実行。局所実行は `pnpm --filter web test` や `test:watch` を利用します。
 - 品質ゲートとして `pnpm lint`（Biome format+lint）と `pnpm typecheck` を PR 前に通過させます。
 - DB 関連は `pnpm db:reset`、`pnpm db:migrate`、`pnpm db:types:gen`、`pnpm seed` を用途に応じて組み合わせます。
+- `pnpm db:docs` はローカル DB から tbls でテーブル定義書と ER 図（Mermaid）を `docs/schema/` に生成します（docker 必須、設定は `.tbls.yml`）。`pnpm db:migrate` の最後にも自動で実行されます。
 
 ## Coding Style & Naming Conventions
 - Biome が 2 スペースインデント、LF、ダブルクォート、セミコロン、80 文字幅を強制します。
@@ -140,7 +141,7 @@ Repository レイヤーの詳細は [docs/repository-layer.md](docs/repository-l
 
 ## Supabase & Environment Notes
 - ローカル開発前に `npx supabase start` を実行し、`.env.example` を `.env` にコピーして値を整えます。
-- スキーマ変更時は `supabase/migrations` のマイグレーションと `packages/supabase/types/supabase.types.ts` の再生成ファイルをセットでコミットします。
+- スキーマ変更時は `supabase/migrations` のマイグレーションと `packages/supabase/types/supabase.types.ts` の再生成ファイル、`docs/schema/`（`pnpm db:docs`）をセットでコミットします。`docs/schema/` は生成物のため手で編集せず、`YYYYMMDD_HHMM_` の命名ルールの対象外です。
 - `pnpm seed` は `admin@example.com / admin123456` を含む検証データを投入するため、開発用途に限定してください。
 - **RLSとアクセスパターン**: マイグレーションでは必ず `alter table <テーブル名> enable row level security;` を記述してRLSを有効化すること。ただし **ポリシーは定義しない**（デフォルト全拒否）。データアクセスはすべて `createAdminClient()`（Service Role Key）経由で行い、認可ロジックはアプリケーション層（Server Actions / Loaders）で実装する。
 
