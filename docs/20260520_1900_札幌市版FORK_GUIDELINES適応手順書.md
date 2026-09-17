@@ -104,7 +104,7 @@ FORK_GUIDELINES が直接禁じているのは upstream のティール (`#2aa69
 |---------|------|------|
 | `packages/seed/main/data.ts` | 定例会・会派・委員会 | 札幌市議会の名称・期日に差し替え |
 | `packages/seed/main/bill-contents-data.ts` | 議案サンプル（子ども医療費助成等） | 札幌市の実議案ベースに書き直し（現在は福岡市の議案がそのまま） |
-| `packages/seed/fukuoka/` 配下 | 福岡市議会専用スクレイパー・パーサー | 札幌市議会向けに `packages/seed/sapporo/` を新設してリプレース。福岡用ディレクトリは当面残しつつ最終的に削除 |
+| `packages/seed/fukuoka/` 配下 | 福岡市議会専用スクレイパー・パーサー | 札幌市議会向けに `packages/seed/sapporo/` を新設してリプレース。福岡用ディレクトリは当面残しつつ最終的に削除（2026-09-17: `fukuoka/`・`sapporo/` とも削除済み。議案は人手登録の運用） |
 
 ### 3-6. 機能ロジック内に残る「福岡市」表記
 
