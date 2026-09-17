@@ -2,7 +2,7 @@
 
 ## Description
 
-国会会期マスタテーブル
+会期マスタテーブル（定例会・臨時会）
 
 ## Columns
 
@@ -14,8 +14,8 @@
 | end_date | date |  | true |  |  | 終了日 |
 | created_at | timestamp with time zone | now() | false |  |  | 作成日時 |
 | updated_at | timestamp with time zone | now() | false |  |  | 更新日時 |
-| slug | text |  | true |  |  | URL用のスラッグ（例: 219-rinji, 218-jokai） |
-| council_url | text |  | true |  |  | 衆議院の国会議案情報ページURL |
+| slug | text |  | true |  |  | URL用のスラッグ（例: r8-2 = 令和8年第2回定例会） |
+| council_url | text |  | true |  |  | 市議会の議案等一覧ページURL（会期ごと） |
 | is_active | boolean | false | false |  |  | Whether this session is the active one displayed on the top page. Only one session can be active at a time. |
 
 ## Constraints
@@ -23,17 +23,17 @@
 | Name | Type | Definition |
 | ---- | ---- | ---------- |
 | end_date_after_start_date | CHECK | CHECK ((end_date >= start_date)) |
-| diet_sessions_pkey | PRIMARY KEY | PRIMARY KEY (id) |
-| diet_sessions_slug_key | UNIQUE | UNIQUE (slug) |
+| council_sessions_pkey | PRIMARY KEY | PRIMARY KEY (id) |
+| council_sessions_slug_key | UNIQUE | UNIQUE (slug) |
 
 ## Indexes
 
 | Name | Definition |
 | ---- | ---------- |
-| diet_sessions_pkey | CREATE UNIQUE INDEX diet_sessions_pkey ON public.council_sessions USING btree (id) |
-| diet_sessions_slug_key | CREATE UNIQUE INDEX diet_sessions_slug_key ON public.council_sessions USING btree (slug) |
+| council_sessions_pkey | CREATE UNIQUE INDEX council_sessions_pkey ON public.council_sessions USING btree (id) |
+| council_sessions_slug_key | CREATE UNIQUE INDEX council_sessions_slug_key ON public.council_sessions USING btree (slug) |
 | idx_council_sessions_date_range | CREATE INDEX idx_council_sessions_date_range ON public.council_sessions USING btree (start_date, end_date) |
-| idx_diet_sessions_slug | CREATE INDEX idx_diet_sessions_slug ON public.council_sessions USING btree (slug) |
+| idx_council_sessions_slug | CREATE INDEX idx_council_sessions_slug ON public.council_sessions USING btree (slug) |
 
 ## Triggers
 

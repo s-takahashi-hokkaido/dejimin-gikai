@@ -459,7 +459,7 @@ COMMENT ON COLUMN "public"."bills"."share_thumbnail_url" IS 'シェア用OGP画�
 
 
 
-COMMENT ON COLUMN "public"."bills"."council_session_id" IS '紐付けられた国会会期ID';
+COMMENT ON COLUMN "public"."bills"."council_session_id" IS '紐付けられた会期ID';
 
 
 
@@ -633,7 +633,7 @@ CREATE TABLE IF NOT EXISTS "public"."budget_themes" (
 ALTER TABLE "public"."budget_themes" OWNER TO "postgres";
 
 
-COMMENT ON TABLE "public"."budget_themes" IS '予算テーマ(部局の主要テーマ。例:「福岡100の推進」)';
+COMMENT ON TABLE "public"."budget_themes" IS '予算テーマ(部局ごとの主要テーマ)';
 
 
 
@@ -816,7 +816,7 @@ CREATE TABLE IF NOT EXISTS "public"."council_sessions" (
     "end_date" "date", -- 終了日
     "created_at" timestamp with time zone DEFAULT "now"() NOT NULL, -- 作成日時
     "updated_at" timestamp with time zone DEFAULT "now"() NOT NULL, -- 更新日時
-    "slug" "text", -- URL用スラッグ（例: 219-rinji）
+    "slug" "text", -- URL用スラッグ（例: r8-2）
     "council_url" "text", -- 議会議案情報ページURL
     "is_active" boolean DEFAULT false NOT NULL, -- アクティブフラグ（トップ表示対象・1件のみ）
     CONSTRAINT "end_date_after_start_date" CHECK (("end_date" >= "start_date"))
@@ -826,7 +826,7 @@ CREATE TABLE IF NOT EXISTS "public"."council_sessions" (
 ALTER TABLE "public"."council_sessions" OWNER TO "postgres";
 
 
-COMMENT ON TABLE "public"."council_sessions" IS '国会会期マスタテーブル';
+COMMENT ON TABLE "public"."council_sessions" IS '会期マスタテーブル（定例会・臨時会）';
 
 
 
@@ -854,11 +854,11 @@ COMMENT ON COLUMN "public"."council_sessions"."updated_at" IS '更新日時';
 
 
 
-COMMENT ON COLUMN "public"."council_sessions"."slug" IS 'URL用のスラッグ（例: 219-rinji, 218-jokai）';
+COMMENT ON COLUMN "public"."council_sessions"."slug" IS 'URL用のスラッグ（例: r8-2 = 令和8年第2回定例会）';
 
 
 
-COMMENT ON COLUMN "public"."council_sessions"."council_url" IS '衆議院の国会議案情報ページURL';
+COMMENT ON COLUMN "public"."council_sessions"."council_url" IS '市議会の議案等一覧ページURL（会期ごと）';
 
 
 
@@ -1758,12 +1758,12 @@ ALTER TABLE ONLY "public"."committees"
 
 
 ALTER TABLE ONLY "public"."council_sessions"
-    ADD CONSTRAINT "diet_sessions_pkey" PRIMARY KEY ("id");
+    ADD CONSTRAINT "council_sessions_pkey" PRIMARY KEY ("id");
 
 
 
 ALTER TABLE ONLY "public"."council_sessions"
-    ADD CONSTRAINT "diet_sessions_slug_key" UNIQUE ("slug");
+    ADD CONSTRAINT "council_sessions_slug_key" UNIQUE ("slug");
 
 
 
@@ -1977,7 +1977,7 @@ CREATE INDEX "idx_council_sessions_date_range" ON "public"."council_sessions" US
 
 
 
-CREATE INDEX "idx_diet_sessions_slug" ON "public"."council_sessions" USING "btree" ("slug");
+CREATE INDEX "idx_council_sessions_slug" ON "public"."council_sessions" USING "btree" ("slug");
 
 
 
@@ -2185,7 +2185,7 @@ ALTER TABLE ONLY "public"."bills"
 
 
 ALTER TABLE ONLY "public"."bills"
-    ADD CONSTRAINT "bills_diet_session_id_fkey" FOREIGN KEY ("council_session_id") REFERENCES "public"."council_sessions"("id") ON DELETE SET NULL;
+    ADD CONSTRAINT "bills_council_session_id_fkey" FOREIGN KEY ("council_session_id") REFERENCES "public"."council_sessions"("id") ON DELETE SET NULL;
 
 
 

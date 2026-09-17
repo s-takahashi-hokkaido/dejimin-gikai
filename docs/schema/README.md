@@ -11,11 +11,11 @@
 | [public.bills_tags](public.bills_tags.md) | 3 | Junction table for bills and tags relationship | BASE TABLE |
 | [public.budget_initiatives](public.budget_initiatives.md) | 9 | 予算施策(テーマごとの個別施策) | BASE TABLE |
 | [public.budget_overviews](public.budget_overviews.md) | 12 | 予算概要(部局ごと×定例会ごと) | BASE TABLE |
-| [public.budget_themes](public.budget_themes.md) | 8 | 予算テーマ(部局の主要テーマ。例:「福岡100の推進」) | BASE TABLE |
+| [public.budget_themes](public.budget_themes.md) | 8 | 予算テーマ(部局ごとの主要テーマ) | BASE TABLE |
 | [public.chat_usage_events](public.chat_usage_events.md) | 12 | チャットAI利用ログ | BASE TABLE |
 | [public.chats](public.chats.md) | 7 | AIとの対話履歴を管理するテーブル | BASE TABLE |
 | [public.committees](public.committees.md) | 8 | 委員会マスター | BASE TABLE |
-| [public.council_sessions](public.council_sessions.md) | 9 | 国会会期マスタテーブル | BASE TABLE |
+| [public.council_sessions](public.council_sessions.md) | 9 | 会期マスタテーブル（定例会・臨時会） | BASE TABLE |
 | [public.expert_registrations](public.expert_registrations.md) | 7 | 有識者リスト登録情報を管理するテーブル | BASE TABLE |
 | [public.faction_stances](public.faction_stances.md) | 7 | 会派見解（1議案に複数会派の見解を登録可能） | BASE TABLE |
 | [public.factions](public.factions.md) | 9 | 会派マスター | BASE TABLE |

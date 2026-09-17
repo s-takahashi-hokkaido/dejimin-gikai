@@ -687,7 +687,7 @@
           "name": "council_session_id",
           "type": "uuid",
           "nullable": true,
-          "comment": "紐付けられた国会会期ID"
+          "comment": "紐付けられた会期ID"
         },
         {
           "name": "committee_id",
@@ -855,7 +855,7 @@
           ]
         },
         {
-          "name": "bills_diet_session_id_fkey",
+          "name": "bills_council_session_id_fkey",
           "type": "FOREIGN KEY",
           "def": "FOREIGN KEY (council_session_id) REFERENCES council_sessions(id) ON DELETE SET NULL",
           "table": "public.bills",
@@ -1207,7 +1207,7 @@
     {
       "name": "public.budget_themes",
       "type": "BASE TABLE",
-      "comment": "予算テーマ(部局の主要テーマ。例:「福岡100の推進」)",
+      "comment": "予算テーマ(部局ごとの主要テーマ)",
       "columns": [
         {
           "name": "id",
@@ -1634,7 +1634,7 @@
     {
       "name": "public.council_sessions",
       "type": "BASE TABLE",
-      "comment": "国会会期マスタテーブル",
+      "comment": "会期マスタテーブル（定例会・臨時会）",
       "columns": [
         {
           "name": "id",
@@ -1679,13 +1679,13 @@
           "name": "slug",
           "type": "text",
           "nullable": true,
-          "comment": "URL用のスラッグ（例: 219-rinji, 218-jokai）"
+          "comment": "URL用のスラッグ（例: r8-2 = 令和8年第2回定例会）"
         },
         {
           "name": "council_url",
           "type": "text",
           "nullable": true,
-          "comment": "衆議院の国会議案情報ページURL"
+          "comment": "市議会の議案等一覧ページURL（会期ごと）"
         },
         {
           "name": "is_active",
@@ -1697,16 +1697,16 @@
       ],
       "indexes": [
         {
-          "name": "diet_sessions_pkey",
-          "def": "CREATE UNIQUE INDEX diet_sessions_pkey ON public.council_sessions USING btree (id)",
+          "name": "council_sessions_pkey",
+          "def": "CREATE UNIQUE INDEX council_sessions_pkey ON public.council_sessions USING btree (id)",
           "table": "public.council_sessions",
           "columns": [
             "id"
           ]
         },
         {
-          "name": "diet_sessions_slug_key",
-          "def": "CREATE UNIQUE INDEX diet_sessions_slug_key ON public.council_sessions USING btree (slug)",
+          "name": "council_sessions_slug_key",
+          "def": "CREATE UNIQUE INDEX council_sessions_slug_key ON public.council_sessions USING btree (slug)",
           "table": "public.council_sessions",
           "columns": [
             "slug"
@@ -1722,8 +1722,8 @@
           ]
         },
         {
-          "name": "idx_diet_sessions_slug",
-          "def": "CREATE INDEX idx_diet_sessions_slug ON public.council_sessions USING btree (slug)",
+          "name": "idx_council_sessions_slug",
+          "def": "CREATE INDEX idx_council_sessions_slug ON public.council_sessions USING btree (slug)",
           "table": "public.council_sessions",
           "columns": [
             "slug"
@@ -1743,7 +1743,7 @@
           ]
         },
         {
-          "name": "diet_sessions_pkey",
+          "name": "council_sessions_pkey",
           "type": "PRIMARY KEY",
           "def": "PRIMARY KEY (id)",
           "table": "public.council_sessions",
@@ -1753,7 +1753,7 @@
           ]
         },
         {
-          "name": "diet_sessions_slug_key",
+          "name": "council_sessions_slug_key",
           "type": "UNIQUE",
           "def": "UNIQUE (slug)",
           "table": "public.council_sessions",

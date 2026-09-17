@@ -19,7 +19,7 @@
 | publish_status | bill_publish_status | 'draft'::bill_publish_status | false |  |  |  | Publication status: draft (private) or published (public) |
 | is_featured | boolean | false | false |  |  |  | Flag to indicate if this bill is featured on the homepage |
 | share_thumbnail_url | text |  | true |  |  |  | シェア用OGP画像URL |
-| council_session_id | uuid |  | true |  |  | [public.council_sessions](public.council_sessions.md) | 紐付けられた国会会期ID |
+| council_session_id | uuid |  | true |  |  | [public.council_sessions](public.council_sessions.md) | 紐付けられた会期ID |
 | committee_id | uuid |  | true |  |  | [public.committees](public.committees.md) | 委員会ID |
 | publish_status_order | integer |  | true | GENERATED ALWAYS AS <br />CASE publish_status<br />    WHEN 'draft'::bill_publish_status THEN 0<br />    WHEN 'coming_soon'::bill_publish_status THEN 1<br />    WHEN 'published'::bill_publish_status THEN 2<br />    ELSE NULL::integer<br />END STORED |  |  | 公開状態ソート順(draft → coming_soon → published の順。Generated Column) |
 | bill_number | text | ''::text | false |  |  |  | 議案番号（例: 「第1号」「報告第1号」など）。空文字は未設定を示す。 |
@@ -35,7 +35,7 @@
 | bills_bill_type_check | CHECK | CHECK ((bill_type = ANY (ARRAY['bill'::text, 'bill_settlement'::text, 'bill_personnel'::text, 'bill_ratification'::text, 'consultation'::text, 'opinion'::text, 'petition'::text, 'appeal'::text, 'report'::text, 'resolution'::text, 'member_bill'::text]))) |
 | bills_pkey | PRIMARY KEY | PRIMARY KEY (id) |
 | bills_committee_id_fkey | FOREIGN KEY | FOREIGN KEY (committee_id) REFERENCES committees(id) |
-| bills_diet_session_id_fkey | FOREIGN KEY | FOREIGN KEY (council_session_id) REFERENCES council_sessions(id) ON DELETE SET NULL |
+| bills_council_session_id_fkey | FOREIGN KEY | FOREIGN KEY (council_session_id) REFERENCES council_sessions(id) ON DELETE SET NULL |
 
 ## Indexes
 

@@ -242,7 +242,7 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "bills_diet_session_id_fkey"
+            foreignKeyName: "bills_council_session_id_fkey"
             columns: ["council_session_id"]
             isOneToOne: false
             referencedRelation: "council_sessions"
