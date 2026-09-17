@@ -18,6 +18,13 @@ describe("getCardStatusLabel", () => {
     expect(getCardStatusLabel("rejected")).toBe("否決");
   });
 
+  it.each([
+    ["adopted", "採択"],
+    ["partially_adopted", "趣旨採択"],
+  ] as const)("請願・陳情の結果 %s → %s", (status, expected) => {
+    expect(getCardStatusLabel(status)).toBe(expected);
+  });
+
   it("preparing → 議案上程前", () => {
     expect(getCardStatusLabel("preparing")).toBe("議案上程前");
   });
@@ -38,6 +45,14 @@ describe("getStatusVariant", () => {
 
   it("rejected → dark", () => {
     expect(getStatusVariant("rejected")).toBe("dark");
+  });
+
+  it.each([
+    "adopted",
+    "partially_adopted",
+    "reported",
+  ] as const)("%s → default", (status) => {
+    expect(getStatusVariant(status)).toBe("default");
   });
 
   it("preparing → muted", () => {

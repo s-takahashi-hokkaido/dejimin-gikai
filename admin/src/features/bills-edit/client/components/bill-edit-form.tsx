@@ -15,6 +15,7 @@ import {
   type BillUpdateInput,
   billUpdateSchema,
 } from "../../shared/types";
+import { toBillType } from "../../shared/utils/to-bill-type";
 import { useBillForm } from "../hooks/use-bill-form";
 import { BillFormFields } from "./bill-form-fields";
 
@@ -40,7 +41,9 @@ export function BillEditForm({
     resolver: zodResolver(billUpdateSchema),
     defaultValues: {
       bill_number: bill.bill_number,
+      bill_type: toBillType(bill.bill_type),
       name: bill.name,
+      source_url: bill.source_url,
       status: bill.status,
       status_note: bill.status_note,
       published_at: bill.published_at

@@ -22,7 +22,7 @@ import { Textarea } from "@/components/ui/textarea";
 import type { BillStatus } from "@/features/bills/shared/types";
 import type { Committee } from "@/features/committees/shared/types";
 import type { CouncilSession } from "@/features/council-sessions/shared/types";
-import type { BillCreateInput } from "../../shared/types";
+import type { BillCreateInput, BillType } from "../../shared/types";
 import { ThumbnailUpload } from "./thumbnail-upload";
 
 const BILL_STATUS_OPTIONS: Array<{ value: BillStatus; label: string }> = [
@@ -32,7 +32,23 @@ const BILL_STATUS_OPTIONS: Array<{ value: BillStatus; label: string }> = [
   { value: "plenary_session", label: "本会議採決中" },
   { value: "approved", label: "可決" },
   { value: "rejected", label: "否決" },
+  { value: "adopted", label: "採択" },
+  { value: "partially_adopted", label: "趣旨採択" },
   { value: "reported", label: "専決処分報告" },
+];
+
+const BILL_TYPE_OPTIONS: Array<{ value: BillType; label: string }> = [
+  { value: "bill", label: "議案（条例・予算・契約など）" },
+  { value: "bill_settlement", label: "議案（決算認定）" },
+  { value: "bill_personnel", label: "議案（人事同意）" },
+  { value: "bill_ratification", label: "議案（専決処分の承認）" },
+  { value: "member_bill", label: "議員提出議案" },
+  { value: "opinion", label: "意見書案" },
+  { value: "resolution", label: "決議案" },
+  { value: "consultation", label: "諮問" },
+  { value: "petition", label: "請願" },
+  { value: "appeal", label: "陳情" },
+  { value: "report", label: "報告" },
 ];
 
 interface BillFormFieldsProps {
@@ -60,7 +76,35 @@ export function BillFormFields({
               <Input {...field} value={field.value ?? ""} />
             </FormControl>
             <FormDescription>
-              議案番号を入力してください（例:「第1号」「報告第1号」）。未設定の場合は空白のままにしてください。
+              議案等一覧の表記どおりに入力してください（例:「議案第1号」「意見書案第1号」「陳情第253号～359号」）。未設定の場合は空白のままにしてください。
+            </FormDescription>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+
+      <FormField
+        control={control}
+        name="bill_type"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>議案種別 *</FormLabel>
+            <Select onValueChange={field.onChange} value={field.value}>
+              <FormControl>
+                <SelectTrigger>
+                  <SelectValue placeholder="議案種別を選択" />
+                </SelectTrigger>
+              </FormControl>
+              <SelectContent>
+                {BILL_TYPE_OPTIONS.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <FormDescription>
+              議案番号の種類に合わせて選択してください。同じ定例会で議案番号と議案種別の組み合わせは重複できません
             </FormDescription>
             <FormMessage />
           </FormItem>
@@ -78,6 +122,32 @@ export function BillFormFields({
             </FormControl>
             <FormDescription>
               議案の正式名称を入力してください（最大200文字）
+            </FormDescription>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+
+      <FormField
+        control={control}
+        name="source_url"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>出典URL（議案原文）</FormLabel>
+            <FormControl>
+              <Input
+                {...field}
+                placeholder="https://www.city.sapporo.jp/gikai/html/documents/..."
+                value={field.value ?? ""}
+                onChange={(e) =>
+                  field.onChange(
+                    e.target.value.trim() === "" ? null : e.target.value
+                  )
+                }
+              />
+            </FormControl>
+            <FormDescription>
+              議案原文PDFのURLを入力してください（任意）。公開ページに「議案原文（PDF）」リンクとして表示されます
             </FormDescription>
             <FormMessage />
           </FormItem>

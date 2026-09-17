@@ -9,13 +9,39 @@ export type BillInsert = Database["public"]["Tables"]["bills"]["Insert"];
 // 公開ステータス型
 export type BillPublishStatus = "draft" | "published" | "coming_soon";
 
+// 議案種別（DBの bills_bill_type_check 制約と一致させる）
+export const BILL_TYPES = [
+  "bill",
+  "bill_settlement",
+  "bill_personnel",
+  "bill_ratification",
+  "consultation",
+  "opinion",
+  "resolution",
+  "petition",
+  "appeal",
+  "report",
+  "member_bill",
+] as const;
+export type BillType = (typeof BILL_TYPES)[number];
+
 // 共通のバリデーションスキーマ
 const billBaseSchema = z.object({
   bill_number: z.string().max(50, "議案番号は50文字以内で入力してください"),
+  bill_type: z.enum(BILL_TYPES),
   name: z
     .string()
     .min(1, "議案名は必須です")
     .max(200, "議案名は200文字以内で入力してください"),
+  // web の議案詳細で href に使うため http(s) のみ許可する
+  source_url: z
+    .url({
+      protocol: /^https?$/,
+      message: "http:// または https:// で始まるURLを入力してください",
+    })
+    .trim()
+    .max(2000, "出典URLは2000文字以内で入力してください")
+    .nullable(),
   status: z.enum([
     "preparing",
     "submitted",

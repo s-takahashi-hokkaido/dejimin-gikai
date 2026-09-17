@@ -33,7 +33,9 @@ export function BillCreateForm({
     resolver: zodResolver(billCreateSchema),
     defaultValues: {
       bill_number: "",
+      bill_type: "bill",
       name: "",
+      source_url: null,
       status: "preparing",
       status_note: null,
       published_at: new Date().toISOString().slice(0, 16),
