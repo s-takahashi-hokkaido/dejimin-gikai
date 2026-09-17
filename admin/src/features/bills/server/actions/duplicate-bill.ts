@@ -10,6 +10,7 @@ import {
 import {
   createBill,
   createBillContents,
+  deleteBillById,
   findBillById,
   findBillContentsByBillId,
 } from "../repositories/bill-repository";
@@ -36,6 +37,8 @@ export async function duplicateBill(billId: string) {
   // コンテンツを複製
   const contentResult = await _duplicateContents(billId, newBill.data.id);
   if (!contentResult.success) {
+    // コンテンツのない複製が残らないよう、作成した議案を削除する
+    await _deleteBillQuietly(newBill.data.id);
     return contentResult;
   }
 
@@ -74,6 +77,17 @@ async function _createDuplicateBill(originalBill: Bill) {
       success: false as const,
       error: "新しい議案の作成に失敗しました",
     };
+  }
+}
+
+/**
+ * 複製途中で失敗した議案を削除（失敗してもログのみ）
+ */
+async function _deleteBillQuietly(billId: string) {
+  try {
+    await deleteBillById(billId);
+  } catch (error) {
+    console.error("Error deleting partially duplicated bill:", error);
   }
 }
 

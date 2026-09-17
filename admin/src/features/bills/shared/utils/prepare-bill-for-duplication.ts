@@ -2,19 +2,24 @@ import type { Bill, BillInsert } from "../types";
 
 /**
  * 議案データから複製用のinsertデータを生成する
- * ID・タイムスタンプを除去し、名前に「(複製)」を付与、ステータスをdraftに設定
+ * ID・タイムスタンプ・生成列を除去し、議案番号を空にする。
+ * 名前に「(複製)」を付与し、公開状態をdraftに設定する
  */
 export function prepareBillForDuplication(originalBill: Bill): BillInsert {
   const {
     id: _,
     created_at: __,
     updated_at: ___,
+    // 生成列（GENERATED ALWAYS）は値を指定してINSERTできない
     status_order: ____,
+    publish_status_order: _____,
     ...billWithoutId
   } = originalBill;
 
   return {
     ...billWithoutId,
+    // 定例会・議案番号・議案種別の組み合わせは一意のため、番号は複製後に設定し直す
+    bill_number: "",
     name: `${originalBill.name} (複製)`,
     publish_status: "draft",
   };

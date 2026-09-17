@@ -36,6 +36,20 @@ describe("prepareBillForDuplication", () => {
     expect(result).not.toHaveProperty("updated_at");
   });
 
+  it("生成列（status_order, publish_status_order）を除去する", () => {
+    const result = prepareBillForDuplication(baseBill);
+    expect(result).not.toHaveProperty("status_order");
+    expect(result).not.toHaveProperty("publish_status_order");
+  });
+
+  it("議案番号を空にする", () => {
+    const result = prepareBillForDuplication({
+      ...baseBill,
+      bill_number: "議案第1号",
+    });
+    expect(result.bill_number).toBe("");
+  });
+
   it("名前に「(複製)」を付与する", () => {
     const result = prepareBillForDuplication(baseBill);
     expect(result.name).toBe("テスト議案 (複製)");
@@ -47,9 +61,15 @@ describe("prepareBillForDuplication", () => {
   });
 
   it("その他のフィールドを保持する", () => {
-    const result = prepareBillForDuplication(baseBill);
+    const result = prepareBillForDuplication({
+      ...baseBill,
+      bill_type: "opinion",
+      source_url: "https://example.com/a.pdf",
+    });
     expect(result.council_session_id).toBe("session-001");
     expect(result.is_featured).toBe(true);
+    expect(result.bill_type).toBe("opinion");
+    expect(result.source_url).toBe("https://example.com/a.pdf");
   });
 });
 
