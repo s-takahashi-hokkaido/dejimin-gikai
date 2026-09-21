@@ -70,6 +70,7 @@ web の記者会見画面には、福岡市長の名前がハードコードさ�
 
 - announcement は turns を作らない（summary だけ）
 - qa は `speaker`（`reporter` / `mayor`）、`speaker_name`（記者は報道機関名、市長は null）、`content`、`order_index` で往復を表す
+- `speaker` は CHECK 制約で `mayor` と `reporter` しか入らない。記録に市長・報道機関以外の発言者（副市長・局長の補足説明や司会など）が出てきたら、どちらで入れるか（入れないか）をユーザーに確認する。`mayor` で入れると、画面では市長の発言として表示される
 - `content` は公式記録の本文をそのまま使うのを基本にする。要約する場合は、方針をユーザーと決めてから行う
 
 ## 手順
@@ -78,10 +79,10 @@ web の記者会見画面には、福岡市長の名前がハードコードさ�
 2. 記録ページを取得し、発表項目と質疑を見出し（`#hNN` / `#sNN`）ごとに分ける
 3. 発表項目の summary を作る。質疑の turns を記録どおりに並べる
 4. **ユーザーレビュー（必須）**: 生成内容を提示し、承認を得る（CLAUDE.md「AI生成コンテンツのDB更新ルール」。中国語漢字の混入、発言者の取り違えに注意）
-5. `draft` で登録する。記者会見には管理画面が無いので、REST または SQL で書き込む。接続は `db-access` スキルの規約に従うが、北海道版の本番DBは未確定（VPS 移行待ち）で `db-access` の記載は福岡市版のまま。**書き込み先は必ずユーザーに確認する**
+5. `draft` で登録する。記者会見には管理画面が無いので、REST または SQL で書き込む。接続は `db-access` スキルに従う（北海道版の本番DBは未確定なので、接続先をユーザーに確認する）
    - 福岡市版の投入スクリプト（`packages/seed/fukuoka/seed-press-conferences.ts`）は削除済み（`e8f9537`）
-6. web の記者会見ページ（`/press-conferences`、`/press-conferences/[slug]`）で表示を確認する
-7. 確認後に `status` を `published` にする
+6. web は `published` の会見しか表示しない。表示の確認はローカル環境（ローカルDBで `published` にする）で、記者会見ページ（`/press-conferences`、`/press-conferences/[slug]`）を開いて行う
+7. ユーザーの確認後に `status` を `published` にする
 
 ## 注意
 

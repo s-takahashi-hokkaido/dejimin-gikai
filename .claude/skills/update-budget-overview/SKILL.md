@@ -37,6 +37,14 @@ description: 各局の重点施策（予算概要）データの更新手順（�
 4. **局の方針（direction）**: 上の2つの資料には、局ごとの編成方針にあたる文章が無い。主要事業から要約して作るか、空にするか
 5. **印の無い事業の badge**: `continued`（画面に「継続」と出る）にするか null（何も出ない）にするか
 6. **department_slug**: URL（`/budget/[session_slug]/[department_slug]`）に使うローマ字のスラッグ。福岡市はPDFのファイル名から取っていたが、札幌市は局ごとのファイルが無いので、付け方を決める
+7. **紐づける会期**: web は予算を「いまアクティブな会期」のものとして扱っている。トップのバナー（`web/src/app/(main)/page.tsx`）は `/budget/{アクティブな会期の slug}` にリンクし、`/budget` の一覧（`get-sessions-with-budget.ts`）はアクティブな会期を除く。当初予算を審議した第1回定例会（例: `r8-1`）に紐づけると、第2回定例会以降はバナーのリンク先が「公開中の予算概要はありません」になる。どの会期に紐づけるか（コードを直すか）をユーザーと決める
+
+## 年度を変えるときに直すこと（web の表示）
+
+web には「令和8年度」がハードコードされている。令和9年度以降の予算を入れる前に、別の PR で直すこと。
+
+- `web/src/components/top/budget-overview-banner.tsx`（「令和8年度 各局の重点施策」）
+- `web/src/features/budget-overview/server/components/budget-overview-detail.tsx`（「令和8年度 重点施策」）
 
 ## DBマッピング
 
@@ -44,7 +52,7 @@ description: 各局の重点施策（予算概要）データの更新手順（�
 
 | フィールド | 内容 |
 |---|---|
-| `council_session_id` | 当初予算を審議した第1回定例会（令和8年度予算 → `r8-1`）のID |
+| `council_session_id` | 未決事項 7。福岡市版は当初予算を審議した第1回定例会（令和8年度予算なら `r8-1`）に紐づけていた |
 | `department_name` / `department_slug` | 局名（例: 危機管理局）/ 未決事項 6 |
 | `direction` | 未決事項 4 |
 | `total_budget` / `prev_budget` | 局別施策の概要にある局の本年度・前年度の予算額（未決事項 1 の単位で） |
@@ -75,9 +83,17 @@ description: 各局の重点施策（予算概要）データの更新手順（�
 2. テキストを抽出し、局ごとに予算額・部・事業・印を抜き出す
 3. テーマの ai_summary と、必要なら局の direction を作る
 4. **ユーザーレビュー（必須）**: 生成内容を提示し、承認を得る（CLAUDE.md「AI生成コンテンツのDB更新ルール」）。**金額と事業名はPDF原本と1件ずつ照合する**
-5. `draft` で登録する（overviews → themes → initiatives の順）。予算には管理画面が無いので、REST または SQL で書き込む。接続は `db-access` スキルの規約に従うが、北海道版の本番DBは未確定（VPS 移行待ち）で `db-access` の記載は福岡市版のまま。**書き込み先は必ずユーザーに確認する**
-6. web の `/budget/[session_slug]` の一覧と局別の詳細ページで表示を確認する（テーマの並び順・バッジ）
-7. 確認後に `published` にする
+5. `draft` で登録する（overviews → themes → initiatives の順）。予算には管理画面が無いので、REST または SQL で書き込む。接続は `db-access` スキルに従う（北海道版の本番DBは未確定なので、接続先をユーザーに確認する）。再登録で重複させないよう、先に対象の会期の既存データを確認する
+6. web は `published` のデータしか表示しない。表示の確認はローカル環境（ローカルDBで `published` にする）で行う。`/budget/[session_slug]` の一覧と局別の詳細ページ（テーマの並び順・バッジ）に加えて、トップのバナーと `/budget` の一覧からたどれるかも確認する（未決事項 7）
+7. ユーザーの確認後に `published` にする
+8. **web のキャッシュを消す**: 予算の loader は `unstable_cache`（タグ `council-sessions`。一覧・詳細は10分、会期一覧は1時間）でキャッシュしている。DBを直接書き換えた場合は、web の `/api/revalidate` を呼ぶ
+
+```bash
+curl -s -X POST "<web のURL>/api/revalidate" \
+  -H "Authorization: Bearer $REVALIDATE_SECRET" \
+  -H "Content-Type: application/json" \
+  -d '{"tags": ["council-sessions"]}'
+```
 
 ## 議案ページとの関係
 

@@ -73,11 +73,10 @@ web/src/features/general-questions/
 新しい定例会の代表質問（札幌市の本会議は代表質問のみ）を取り込む手順は `update-general-questions` スキルを参照。
 
 ### publish_status の管理
-現状は **admin UIなし**。DBを直接更新する（2026-04-28 時点の設計書あり）。
+現状は **admin UIなし**。DBを直接更新する（2026-04-28 時点の設計書あり）。接続先は `db-access` スキルに従う（北海道版の本番DBは未確定で、`.env.production` も無い。接続先はユーザーに確認する）。更新後は web のキャッシュを消す（`update-general-questions` スキルの手順10）。
 
 ```bash
-# 本番DBで公開状態に変更（.env.production の値を使用）
-source .env.production
+# 公開状態に変更（SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY は、ユーザーに確認した接続先の値）
 curl -s -X PATCH "$SUPABASE_URL/rest/v1/general_questions?council_session_id=eq.<session_id>" \
   -H "apikey: $SUPABASE_SERVICE_ROLE_KEY" \
   -H "Authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY" \
