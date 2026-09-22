@@ -45,6 +45,8 @@ services:
       interval: 5s
       timeout: 5s
       retries: 10
+      # 初回起動時の初期化（Supabase の初期化 SQL）が遅いディスクで長引いても unhealthy にしない
+      start_period: 60s
 
   auth:
     image: public.ecr.aws/supabase/gotrue:v2.196.0
@@ -71,10 +73,15 @@ services:
       GOTRUE_JWT_EXP: ${JWT_EXPIRY:-3600}
       GOTRUE_JWT_SECRET: ${JWT_SECRET:?}
       GOTRUE_JWT_ISSUER: ${SUPABASE_PUBLIC_URL}/auth/v1
-      # 以下は supabase/config.toml の [auth] と同じ値（config.toml は CLI しか読まない）
+      # 以下は supabase/config.toml の [auth] の主要な値を移したもの（config.toml は CLI しか読まない）。
+      # [auth.rate_limit] は anonymous_users 以外は GoTrue の既定値のまま。メール送信の上限は SMTP を足す時に決める
+      # 匿名ログインに必要なので signup は閉じられない（DISABLE_SIGNUP=true にすると匿名ログインも 422 になる）
       GOTRUE_DISABLE_SIGNUP: "false"
       GOTRUE_EXTERNAL_EMAIL_ENABLED: "true"
-      GOTRUE_MAILER_AUTOCONFIRM: "true"
+      # config.toml（ローカル開発用）とは変えている。true だとメールアドレスでのサインアップで即座にセッションが出て、
+      # ユーザー単位の AI コスト上限を何度でも取り直せる。アプリのユーザーは管理画面から
+      # auth.admin.createUser（email_confirm: true）で作るので、false でも困らない
+      GOTRUE_MAILER_AUTOCONFIRM: "false"
       GOTRUE_EXTERNAL_PHONE_ENABLED: "false"
       GOTRUE_EXTERNAL_ANONYMOUS_USERS_ENABLED: "true"
       GOTRUE_PASSWORD_MIN_LENGTH: 6

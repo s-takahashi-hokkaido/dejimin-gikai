@@ -115,7 +115,7 @@ for (const role of ["anon", "service_role"]) {
 | `[auth] site_url` | `GOTRUE_SITE_URL` | `http://127.0.0.1:3004` |
 | `[auth] additional_redirect_urls` | `GOTRUE_URI_ALLOW_LIST` | カンマ区切りで同じ値 |
 | `[auth] jwt_expiry = 3600` | `GOTRUE_JWT_EXP` | `3600` |
-| `[auth.email] enable_confirmations = false` | `GOTRUE_MAILER_AUTOCONFIRM` | `true` |
+| `[auth.email] enable_confirmations = false` | `GOTRUE_MAILER_AUTOCONFIRM` | ~~`true`~~ → `false`（検証結果 §4-3。true だと誰でも確認済みアカウントを作れる） |
 | `[auth.rate_limit] anonymous_users = 30` | `GOTRUE_RATE_LIMIT_ANONYMOUS_USERS` | `30` |
 
 `config.toml` はローカル開発用の値。**本番（Supabase Cloud）の実際の設定はダッシュボードの
@@ -277,8 +277,9 @@ PORT=3004 pnpm exec dotenv -e .env.compose -- node web/.next/standalone/web/serv
 
 `docker compose down` → `infra/volumes/db/data` と `infra/volumes/storage` を削除 → `docker compose up -d` → 手順2のマイグレーション。
 
-中身はコンテナのユーザー所有なので、削除はコンテナ経由で行う:
-`docker run --rm -v "$PWD/volumes:/v" alpine:3 rm -rf /v/db/data /v/storage`
+中身はコンテナのユーザー所有なので、削除はコンテナ経由で行う（`INFRA` はリポジトリの `infra/` の絶対パス。
+dump 用の作業ディレクトリから `$PWD` で指定すると、空のディレクトリを消して何も起きない）:
+`docker run --rm -v "$INFRA/volumes:/v" alpine:3 rm -rf /v/db/data /v/storage`
 
 **2. 本番（Supabase Cloud）からデータだけを dump する**
 

@@ -19,5 +19,7 @@ docs/fukuoka/sample/
 # upstream（fork元）参照用ディレクトリ（ローカル参照のみ）
 mirai-gikai-upstream/
 
-# セルフホスト Supabase のデータ（DB・画像ファイル）
+# セルフホスト Supabase のデータ（DB・画像ファイル）と、誤って infra/ に置いた dump・バックアップ
 infra/volumes/
+infra/*.sql
+infra/*.tar
