@@ -396,7 +396,7 @@ curl -s -o /dev/null -w "%{http_code}\n" -X POST localhost:8000/auth/v1/signup \
 
 - **SMTP / メール** — 現状の「管理者追加」は `auth.admin.createUser` にパスワードを直接渡して作る方式で
   （`admin/src/features/admins/server/repositories/admin-repository.ts`）、メールは送っていない。
-  SMTP が要るのは C のパスワードリセット（方針 §6 ④）を作る時。その時に compose へ mailpit
+  SMTP が要るのは C のパスワードリセットと招待メール方式（方針 §6 ⑤）を作る時。その時に compose へ mailpit
   （メールを受け止めるだけのサーバー）を足して確認する
 - **Langfuse・GA の撤去、AI Gateway の扱い** — 別タスク（方針 §5）
 - **Postgres を複数プロジェクトで共有する構成** — 方針 §5「共通基盤としての組み方」では
