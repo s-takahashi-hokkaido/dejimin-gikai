@@ -1,6 +1,8 @@
 # ローカル docker compose 検証手順
 
 作成日: 2026-09-22
+検証結果: [ローカル docker compose 検証結果](20260922_2100_ローカルdocker-compose検証結果.md)（2026-09-22 実施。
+実際の設定ファイルは `infra/`。本手順書のコマンドのうち誤っていたものは修正済み）
 
 [プロジェクト方針とやりたいこと整理](20260912_1528_プロジェクト方針とやりたいこと整理.md) §10 の4番
 「B. ローカルで docker compose 検証」の手順書。VPS を契約する前に、本番と同じ構成を手元で動かして確かめる。
@@ -156,6 +158,9 @@ server {
 `X-Forwarded-For` は利用者が送ってきた値に追記せず、`$remote_addr` で上書きする。
 利用者が偽の IP を名乗ってレート制限を逃れるのを防ぐため。
 
+> **検証結果**: CORS は素通しでは通らなかった。auth は `GOTRUE_CORS_ALLOWED_HEADERS`、storage は nginx で対応した
+> （[検証結果](20260922_2100_ローカルdocker-compose検証結果.md) §4-1）。実際の設定は `infra/nginx/supabase.conf`。
+
 ゲートウェイがやっていて nginx ではやらないことが2つある。どちらも §4 で確認する。
 
 - **apikey の検査**: nginx は素通しにする。apikey も JWT も無いリクエストは PostgREST で `anon` ロール扱いになり、
@@ -184,8 +189,9 @@ rest はテーブルがまだ無いので、手順3のテストで確認する�
 その前に流すと失敗する。
 
 ```bash
+# ローカルの compose は SSL 無しなので sslmode=disable が要る（CLI は既定で SSL を要求する）
 npx supabase migration up --include-all \
-  --db-url "postgresql://postgres:$POSTGRES_PASSWORD@127.0.0.1:5433/postgres"
+  --db-url "postgresql://postgres:$POSTGRES_PASSWORD@127.0.0.1:5433/postgres?sslmode=disable"
 
 docker compose exec db psql -U postgres \
   -c "select id, public from storage.buckets"     # bill-thumbnails | t
@@ -215,6 +221,8 @@ pnpm exec dotenv -e .env.compose -- vitest run --config tests/supabase/vitest.co
 pnpm exec dotenv -e .env.compose -- pnpm --filter web exec vitest run --config vitest.integration.config.mts
 # シードデータ投入
 pnpm exec dotenv -e .env.compose -- pnpm --filter @mirai-gikai/seed seed
+# 管理者アカウント（admin@example.com）。seed.sql は supabase db reset でしか流れないので psql で流す
+docker compose -f infra/compose.yml exec -T db psql -U postgres -f - < supabase/seed.sql
 ```
 
 `tests/supabase/` には RLS の全拒否（`rls/default-deny.test.ts`）や、auth スキーマを読む
@@ -268,6 +276,9 @@ PORT=3004 pnpm exec dotenv -e .env.compose -- node web/.next/standalone/web/serv
 **1. DB を空に作り直す**
 
 `docker compose down` → `infra/volumes/db/data` と `infra/volumes/storage` を削除 → `docker compose up -d` → 手順2のマイグレーション。
+
+中身はコンテナのユーザー所有なので、削除はコンテナ経由で行う:
+`docker run --rm -v "$PWD/volumes:/v" alpine:3 rm -rf /v/db/data /v/storage`
 
 **2. 本番（Supabase Cloud）からデータだけを dump する**
 
@@ -349,6 +360,9 @@ Supabase の初期化済み DB に全体を `pg_restore` すると、auth・stor
 画像ファイル（`infra/volumes/storage`）もバックアップ対象に含める。
 ここでバックアップの取り方（対象テーブル・形式）を決め、cron 設定（方針 §5 の作業項目）に持ち込む。
 
+> **検証結果**: この方式で戻ることを確かめた。画像ファイルは xattr ごと取る必要がある。
+> コマンドは [検証結果](20260922_2100_ローカルdocker-compose検証結果.md) §4-4。
+
 ---
 
 ## 4. 機能確認チェックリスト
@@ -370,8 +384,10 @@ Supabase の初期化済み DB に全体を `pg_restore` すると、auth・stor
 #9 は**必ず確かめる**。全員が nginx の IP に見えていると、**サイト全体で1時間30件の匿名ログインで止まる**。
 本番で初めて気づくと公開直後に全員がチャットを使えなくなる。
 
-- GoTrue にはレート制限に使う IP のヘッダー名を指定する `GOTRUE_RATE_LIMIT_HEADER` という設定がある（はず）。
-  nginx が付ける `X-Real-IP` を指定するのが候補（要確認）
+- GoTrue にはレート制限に使う IP のヘッダー名を指定する `GOTRUE_RATE_LIMIT_HEADER` という設定がある。
+  nginx が付ける `X-Real-IP` を指定する
+  - **検証結果**: 未設定だと IP ごとの上限が**一切掛からない**（全体で止まるのではなく無制限）。
+    設定すれば IP ごとに数えられる（[検証結果](20260922_2100_ローカルdocker-compose検証結果.md) §4-2）
 - 上限を一時的に下げて（`GOTRUE_RATE_LIMIT_ANONYMOUS_USERS=3`）、ホストからの curl と別コンテナからの curl
   （`docker run --rm --network <compose のネットワーク> curlimages/curl ...`）で試す。
   片方が 429 になっても、もう片方が通れば IP ごとに数えられている
@@ -409,8 +425,8 @@ curl -s -o /dev/null -w "%{http_code}\n" -X POST localhost:8000/auth/v1/signup \
 ## 7. 未決事項
 
 1. Storage を storage-api のままにするか、nginx 静的配信に置き換えるか（方針 §9-1。まず storage-api で動かしてから判断）
-2. バックアップの取り方（対象テーブル・形式・画像ファイル）。手順7で決める
-3. nginx で CORS を付ける必要があるか（§4 #2・#6 の結果次第）
+2. ~~バックアップの取り方（対象テーブル・形式・画像ファイル）。手順7で決める~~ — 決定（検証結果 §4-4）
+3. ~~nginx で CORS を付ける必要があるか（§4 #2・#6 の結果次第）~~ — storage だけ nginx で付ける（検証結果 §4-1）
 4. `infra/` をいつ別リポジトリに切り出すか
 
 ---

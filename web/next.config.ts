@@ -1,8 +1,15 @@
+import path from "node:path";
 import type { NextConfig } from "next";
 
+// モノレポのルート。packages/* を standalone の出力に含めるため、トレースの起点をここにする
+const monorepoRoot = path.join(__dirname, "..");
+
 const nextConfig: NextConfig = {
+  // VPS ではビルドせず、GitHub Actions でビルドした成果物を置いて node server.js で起動する
+  output: "standalone",
+  outputFileTracingRoot: monorepoRoot,
   turbopack: {
-    root: "../",
+    root: monorepoRoot,
   },
   images: {
     remotePatterns: [
