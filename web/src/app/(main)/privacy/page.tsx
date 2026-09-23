@@ -71,24 +71,11 @@ export default function PrivacyPage() {
           <LegalParagraph>
             Cookieとは、サーバーが利用者の識別を目的として、利用者のブラウザに送信し、端末に保存される情報です。
           </LegalParagraph>
-          <LegalParagraph>
-            当ウェブサイトでは、Googleによるアクセス解析ツール「Googleアナリティクス」を使用しており、Googleアナリティクスはデータ収集のためにCookieを使用しています。データは匿名で収集されており、個人を特定するものではありません。この機能はお使いのブラウザの設定でCookieを無効にすることで拒否することができます。
-          </LegalParagraph>
-          <LegalParagraph>
-            Googleアナリティクスでデータが収集および処理される仕組みの詳細は「Googleのサービスを使用するサイトやアプリから収集した情報のGoogleによる使用」のページをご覧ください。
-          </LegalParagraph>
-        </section>
-
-        <section className="space-y-4">
-          <LegalSectionTitle>6. 個人情報の保管期間</LegalSectionTitle>
-          <LegalParagraph>
-            取得した個人情報は、政治資金規正法等の法令に基づき、必要な期間（原則として7年間）保管した後、適切な方法により廃棄・削除いたします。
-          </LegalParagraph>
         </section>
 
         <section className="space-y-4">
           <LegalSectionTitle>
-            7. プライバシーポリシーの改訂と通知について
+            6. プライバシーポリシーの改訂と通知について
           </LegalSectionTitle>
           <LegalParagraph>
             このプライバシーポリシーは、必要に応じて内容の見直しを行い、改訂されることがあります。その際、個別の通知は行いませんので、最新の情報については当ウェブサイトをご確認ください。
@@ -96,7 +83,7 @@ export default function PrivacyPage() {
         </section>
 
         <section className="space-y-4">
-          <LegalSectionTitle>8. 個人情報に関するお問い合わせ</LegalSectionTitle>
+          <LegalSectionTitle>7. 個人情報に関するお問い合わせ</LegalSectionTitle>
           <LegalParagraph>
             個人情報の確認・修正・削除・利用停止等をご希望される場合は、下記のお問い合わせ窓口までご連絡ください。なお、ご請求内容がご本人によるものであることが確認できた場合に限り、必要な調査を行い、その結果に基づき適切な対応を行います。
           </LegalParagraph>
