@@ -36,12 +36,9 @@ export const siteConfig = {
   externalLinks: {
     report: "https://forms.gle/PbZdpdRzTrsAuDST7",
     aboutNote: "",
-    donation: "https://team-mir.ai/support/donation",
-    teamAbout: "https://team-mir.ai/about",
   },
   /**
    * ページを管理する政党名（空文字列の場合は政党名を省略した汎用表現を使用）
-   * 例: "チームみらい"
    */
   managingParty: "" as string,
   /**
@@ -63,10 +60,5 @@ export const siteConfig = {
     aiChat: true,
     /** AIインタビュー機能（議案当事者へのヒアリング）*/
     aiInterview: true,
-    /**
-     * チームみらいセクションの表示（トップページ・フッター・デスクトップメニュー）
-     * 非公式運営など、党の公式サービスとして出さない場合は false にする。
-     */
-    showTeamMiraiSection: false as boolean,
   },
 } as const;

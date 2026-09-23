@@ -2,8 +2,8 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { siteConfig } from "@/config/site.config";
 import { usePathname } from "next/navigation";
+import { siteConfig } from "@/config/site.config";
 import { isInterviewPage } from "@/lib/page-layout-utils";
 import { policyLinks, primaryLinks } from "./footer.config";
 
@@ -17,11 +17,11 @@ export function Footer() {
   return (
     <footer className="bg-mirai-gradient text-slate-900">
       <div className="mx-auto flex w-full max-w-[500px] flex-col items-center px-6 py-14 pb-20 text-center">
-        {siteConfig.features.showTeamMiraiSection && <FooterLogoSection />}
+        <FooterLogoSection />
         <FooterPrimaryLinks />
         <FooterPolicies />
         <FooterDisclaimer />
-        {siteConfig.features.showTeamMiraiSection && <FooterCopyright />}
+        <FooterCopyright />
       </div>
     </footer>
   );
@@ -35,7 +35,7 @@ function FooterLogoSection() {
           src="/img/logo.svg"
           alt={siteConfig.siteName}
           width={150}
-          height={128}
+          height={40}
           className="h-auto"
         />
       </Link>
@@ -102,7 +102,7 @@ function FooterDisclaimer() {
 function FooterCopyright() {
   return (
     <div className="text-center text-sm font-medium text-slate-800">
-      © 2025 Team Mirai All rights Reserved
+      © 2026 {siteConfig.siteName}
     </div>
   );
 }

@@ -7,30 +7,17 @@ import { siteConfig } from "@/config/site.config";
 export function DesktopMenuActionButtons() {
   return (
     <div className="flex flex-col gap-3">
-      <LinkButton
-        href={siteConfig.externalLinks.aboutNote}
-        icon={{
-          src: "/icons/note-icon.png",
-          alt: "note",
-          width: 20,
-          height: 20,
-        }}
-      >
-        {siteConfig.siteName}とは
-      </LinkButton>
-
-      {/* 寄附先はチームみらいのため、フッターと同じくチームみらいセクション表示時のみ出す */}
-      {siteConfig.features.showTeamMiraiSection && (
+      {siteConfig.externalLinks.aboutNote && (
         <LinkButton
-          href={siteConfig.externalLinks.donation}
+          href={siteConfig.externalLinks.aboutNote}
           icon={{
-            src: "/icons/heart-icon.svg",
-            alt: "寄附",
+            src: "/icons/note-icon.png",
+            alt: "note",
             width: 20,
             height: 20,
           }}
         >
-          寄附で応援する
+          {siteConfig.siteName}とは
         </LinkButton>
       )}
     </div>

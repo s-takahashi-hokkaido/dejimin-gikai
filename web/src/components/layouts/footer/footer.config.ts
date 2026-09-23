@@ -26,20 +26,6 @@ export const primaryLinks: FooterLink[] = [
         },
       ]
     : []),
-  ...(siteConfig.features.showTeamMiraiSection
-    ? ([
-        {
-          label: "チームみらいについて",
-          href: siteConfig.externalLinks.teamAbout,
-          external: true,
-        },
-        {
-          label: "寄附で応援する",
-          href: siteConfig.externalLinks.donation,
-          external: true,
-        },
-      ] as FooterLink[])
-    : []),
 ];
 
 export const policyLinks: FooterPolicyLink[] = [

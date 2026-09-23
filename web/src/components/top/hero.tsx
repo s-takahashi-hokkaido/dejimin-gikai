@@ -21,12 +21,6 @@ export function Hero() {
             いま{siteConfig.councilName}で議論されていること <br />
             やさしい言葉で説明します
           </p>
-          <p className="mt-2 font-lexend text-xs text-white">
-            {/* 表示したい場合は `powered by ${siteConfig.operator.name}` とかで*/}
-            {siteConfig.features.showTeamMiraiSection
-              ? "powered by Team Mirai & AI"
-              : ""}
-          </p>
         </Container>
       </div>
 

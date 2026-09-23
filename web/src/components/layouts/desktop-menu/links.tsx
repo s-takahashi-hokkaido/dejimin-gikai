@@ -8,15 +8,6 @@ type FooterLinkItem = {
 };
 
 const links: FooterLinkItem[] = [
-  ...(siteConfig.features.showTeamMiraiSection
-    ? ([
-        {
-          label: "チームみらいについて",
-          href: siteConfig.externalLinks.teamAbout,
-          external: true,
-        },
-      ] as FooterLinkItem[])
-    : []),
   {
     label: "利用規約",
     href: "/terms",
@@ -60,7 +51,7 @@ export function DesktopMenuLinks() {
           lineHeight: "1.48em",
         }}
       >
-        © 2025 {siteConfig.operator.name}
+        © 2026 {siteConfig.siteName}
       </p>
     </div>
   );

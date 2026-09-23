@@ -1,14 +1,13 @@
 "use client";
 
-import Image from "next/image";
+import { Search } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Search } from "lucide-react";
+import { siteConfig } from "@/config/site.config";
 import { DifficultySelector } from "@/features/bill-difficulty/client/components/difficulty-selector";
 import type { DifficultyLevelEnum } from "@/features/bill-difficulty/shared/types";
 import { InterviewHeaderActions } from "@/features/interview-session/client/components/interview-header-actions";
 import { isInterviewPage, isMainPage } from "@/lib/page-layout-utils";
-import { siteConfig } from "@/config/site.config";
 import { HamburgerMenu } from "./hamburger-menu";
 
 interface HeaderClientProps {
@@ -31,14 +30,6 @@ export function HeaderClient({ difficultyLevel }: HeaderClientProps) {
               className="flex items-center space-x-2"
               aria-label="ホーム"
             >
-              {siteConfig.features.showTeamMiraiSection && (
-                <Image
-                  src="/img/logo.svg"
-                  alt={siteConfig.siteName}
-                  width={42}
-                  height={36}
-                />
-              )}
               <div className="text-sm sm:text-base font-bold whitespace-nowrap">
                 {siteConfig.siteName}
               </div>
