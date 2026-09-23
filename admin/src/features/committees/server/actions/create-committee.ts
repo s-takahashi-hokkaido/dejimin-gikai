@@ -1,7 +1,7 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
 import { createAdminClient } from "@dejimin-gikai/supabase";
+import { revalidatePath } from "next/cache";
 import { requireAdmin } from "@/features/auth/server/lib/auth-server";
 import { invalidateWebCache } from "@/lib/utils/cache-invalidation";
 import type { CreateCommitteeInput } from "../../shared/types";
@@ -20,6 +20,7 @@ export async function createCommittee(input: CreateCommitteeInput) {
       .from("committees")
       .insert({
         name: input.name.trim(),
+        committee_type: input.committee_type,
         description: input.description || null,
         sort_order: input.sort_order,
       })

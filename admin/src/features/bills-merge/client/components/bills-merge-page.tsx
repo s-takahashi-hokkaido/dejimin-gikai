@@ -81,11 +81,6 @@ const SCALAR_FIELDS: ScalarField[] = [
     format: (b) => (b.is_featured ? "注目" : "通常"),
   },
   {
-    key: "committee_id",
-    label: "委員会",
-    format: (b) => (b.committee_id ? "設定あり" : "(未設定)"),
-  },
-  {
     key: "council_session_id",
     label: "定例会",
     format: (b) => (b.council_session_id ? "設定あり" : "(未設定)"),
@@ -217,7 +212,6 @@ function GroupCard({ group, onMerged }: GroupCardProps) {
       thumbnail_url: getField("thumbnail_url") as string | null,
       share_thumbnail_url: getField("share_thumbnail_url") as string | null,
       is_featured: getField("is_featured") as boolean,
-      committee_id: getField("committee_id") as string | null,
       council_session_id: getField("council_session_id") as string | null,
     };
 
@@ -577,7 +571,7 @@ function GroupCard({ group, onMerged }: GroupCardProps) {
             選択内容で統合実行
           </Button>
           <p className="text-xs text-gray-500">
-            「保持レコード」のIDが残り、他は削除されます。タグは全議案の和集合になります。
+            「保持レコード」のIDが残り、他は削除されます。タグと付託委員会は全議案の和集合になります。
           </p>
         </div>
       </CardContent>

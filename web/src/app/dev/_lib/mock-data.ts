@@ -30,7 +30,6 @@ const baseBill: BillWithContent = {
   status_order: 4,
   publish_status_order: 2,
   council_session_id: null,
-  committee_id: null,
   created_at: "2026-02-15T00:00:00Z",
   updated_at: "2026-02-15T00:00:00Z",
   bill_content: {

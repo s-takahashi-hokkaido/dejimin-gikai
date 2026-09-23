@@ -18,7 +18,7 @@ export async function loadCommittees(): Promise<CommitteeWithBillCount[]> {
       is_active,
       created_at,
       updated_at,
-      bills(count)
+      bill_committees(count)
     `
     )
     .order("sort_order", { ascending: true });
@@ -37,7 +37,7 @@ export async function loadCommittees(): Promise<CommitteeWithBillCount[]> {
       is_active: committee.is_active,
       created_at: committee.created_at,
       updated_at: committee.updated_at,
-      bill_count: committee.bills?.[0]?.count ?? 0,
+      bill_count: committee.bill_committees?.[0]?.count ?? 0,
     })) || []
   );
 }

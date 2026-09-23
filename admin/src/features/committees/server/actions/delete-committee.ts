@@ -1,7 +1,7 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
 import { createAdminClient } from "@dejimin-gikai/supabase";
+import { revalidatePath } from "next/cache";
 import { requireAdmin } from "@/features/auth/server/lib/auth-server";
 import { invalidateWebCache } from "@/lib/utils/cache-invalidation";
 import type { DeleteCommitteeInput } from "../../shared/types";
@@ -12,9 +12,9 @@ export async function deleteCommittee(input: DeleteCommitteeInput) {
 
     const supabase = createAdminClient();
 
-    // 議案が紐付いている場合は削除不可
+    // 議案が付託されている場合は削除不可
     const { count, error: countError } = await supabase
-      .from("bills")
+      .from("bill_committees")
       .select("*", { count: "exact", head: true })
       .eq("committee_id", input.id);
 

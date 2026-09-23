@@ -7,15 +7,19 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { createCommittee } from "../../server/actions/create-committee";
+import type { CommitteeType } from "../../shared/types";
+import { CommitteeTypeSelect } from "./committee-type-select";
 
 export function CommitteeForm() {
   const nameId = useId();
   const descriptionId = useId();
   const sortOrderId = useId();
+  const typeId = useId();
 
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [sortOrder, setSortOrder] = useState("0");
+  const [committeeType, setCommitteeType] = useState<CommitteeType>("standing");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -37,6 +41,7 @@ export function CommitteeForm() {
     try {
       const result = await createCommittee({
         name: name.trim(),
+        committee_type: committeeType,
         description: description.trim() || null,
         sort_order: sortOrderNum,
       });
@@ -48,6 +53,7 @@ export function CommitteeForm() {
         setName("");
         setDescription("");
         setSortOrder("0");
+        setCommitteeType("standing");
       }
     } catch (error) {
       console.error("Create committee error:", error);
@@ -81,6 +87,16 @@ export function CommitteeForm() {
             type="number"
             value={sortOrder}
             onChange={(e) => setSortOrder(e.target.value)}
+            disabled={isSubmitting}
+          />
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor={typeId}>種別</Label>
+          <CommitteeTypeSelect
+            id={typeId}
+            value={committeeType}
+            onChange={setCommitteeType}
             disabled={isSubmitting}
           />
         </div>

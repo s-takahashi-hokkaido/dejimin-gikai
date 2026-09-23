@@ -10,8 +10,8 @@ import { BillDisclaimer } from "../../../client/components/bill-detail/bill-disc
 import { BillStatusProgress } from "../../../client/components/bill-detail/bill-status-progress";
 import { FactionStanceCard } from "../../../client/components/bill-detail/faction-stance-card";
 import type { BillWithContent } from "../../../shared/types";
-import { BillShareButtons } from "../share/bill-share-buttons";
 import { getBillDiscussions } from "../../loaders/get-bill-discussions";
+import { BillShareButtons } from "../share/bill-share-buttons";
 import { BillContent } from "./bill-content";
 import { BillDetailHeader } from "./bill-detail-header";
 import { BillDiscussionsSection } from "./bill-discussions-section";
@@ -60,6 +60,7 @@ export async function BillDetailLayout({
             <BillStatusProgress
               status={bill.status}
               statusNote={bill.status_note}
+              billType={bill.bill_type}
             />
           </div>
 

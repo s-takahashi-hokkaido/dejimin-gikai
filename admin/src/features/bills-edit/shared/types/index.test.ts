@@ -9,6 +9,7 @@ const validInput: BillCreateInput = {
   status: "submitted",
   status_note: null,
   is_featured: false,
+  committee_ids: [],
 };
 
 function parseSourceUrl(sourceUrl: string | null) {

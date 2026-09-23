@@ -69,6 +69,39 @@ export type Database = {
           },
         ]
       }
+      bill_committees: {
+        Row: {
+          bill_id: string
+          committee_id: string
+          created_at: string
+        }
+        Insert: {
+          bill_id: string
+          committee_id: string
+          created_at?: string
+        }
+        Update: {
+          bill_id?: string
+          committee_id?: string
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bill_committees_bill_id_fkey"
+            columns: ["bill_id"]
+            isOneToOne: false
+            referencedRelation: "bills"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bill_committees_committee_id_fkey"
+            columns: ["committee_id"]
+            isOneToOne: false
+            referencedRelation: "committees"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       bill_contents: {
         Row: {
           bill_id: string
@@ -173,7 +206,6 @@ export type Database = {
         Row: {
           bill_number: string
           bill_type: string
-          committee_id: string | null
           council_session_id: string | null
           created_at: string
           discussion_overview_points: string[]
@@ -194,7 +226,6 @@ export type Database = {
         Insert: {
           bill_number?: string
           bill_type?: string
-          committee_id?: string | null
           council_session_id?: string | null
           created_at?: string
           discussion_overview_points?: string[]
@@ -215,7 +246,6 @@ export type Database = {
         Update: {
           bill_number?: string
           bill_type?: string
-          committee_id?: string | null
           council_session_id?: string | null
           created_at?: string
           discussion_overview_points?: string[]
@@ -234,13 +264,6 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
-          {
-            foreignKeyName: "bills_committee_id_fkey"
-            columns: ["committee_id"]
-            isOneToOne: false
-            referencedRelation: "committees"
-            referencedColumns: ["id"]
-          },
           {
             foreignKeyName: "bills_council_session_id_fkey"
             columns: ["council_session_id"]
@@ -1353,6 +1376,10 @@ export type Database = {
         }[]
       }
       is_admin: { Args: never; Returns: boolean }
+      replace_bill_committees: {
+        Args: { p_bill_id: string; p_committee_ids: string[] }
+        Returns: undefined
+      }
       set_active_council_session: {
         Args: { target_session_id: string }
         Returns: undefined

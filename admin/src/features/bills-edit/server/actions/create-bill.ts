@@ -8,7 +8,10 @@ import {
 } from "@/lib/utils/cache-invalidation";
 import { getErrorMessage } from "@/lib/utils/get-error-message";
 import { type BillCreateInput, billCreateSchema } from "../../shared/types";
-import { createBillRecord } from "../repositories/bill-edit-repository";
+import {
+  createBillRecord,
+  replaceBillCommittees,
+} from "../repositories/bill-edit-repository";
 
 export async function createBill(input: BillCreateInput) {
   try {
@@ -16,17 +19,25 @@ export async function createBill(input: BillCreateInput) {
     await requireAdmin();
 
     // バリデーション
-    const validatedData = billCreateSchema.parse(input);
+    const { committee_ids, ...billData } = billCreateSchema.parse(input);
 
     const insertData = {
-      ...validatedData,
-      published_at: validatedData.published_at
-        ? new Date(validatedData.published_at).toISOString()
+      ...billData,
+      published_at: billData.published_at
+        ? new Date(billData.published_at).toISOString()
         : null,
     };
 
     // Supabaseに挿入
-    await createBillRecord(insertData);
+    const bill = await createBillRecord(insertData);
+    try {
+      await replaceBillCommittees(bill.id, committee_ids);
+    } catch (error) {
+      // 議案は作成済みなので、作り直すと重複する。編集画面での再設定を促す
+      throw new Error(
+        `議案は作成しましたが、付託委員会を保存できませんでした。議案一覧から編集して設定し直してください（${getErrorMessage(error, "不明なエラー")}）`
+      );
+    }
 
     // web側のキャッシュを無効化
     await invalidateWebCache([WEB_CACHE_TAGS.BILLS]);

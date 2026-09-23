@@ -129,19 +129,22 @@ async function seedDatabase() {
     }
 
     // Link bills to committees
-    let committeeLinkedCount = 0;
-    for (const [billName, committeeName] of Object.entries(billCommitteeMap)) {
-      const bill = insertedBills.find((b) => b.name === billName);
-      const committee = insertedCommittees.find((c) => c.name === committeeName);
-      if (bill && committee) {
-        await supabase
-          .from("bills")
-          .update({ committee_id: committee.id })
-          .eq("id", bill.id);
-        committeeLinkedCount++;
+    const billCommittees = Object.entries(billCommitteeMap).flatMap(
+      ([billName, committeeNames]) => {
+        const bill = insertedBills.find((b) => b.name === billName);
+        if (!bill) return [];
+        return committeeNames.flatMap((committeeName) => {
+          const committee = insertedCommittees.find((c) => c.name === committeeName);
+          return committee ? [{ bill_id: bill.id, committee_id: committee.id }] : [];
+        });
       }
-    }
-    console.log(`🔗 Linked ${committeeLinkedCount} bills to committees`);
+    );
+    const { error: billCommitteesError } = await supabase
+      .from("bill_committees")
+      .insert(billCommittees);
+    if (billCommitteesError)
+      throw new Error(`Failed to insert bill committees: ${billCommitteesError.message}`);
+    console.log(`🔗 Linked ${billCommittees.length} bill-committee pairs`);
 
     // Insert bill_contents
     console.log("📚 Inserting bill contents...");

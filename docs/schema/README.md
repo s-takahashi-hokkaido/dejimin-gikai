@@ -7,7 +7,7 @@
 | [auth.users](auth.users.md) | 35 | Auth: Stores user login data within a secure schema. | BASE TABLE |
 | [public.bill_contents](public.bill_contents.md) | 8 | 議案の難易度別コンテンツを管理するテーブル | BASE TABLE |
 | [public.bill_discussions](public.bill_discussions.md) | 14 | 議案討論記録 | BASE TABLE |
-| [public.bills](public.bills.md) | 19 | 議案の基本情報を格納するテーブル。コンテンツはbill_contentsテーブルで管理。 | BASE TABLE |
+| [public.bills](public.bills.md) | 18 | 議案の基本情報を格納するテーブル。コンテンツはbill_contentsテーブルで管理。 | BASE TABLE |
 | [public.bills_tags](public.bills_tags.md) | 3 | Junction table for bills and tags relationship | BASE TABLE |
 | [public.budget_initiatives](public.budget_initiatives.md) | 9 | 予算施策(テーマごとの個別施策) | BASE TABLE |
 | [public.budget_overviews](public.budget_overviews.md) | 12 | 予算概要(部局ごと×定例会ごと) | BASE TABLE |
@@ -35,6 +35,7 @@
 | [public.topic_analysis_topics](public.topic_analysis_topics.md) | 7 | トピック解析で抽出されたトピック | BASE TABLE |
 | [public.topic_analysis_versions](public.topic_analysis_versions.md) | 13 | トピック解析のバージョン管理 | BASE TABLE |
 | [public.admin_profiles](public.admin_profiles.md) | 6 | 管理画面利用者のロールと所属会派 | BASE TABLE |
+| [public.bill_committees](public.bill_committees.md) | 3 | 議案の付託委員会（1議案に複数の委員会を付託できる） | BASE TABLE |
 
 ## Stored procedures and functions
 
@@ -47,6 +48,7 @@
 | public.set_active_council_session | void | target_session_id uuid | FUNCTION |
 | public.update_updated_at_column | trigger |  | FUNCTION |
 | public.get_ai_usage_cost_usd | numeric | from_ts timestamp with time zone, to_ts timestamp with time zone, target_user_id uuid DEFAULT NULL::uuid | FUNCTION |
+| public.replace_bill_committees | void | p_bill_id uuid, p_committee_ids uuid[] | FUNCTION |
 
 ## Enums
 
@@ -80,7 +82,6 @@ erDiagram
 
 "public.bill_contents" }o--|| "public.bills" : "FOREIGN KEY (bill_id) REFERENCES bills(id) ON DELETE CASCADE"
 "public.bill_discussions" }o--|| "public.bills" : "FOREIGN KEY (bill_id) REFERENCES bills(id) ON DELETE CASCADE"
-"public.bills" }o--o| "public.committees" : "FOREIGN KEY (committee_id) REFERENCES committees(id)"
 "public.bills" }o--o| "public.council_sessions" : "FOREIGN KEY (council_session_id) REFERENCES council_sessions(id) ON DELETE SET NULL"
 "public.bills_tags" }o--|| "public.bills" : "FOREIGN KEY (bill_id) REFERENCES bills(id) ON DELETE CASCADE"
 "public.bills_tags" }o--|| "public.tags" : "FOREIGN KEY (tag_id) REFERENCES tags(id) ON DELETE CASCADE"
@@ -108,6 +109,8 @@ erDiagram
 "public.topic_analysis_versions" }o--|| "public.bills" : "FOREIGN KEY (bill_id) REFERENCES bills(id) ON DELETE CASCADE"
 "public.admin_profiles" |o--|| "auth.users" : "FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE"
 "public.admin_profiles" }o--o| "public.factions" : "FOREIGN KEY (faction_id) REFERENCES factions(id) ON DELETE RESTRICT"
+"public.bill_committees" }o--|| "public.bills" : "FOREIGN KEY (bill_id) REFERENCES bills(id) ON DELETE CASCADE"
+"public.bill_committees" }o--|| "public.committees" : "FOREIGN KEY (committee_id) REFERENCES committees(id) ON DELETE RESTRICT"
 
 "auth.users" {
   uuid instance_id
@@ -185,7 +188,6 @@ erDiagram
   boolean is_featured
   text share_thumbnail_url
   uuid council_session_id FK
-  uuid committee_id FK
   integer publish_status_order
   text bill_number
   integer status_order
@@ -469,6 +471,11 @@ erDiagram
   text display_name
   timestamp_with_time_zone created_at
   timestamp_with_time_zone updated_at
+}
+"public.bill_committees" {
+  uuid bill_id FK
+  uuid committee_id FK
+  timestamp_with_time_zone created_at
 }
 ```
 

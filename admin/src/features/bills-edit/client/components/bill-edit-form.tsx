@@ -21,12 +21,14 @@ import { BillFormFields } from "./bill-form-fields";
 
 interface BillEditFormProps {
   bill: Bill;
+  committeeIds: string[];
   councilSessions: CouncilSession[];
   committees: Committee[];
 }
 
 export function BillEditForm({
   bill,
+  committeeIds,
   councilSessions,
   committees,
 }: BillEditFormProps) {
@@ -52,7 +54,7 @@ export function BillEditForm({
       thumbnail_url: bill.thumbnail_url,
       share_thumbnail_url: bill.share_thumbnail_url,
       is_featured: bill.is_featured,
-      committee_id: bill.committee_id,
+      committee_ids: committeeIds,
       council_session_id: defaultCouncilSessionId,
     },
   });

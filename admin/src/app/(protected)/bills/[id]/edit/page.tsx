@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { BillEditForm } from "@/features/bills-edit/client/components/bill-edit-form";
 import { BillTagsForm } from "@/features/bills-edit/client/components/bill-tags-form";
 import { getBillById } from "@/features/bills-edit/server/loaders/get-bill-by-id";
+import { getBillCommitteeIds } from "@/features/bills-edit/server/loaders/get-bill-committee-ids";
 import { getBillTagIds } from "@/features/bills-edit/server/loaders/get-bill-tag-ids";
 import { loadCommittees } from "@/features/committees/server/loaders/load-committees";
 import { loadCouncilSessions } from "@/features/council-sessions/server/loaders/load-council-sessions";
@@ -28,6 +29,7 @@ export default async function BillEditPage({ params }: BillEditPageProps) {
     selectedTagIds,
     councilSessions,
     committees,
+    committeeIds,
   ] = await Promise.all([
     getBillById(id),
     getStancesByBillId(id),
@@ -36,6 +38,7 @@ export default async function BillEditPage({ params }: BillEditPageProps) {
     getBillTagIds(id),
     loadCouncilSessions(),
     loadCommittees(),
+    getBillCommitteeIds(id),
   ]);
 
   if (!bill) {
@@ -62,6 +65,7 @@ export default async function BillEditPage({ params }: BillEditPageProps) {
       <div className="space-y-6">
         <BillEditForm
           bill={bill}
+          committeeIds={committeeIds}
           councilSessions={councilSessions}
           committees={committees}
         />

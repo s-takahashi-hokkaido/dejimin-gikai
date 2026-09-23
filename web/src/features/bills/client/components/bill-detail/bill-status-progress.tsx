@@ -4,10 +4,12 @@ import {
   getCurrentStep,
   getOrderedSteps,
 } from "../../../shared/utils/bill-progress";
+import { getResultLabelForBillType } from "../../../shared/utils/bill-status";
 
 interface BillStatusProgressProps {
   status: BillStatusEnum;
   statusNote?: string | null;
+  billType?: string | null;
 }
 
 interface StatusBadgeProps {
@@ -106,10 +108,12 @@ function ProgressStep({
 export function BillStatusProgress({
   status,
   statusNote,
+  billType,
 }: BillStatusProgressProps) {
   const isPreparing = status === "preparing";
   const currentStep = getCurrentStep(status);
-  const statusMessage = STATUS_LABELS[status] ?? "";
+  const statusMessage =
+    getResultLabelForBillType(status, billType) ?? STATUS_LABELS[status] ?? "";
 
   const getStepState = (stepNumber: number): "active" | "inactive" => {
     if (isPreparing) return "inactive";

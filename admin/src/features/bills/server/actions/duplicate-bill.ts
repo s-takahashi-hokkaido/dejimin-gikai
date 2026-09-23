@@ -8,6 +8,7 @@ import {
   prepareBillForDuplication,
 } from "../../shared/utils/prepare-bill-for-duplication";
 import {
+  copyBillCommittees,
   createBill,
   createBillContents,
   deleteBillById,
@@ -40,6 +41,13 @@ export async function duplicateBill(billId: string) {
     // コンテンツのない複製が残らないよう、作成した議案を削除する
     await _deleteBillQuietly(newBill.data.id);
     return contentResult;
+  }
+
+  // 付託委員会を複製
+  const committeeResult = await _duplicateCommittees(billId, newBill.data.id);
+  if (!committeeResult.success) {
+    await _deleteBillQuietly(newBill.data.id);
+    return committeeResult;
   }
 
   revalidatePath("/bills");
@@ -119,6 +127,22 @@ async function _duplicateContents(originalBillId: string, newBillId: string) {
     return {
       success: false as const,
       error: "コンテンツの複製に失敗しました",
+    };
+  }
+}
+
+/**
+ * 議案の付託委員会を複製
+ */
+async function _duplicateCommittees(originalBillId: string, newBillId: string) {
+  try {
+    await copyBillCommittees(originalBillId, newBillId);
+    return { success: true as const };
+  } catch (error) {
+    console.error("Error duplicating committees:", error);
+    return {
+      success: false as const,
+      error: "付託委員会の複製に失敗しました",
     };
   }
 }

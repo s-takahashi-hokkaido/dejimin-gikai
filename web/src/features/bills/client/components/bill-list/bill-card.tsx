@@ -54,7 +54,11 @@ export function BillCard({ bill }: BillCardProps) {
                 {displayTitle}
               </CardTitle>
               <div className="flex flex-row gap-4">
-                <BillStatusBadge status={bill.status} className="w-fit" />
+                <BillStatusBadge
+                  status={bill.status}
+                  billType={bill.bill_type}
+                  className="w-fit"
+                />
                 <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
                   {bill.published_at && (
                     <time>{formatDateJST(bill.published_at)} 提出</time>

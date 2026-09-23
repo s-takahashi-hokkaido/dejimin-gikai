@@ -14,7 +14,6 @@ type ScalarUpdate = {
   thumbnail_url: string | null;
   share_thumbnail_url: string | null;
   is_featured: boolean;
-  committee_id: string | null;
   council_session_id: string | null;
 };
 
@@ -152,7 +151,28 @@ export async function mergeBills(input: MergeBillsInput): Promise<MergeResult> {
       }
     }
 
-    // 5. 重複議案を削除（ON DELETE CASCADE で残関連データも自動削除）
+    // 5. 付託委員会もすべてのbillの和集合を keepBillId に設定
+    const { data: allCommittees, error: committeesError } = await supabase
+      .from("bill_committees")
+      .select("committee_id")
+      .in("bill_id", allBillIds);
+    if (committeesError)
+      throw new Error(`付託委員会の取得に失敗: ${committeesError.message}`);
+    const { error: replaceCommitteesError } = await supabase.rpc(
+      "replace_bill_committees",
+      {
+        p_bill_id: input.keepBillId,
+        p_committee_ids: [
+          ...new Set((allCommittees ?? []).map((c) => c.committee_id)),
+        ],
+      }
+    );
+    if (replaceCommitteesError)
+      throw new Error(
+        `付託委員会の統合に失敗: ${replaceCommitteesError.message}`
+      );
+
+    // 6. 重複議案を削除（ON DELETE CASCADE で残関連データも自動削除）
     const { error: deleteError } = await supabase
       .from("bills")
       .delete()
