@@ -32,7 +32,7 @@ export default async function LoginPage() {
 
           <div className="mt-6 text-center">
             <p className="text-xs text-muted-foreground">
-              © 2025 {siteConfig.siteName}. All rights reserved.
+              © 2026 {siteConfig.siteName}. All rights reserved.
             </p>
           </div>
         </CardContent>

@@ -4,7 +4,6 @@ import { BudgetOverviewBanner } from "@/components/top/budget-overview-banner";
 import { GeneralQuestionsBanner } from "@/components/top/general-questions-banner";
 import { Hero } from "@/components/top/hero";
 import { PastSessionsSection } from "@/components/top/past-sessions-section";
-import { TeamMirai } from "@/components/top/team-mirai";
 import { siteConfig } from "@/config/site.config";
 import { getDifficultyLevel } from "@/features/bill-difficulty/server/loaders/get-difficulty-level";
 import { BillDisclaimer } from "@/features/bills/client/components/bill-detail/bill-disclaimer";
@@ -117,11 +116,8 @@ export default async function Home() {
       </div>
 
       <Container>
-        {/* みらい議会とは セクション */}
+        {/* About（サービス紹介・派生元の表記）セクション */}
         <About />
-
-        {/* チームみらいについて セクション */}
-        <TeamMirai />
 
         {/* 免責事項 */}
         <BillDisclaimer />
