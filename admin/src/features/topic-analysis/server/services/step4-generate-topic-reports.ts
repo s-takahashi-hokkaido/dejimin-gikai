@@ -2,6 +2,7 @@ import "server-only";
 
 import { openai } from "@ai-sdk/openai";
 import { generateObject } from "ai";
+import { OPENAI_STRUCTURED_OUTPUT_OPTIONS } from "@/lib/ai/models";
 import {
   TOPIC_ANALYSIS_MAX_CONCURRENCY,
   TOPIC_ANALYSIS_MODEL,
@@ -58,6 +59,7 @@ async function generateSingleTopicReport(
 
   const result = await generateObject({
     model: openai(TOPIC_ANALYSIS_MODEL),
+    providerOptions: OPENAI_STRUCTURED_OUTPUT_OPTIONS,
     schema: topicReportSchema,
     prompt: `あなたは市民意見の分析レポートを作成します。
 

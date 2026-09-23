@@ -38,3 +38,14 @@ export const DEFAULT_INTERVIEW_CHAT_MODEL = AI_MODELS.gpt5_mini;
  * 議案ごとの chat_model に左右されず、要約の品質を一定にするため固定する。
  */
 export const INTERVIEW_SUMMARY_MODEL = AI_MODELS.gpt5_mini;
+
+/**
+ * 構造化出力（Output.object / generateObject）で OpenAI に渡す providerOptions
+ *
+ * `@ai-sdk/openai` は既定で strict モードの JSON Schema を送るが、strict モードは
+ * `.optional()` のフィールドや `maxLength` などを受け付けず 400 になる。
+ * スキーマは Gateway 経由の頃のまま（任意フィールドあり）なので、strict を切って送る。
+ */
+export const OPENAI_STRUCTURED_OUTPUT_OPTIONS = {
+  openai: { strictJsonSchema: false },
+};

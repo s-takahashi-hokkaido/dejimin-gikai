@@ -33,6 +33,7 @@ import type {
 import {
   DEFAULT_INTERVIEW_CHAT_MODEL,
   INTERVIEW_SUMMARY_MODEL,
+  OPENAI_STRUCTURED_OUTPUT_OPTIONS,
 } from "@/lib/ai/models";
 import { env } from "@/lib/env";
 import { logger } from "@/lib/logger";
@@ -294,6 +295,7 @@ async function generateStreamingResponse({
     model,
     system: systemPrompt,
     messages: await convertToModelMessages(uiMessages),
+    providerOptions: OPENAI_STRUCTURED_OUTPUT_OPTIONS,
     onError: handleError,
     onFinish: handleFinish,
   } as const;

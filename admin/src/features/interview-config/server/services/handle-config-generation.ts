@@ -4,7 +4,7 @@ import { openai } from "@ai-sdk/openai";
 import { convertToModelMessages, Output, streamText } from "ai";
 import { getBillById } from "@/features/bills-edit/server/loaders/get-bill-by-id";
 import { getBillContents } from "@/features/bills-edit/server/loaders/get-bill-contents";
-import { AI_MODELS } from "@/lib/ai/models";
+import { AI_MODELS, OPENAI_STRUCTURED_OUTPUT_OPTIONS } from "@/lib/ai/models";
 import { injectJsonFields } from "@/lib/stream/inject-json-fields";
 import {
   type ConfigGenerationStage,
@@ -92,6 +92,7 @@ export async function handleConfigGeneration({
     stage === "theme_proposal"
       ? streamText({
           model: openai(AI_MODELS.gpt5_2),
+          providerOptions: OPENAI_STRUCTURED_OUTPUT_OPTIONS,
           system: systemPrompt,
           messages: modelMessages,
           output: Output.object({ schema: themeProposalSchema }),
@@ -101,6 +102,7 @@ export async function handleConfigGeneration({
         })
       : streamText({
           model: openai(AI_MODELS.gpt5_2),
+          providerOptions: OPENAI_STRUCTURED_OUTPUT_OPTIONS,
           system: systemPrompt,
           messages: modelMessages,
           output: Output.object({ schema: questionProposalSchema }),
