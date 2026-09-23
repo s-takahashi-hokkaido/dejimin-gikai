@@ -12,9 +12,9 @@ import { deleteCouncilSessionRecord } from "../repositories/council-session-repo
 
 export async function deleteCouncilSession(input: DeleteCouncilSessionInput) {
   try {
-    await requireAdmin();
+    const admin = await requireAdmin();
 
-    await deleteCouncilSessionRecord(input.id);
+    await deleteCouncilSessionRecord(input.id, admin);
 
     revalidatePath("/council-sessions");
     await invalidateWebCache([WEB_CACHE_TAGS.COUNCIL_SESSIONS]);

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import {
   Pagination,
   PaginationContent,
@@ -23,6 +24,11 @@ const TABLE_TABS = [
 
 export async function AuditLogList({ filters }: { filters: AuditLogFilters }) {
   const { items, total, totalPages } = await loadAuditLogs(filters);
+
+  // 古いブックマークなどで最後のページより後ろを開いたら、最後のページへ
+  if (filters.page > totalPages) {
+    redirect(buildAuditLogsHref({ ...filters, page: totalPages }));
+  }
   const billName = filters.billId
     ? (items.find((item) => item.bill_id === filters.billId)?.billName ?? null)
     : null;
