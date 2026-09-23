@@ -1,4 +1,4 @@
-import type { Database } from "@mirai-gikai/supabase";
+import type { Database } from "@dejimin-gikai/supabase";
 
 export type Bill = Database["public"]["Tables"]["bills"]["Row"];
 export type BillInsert = Database["public"]["Tables"]["bills"]["Insert"];

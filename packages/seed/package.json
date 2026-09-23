@@ -1,5 +1,5 @@
 {
-  "name": "@mirai-gikai/seed",
+  "name": "@dejimin-gikai/seed",
   "version": "1.0.0",
   "private": true,
   "type": "module",
@@ -9,7 +9,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@mirai-gikai/supabase": "workspace:*",
+    "@dejimin-gikai/supabase": "workspace:*",
     "@supabase/supabase-js": "^2.57.0",
     "csv-parse": "^6.1.0"
   },

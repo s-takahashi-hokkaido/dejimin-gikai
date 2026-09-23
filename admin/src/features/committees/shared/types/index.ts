@@ -1,4 +1,4 @@
-import type { Database } from "@mirai-gikai/supabase";
+import type { Database } from "@dejimin-gikai/supabase";
 
 export type Committee = Database["public"]["Tables"]["committees"]["Row"];
 

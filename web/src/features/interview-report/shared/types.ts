@@ -1,4 +1,4 @@
-import type { Database } from "@mirai-gikai/supabase";
+import type { Database } from "@dejimin-gikai/supabase";
 
 export type InterviewReport =
   Database["public"]["Tables"]["interview_report"]["Row"];

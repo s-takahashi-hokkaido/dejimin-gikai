@@ -1,4 +1,4 @@
-import { createAdminClient } from "@mirai-gikai/supabase";
+import { createAdminClient } from "@dejimin-gikai/supabase";
 import { unstable_cache } from "next/cache";
 import { CACHE_TAGS } from "@/lib/cache-tags";
 import type { CouncilSession } from "../../shared/types";

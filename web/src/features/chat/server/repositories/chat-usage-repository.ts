@@ -1,7 +1,7 @@
 import "server-only";
 
-import type { Database } from "@mirai-gikai/supabase";
-import { createAdminClient } from "@mirai-gikai/supabase";
+import type { Database } from "@dejimin-gikai/supabase";
+import { createAdminClient } from "@dejimin-gikai/supabase";
 
 type ChatUsageInsert =
   Database["public"]["Tables"]["chat_usage_events"]["Insert"];

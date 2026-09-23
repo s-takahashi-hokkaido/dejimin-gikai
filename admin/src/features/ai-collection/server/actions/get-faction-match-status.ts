@@ -1,6 +1,6 @@
 "use server";
 
-import { createAdminClient } from "@mirai-gikai/supabase";
+import { createAdminClient } from "@dejimin-gikai/supabase";
 import { requireAdmin } from "@/features/auth/server/lib/auth-server";
 import type { FactionMatchStatus } from "../../shared/types";
 import { findFactionByName } from "../utils/faction-matching";

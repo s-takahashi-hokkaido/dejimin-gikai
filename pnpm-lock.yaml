@@ -35,10 +35,10 @@ importers:
       '@hookform/resolvers':
         specifier: ^5.2.1
         version: 5.2.2(react-hook-form@7.64.0(react@19.1.2))
-      '@mirai-gikai/shared':
+      '@dejimin-gikai/shared':
         specifier: workspace:*
         version: link:../packages/shared
-      '@mirai-gikai/supabase':
+      '@dejimin-gikai/supabase':
         specifier: workspace:*
         version: link:../packages/supabase
       '@opentelemetry/sdk-node':
@@ -150,7 +150,7 @@ importers:
 
   packages/seed:
     dependencies:
-      '@mirai-gikai/supabase':
+      '@dejimin-gikai/supabase':
         specifier: workspace:*
         version: link:../supabase
       '@supabase/supabase-js':
@@ -203,10 +203,10 @@ importers:
       '@ai-sdk/react':
         specifier: ^3.0.3
         version: 3.0.3(react@19.1.2)(zod@4.1.12)
-      '@mirai-gikai/shared':
+      '@dejimin-gikai/shared':
         specifier: workspace:*
         version: link:../packages/shared
-      '@mirai-gikai/supabase':
+      '@dejimin-gikai/supabase':
         specifier: workspace:*
         version: link:../packages/supabase
       '@opentelemetry/sdk-node':

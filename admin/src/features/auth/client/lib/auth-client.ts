@@ -1,5 +1,5 @@
 import "client-only";
-import { createBrowserClient } from "@mirai-gikai/supabase";
+import { createBrowserClient } from "@dejimin-gikai/supabase";
 import { hasAdminAccess } from "@/features/auth/server/actions/check-admin-access";
 
 const supabase = createBrowserClient();

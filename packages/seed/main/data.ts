@@ -18,7 +18,7 @@
  * - 議案 (bills) はサンプルダミー（実在しない、UI検証用）
  */
 
-import type { Database } from "@mirai-gikai/supabase";
+import type { Database } from "@dejimin-gikai/supabase";
 
 type BillInsert = Database["public"]["Tables"]["bills"]["Insert"];
 type FactionStanceInsert =

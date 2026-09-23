@@ -1,7 +1,7 @@
 "use server";
 
 import { spawn } from "node:child_process";
-import { createAdminClient } from "@mirai-gikai/supabase";
+import { createAdminClient } from "@dejimin-gikai/supabase";
 import { requireAdmin } from "@/features/auth/server/lib/auth-server";
 import {
   EVAL_BATCH_SIZE,

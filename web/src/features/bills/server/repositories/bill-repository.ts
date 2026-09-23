@@ -1,5 +1,5 @@
 import "server-only";
-import { createAdminClient } from "@mirai-gikai/supabase";
+import { createAdminClient } from "@dejimin-gikai/supabase";
 import type { DifficultyLevelEnum } from "@/features/bill-difficulty/shared/types";
 import type { MiraiStance } from "../../shared/types";
 

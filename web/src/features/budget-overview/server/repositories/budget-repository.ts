@@ -1,5 +1,5 @@
 import "server-only";
-import { createAdminClient } from "@mirai-gikai/supabase";
+import { createAdminClient } from "@dejimin-gikai/supabase";
 import type { CouncilSession } from "@/features/council-sessions/shared/types";
 import type {
   BudgetOverview,

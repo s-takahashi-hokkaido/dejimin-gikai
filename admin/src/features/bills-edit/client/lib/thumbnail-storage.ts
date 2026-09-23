@@ -1,4 +1,4 @@
-import { createBrowserClient } from "@mirai-gikai/supabase";
+import { createBrowserClient } from "@dejimin-gikai/supabase";
 
 export interface UploadResult {
   url?: string;

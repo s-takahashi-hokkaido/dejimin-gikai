@@ -2,7 +2,7 @@ import {
   type BasicAuthConfig,
   isHtmlAcceptHeader,
   validateBasicAuthHeader,
-} from "@mirai-gikai/shared/auth/basic-auth";
+} from "@dejimin-gikai/shared/auth/basic-auth";
 import type { NextRequest } from "next/server";
 
 export type { BasicAuthConfig };

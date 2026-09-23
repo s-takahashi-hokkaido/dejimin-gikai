@@ -1,7 +1,7 @@
 import { parse } from "csv-parse/sync";
 import fs from "node:fs";
 import path from "node:path";
-import type { Database } from "@mirai-gikai/supabase";
+import type { Database } from "@dejimin-gikai/supabase";
 import { createAdminClient, clearAllData } from "../shared/helper";
 
 type TableName = keyof Database["public"]["Tables"];

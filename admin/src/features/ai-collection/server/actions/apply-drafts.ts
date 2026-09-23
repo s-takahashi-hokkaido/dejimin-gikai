@@ -7,7 +7,7 @@
 // 2. supabase db push / migration でデータを移行
 // 3. Supabase CLIの --db-url オプションで本番DBに直接接続
 
-import { createAdminClient } from "@mirai-gikai/supabase";
+import { createAdminClient } from "@dejimin-gikai/supabase";
 import { revalidatePath } from "next/cache";
 import { requireAdmin } from "@/features/auth/server/lib/auth-server";
 import { invalidateWebCache } from "@/lib/utils/cache-invalidation";

@@ -1,5 +1,5 @@
 import "server-only";
-import { createAdminClient } from "@mirai-gikai/supabase";
+import { createAdminClient } from "@dejimin-gikai/supabase";
 
 export async function findAdminUsers() {
   const supabase = createAdminClient();
