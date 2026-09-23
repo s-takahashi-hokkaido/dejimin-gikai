@@ -1,10 +1,9 @@
 import Link from "next/link";
-import { requireRoleOrRedirect } from "@/features/auth/server/lib/auth-server";
-import { ADMIN_ONLY } from "@/features/auth/shared/utils/role";
+import { requirePageAccess } from "@/features/auth/server/lib/auth-server";
 import { loadPrompts } from "@/features/prompts/server/loaders/load-prompts";
 
 export default async function PromptsPage() {
-  await requireRoleOrRedirect(ADMIN_ONLY);
+  await requirePageAccess("/prompts");
 
   const prompts = await loadPrompts();
 

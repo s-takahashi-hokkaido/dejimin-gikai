@@ -1,8 +1,11 @@
 import "server-only";
 import { redirect } from "next/navigation";
 import { createAuthClient } from "@/lib/supabase/auth";
+import { getAllowedRoles } from "../../shared/utils/can-access-page";
+import { canEditFactionStance } from "../../shared/utils/can-edit-faction-stance";
 import {
   type AdminRole,
+  EDITOR_ROLES,
   isAdminRole,
   isAllowedRole,
 } from "../../shared/utils/role";
@@ -97,6 +100,34 @@ export async function requireRoleOrRedirect(
 
   if (!isAllowedRole(user.role, allowed)) {
     redirect("/login?error=unauthorized");
+  }
+
+  return user;
+}
+
+/**
+ * ページ（Server Components）の先頭で呼ぶ。そのページに必要なロールを要求する
+ *
+ * `route` はルートのパターン（例: `/bills/[id]/edit`）。許可ロールは
+ * `getAllowedRoles` の定義を使うので、ナビゲーションの出し分けと食い違わない。
+ * レイアウトはクライアント遷移で再実行されないため、ページごとに呼ぶ必要がある。
+ */
+export async function requirePageAccess(route: string): Promise<AdminUser> {
+  return requireRoleOrRedirect(getAllowedRoles(route));
+}
+
+/**
+ * 会派見解を編集する資格を要求する。無ければ throw
+ *
+ * 運営者は全会派、議員は自分が所属する会派のみ編集できる。
+ */
+export async function requireFactionStanceAccess(
+  factionId: string
+): Promise<AdminUser> {
+  const user = await requireRole(EDITOR_ROLES);
+
+  if (!canEditFactionStance(user, factionId)) {
+    throw new Error("自分が所属する会派の見解のみ編集できます");
   }
 
   return user;

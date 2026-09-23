@@ -14,6 +14,8 @@ import type { BillPublishStatus } from "../../../shared/types";
 interface PublishStatusBadgeProps {
   billId: string;
   publishStatus: BillPublishStatus;
+  /** false のときは変更できない表示だけのバッジにする（運営者以外） */
+  editable: boolean;
 }
 
 const PUBLISH_STATUS_CONFIG: Record<
@@ -46,6 +48,7 @@ const PUBLISH_STATUS_CONFIG: Record<
 export function PublishStatusBadge({
   billId,
   publishStatus,
+  editable,
 }: PublishStatusBadgeProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [open, setOpen] = useState(false);
@@ -70,6 +73,17 @@ export function PublishStatusBadge({
       setIsSubmitting(false);
     }
   };
+
+  if (!editable) {
+    return (
+      <span
+        className={`inline-flex items-center justify-center gap-1.5 px-3 py-1 rounded-full text-sm font-medium border-2 min-w-[152px] ${currentConfig.badgeClass}`}
+      >
+        <CurrentIcon className="h-4 w-4" />
+        <span>{currentConfig.label}</span>
+      </span>
+    );
+  }
 
   return (
     <Popover open={open} onOpenChange={setOpen}>

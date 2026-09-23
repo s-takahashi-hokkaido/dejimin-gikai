@@ -9,10 +9,13 @@ import { VersionList } from "./version-list";
 
 interface TopicAnalysisPageContentProps {
   billId: string;
+  /** 分析を実行できるか（運営者のみ） */
+  canRunAnalysis: boolean;
 }
 
 export async function TopicAnalysisPageContent({
   billId,
+  canRunAnalysis,
 }: TopicAnalysisPageContentProps) {
   const [bill, versions] = await Promise.all([
     getBillById(billId),
@@ -26,7 +29,7 @@ export async function TopicAnalysisPageContent({
   return (
     <div className="space-y-6">
       <TopicAnalysisHeader billId={billId} billName={bill.name} />
-      <RunAnalysisButton billId={billId} />
+      {canRunAnalysis && <RunAnalysisButton billId={billId} />}
       <VersionList versions={versions} billId={billId} />
     </div>
   );

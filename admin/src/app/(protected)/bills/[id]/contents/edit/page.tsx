@@ -1,3 +1,4 @@
+import { requirePageAccess } from "@/features/auth/server/lib/auth-server";
 import { BillContentsEditForm } from "@/features/bills-edit/client/components/bill-contents-edit-form";
 import { getBillById } from "@/features/bills-edit/server/loaders/get-bill-by-id";
 import { getBillContents } from "@/features/bills-edit/server/loaders/get-bill-contents";
@@ -9,6 +10,7 @@ interface BillContentsEditPageProps {
 export default async function BillContentsEditPage({
   params,
 }: BillContentsEditPageProps) {
+  const admin = await requirePageAccess("/bills/[id]/contents/edit");
   const { id } = await params;
 
   // 議案とコンテンツを並行取得
@@ -28,7 +30,11 @@ export default async function BillContentsEditPage({
       <h1 className="text-2xl font-bold text-gray-900 mb-6">
         議案コンテンツ編集
       </h1>
-      <BillContentsEditForm bill={bill} billContents={billContents} />
+      <BillContentsEditForm
+        bill={bill}
+        billContents={billContents}
+        canEnrich={admin.role === "admin"}
+      />
     </div>
   );
 }

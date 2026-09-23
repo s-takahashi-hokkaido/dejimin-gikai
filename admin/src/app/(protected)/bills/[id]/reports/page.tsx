@@ -1,7 +1,7 @@
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-
+import { requirePageAccess } from "@/features/auth/server/lib/auth-server";
 import { getBillById } from "@/features/bills-edit/server/loaders/get-bill-by-id";
 import { SessionList } from "@/features/interview-reports/server/components/session-list";
 import {
@@ -22,6 +22,7 @@ export default async function ReportsPage({
   params,
   searchParams,
 }: ReportsPageProps) {
+  await requirePageAccess("/bills/[id]/reports");
   const { id } = await params;
   const { page } = await searchParams;
   const currentPage = Math.max(1, Number(page) || 1);

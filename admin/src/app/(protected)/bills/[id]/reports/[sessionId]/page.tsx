@@ -1,7 +1,7 @@
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-
+import { requirePageAccess } from "@/features/auth/server/lib/auth-server";
 import { getBillById } from "@/features/bills-edit/server/loaders/get-bill-by-id";
 import { SessionDetail } from "@/features/interview-reports/server/components/session-detail";
 import { getInterviewSessionDetail } from "@/features/interview-reports/server/loaders/get-interview-session-detail";
@@ -16,6 +16,7 @@ interface ReportDetailPageProps {
 export default async function ReportDetailPage({
   params,
 }: ReportDetailPageProps) {
+  const admin = await requirePageAccess("/bills/[id]/reports/[sessionId]");
   const { id, sessionId } = await params;
   const [bill, session] = await Promise.all([
     getBillById(id),
@@ -49,7 +50,11 @@ export default async function ReportDetailPage({
         </p>
       </div>
 
-      <SessionDetail session={session} billId={id} />
+      <SessionDetail
+        session={session}
+        billId={id}
+        canChangeVisibility={admin.role === "admin"}
+      />
     </div>
   );
 }

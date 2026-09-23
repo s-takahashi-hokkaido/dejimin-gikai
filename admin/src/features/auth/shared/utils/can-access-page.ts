@@ -79,10 +79,11 @@ export function getAllowedRoles(pathname: string): readonly AdminRole[] {
     case "edit":
     case "contents":
       return EDITOR_ROLES;
-    // インタビュー結果とトピック分析は出馬者も閲覧できる
+    // インタビュー結果とトピック分析は議員まで。
+    // 出馬者への開放は、公職選挙法の確認（タスク分割 T2 の人手作業）が済むまで保留する
     case "reports":
     case "topic-analysis":
-      return ALL_ROLES;
+      return EDITOR_ROLES;
     // インタビュー設定など、それ以外は運営者のみ
     default:
       return ADMIN_ONLY;

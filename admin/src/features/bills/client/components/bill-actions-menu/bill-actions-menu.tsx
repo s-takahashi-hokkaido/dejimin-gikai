@@ -15,15 +15,54 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { canAccessPage } from "@/features/auth/shared/utils/can-access-page";
+import type { AdminRole } from "@/features/auth/shared/utils/role";
 import { DeleteBillButton } from "./delete-bill-button";
 import { DuplicateBillButton } from "./duplicate-bill-button";
 
 interface BillActionsMenuProps {
   billId: string;
   billName: string;
+  role: AdminRole;
 }
 
-export function BillActionsMenu({ billId, billName }: BillActionsMenuProps) {
+export function BillActionsMenu({
+  billId,
+  billName,
+  role,
+}: BillActionsMenuProps) {
+  // 行き先の画面に入れるものだけを出す。判定は画面のガードと同じ canAccessPage
+  const links = [
+    { href: `/bills/${billId}/edit`, icon: Edit, label: "基本情報" },
+    {
+      href: `/bills/${billId}/contents/edit`,
+      icon: FileText,
+      label: "コンテンツ",
+    },
+    {
+      href: `/bills/${billId}/interview`,
+      icon: MessageCircle,
+      label: "インタビュー設定",
+    },
+    {
+      href: `/bills/${billId}/reports`,
+      icon: BarChart3,
+      label: "レポート一覧",
+    },
+    {
+      href: `/bills/${billId}/topic-analysis`,
+      icon: Sparkles,
+      label: "トピック解析",
+    },
+  ].filter((link) => canAccessPage(role, link.href));
+
+  // 複製・削除は運営者のみ
+  const canManage = role === "admin";
+
+  if (links.length === 0 && !canManage) {
+    return null;
+  }
+
   return (
     <Popover>
       <PopoverTrigger asChild>
@@ -33,39 +72,25 @@ export function BillActionsMenu({ billId, billName }: BillActionsMenuProps) {
       </PopoverTrigger>
       <PopoverContent className="w-48 p-1" align="end">
         <div className="flex flex-col">
-          <Link href={`/bills/${billId}/edit`}>
-            <Button variant="ghost" size="sm" className="w-full justify-start">
-              <Edit className="h-4 w-4 mr-2" />
-              基本情報
-            </Button>
-          </Link>
-          <Link href={`/bills/${billId}/contents/edit`}>
-            <Button variant="ghost" size="sm" className="w-full justify-start">
-              <FileText className="h-4 w-4 mr-2" />
-              コンテンツ
-            </Button>
-          </Link>
-          <Link href={`/bills/${billId}/interview`}>
-            <Button variant="ghost" size="sm" className="w-full justify-start">
-              <MessageCircle className="h-4 w-4 mr-2" />
-              インタビュー設定
-            </Button>
-          </Link>
-          <Link href={`/bills/${billId}/reports`}>
-            <Button variant="ghost" size="sm" className="w-full justify-start">
-              <BarChart3 className="h-4 w-4 mr-2" />
-              レポート一覧
-            </Button>
-          </Link>
-          <Link href={`/bills/${billId}/topic-analysis`}>
-            <Button variant="ghost" size="sm" className="w-full justify-start">
-              <Sparkles className="h-4 w-4 mr-2" />
-              トピック解析
-            </Button>
-          </Link>
-          <div className="my-1 border-t" />
-          <DuplicateBillButton billId={billId} billName={billName} />
-          <DeleteBillButton billId={billId} billName={billName} />
+          {links.map(({ href, icon: Icon, label }) => (
+            <Link key={href} href={href}>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="w-full justify-start"
+              >
+                <Icon className="h-4 w-4 mr-2" />
+                {label}
+              </Button>
+            </Link>
+          ))}
+          {canManage && (
+            <>
+              <div className="my-1 border-t" />
+              <DuplicateBillButton billId={billId} billName={billName} />
+              <DeleteBillButton billId={billId} billName={billName} />
+            </>
+          )}
         </div>
       </PopoverContent>
     </Popover>

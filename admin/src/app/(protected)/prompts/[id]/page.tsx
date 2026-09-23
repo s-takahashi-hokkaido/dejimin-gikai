@@ -1,8 +1,7 @@
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { requireRoleOrRedirect } from "@/features/auth/server/lib/auth-server";
-import { ADMIN_ONLY } from "@/features/auth/shared/utils/role";
+import { requirePageAccess } from "@/features/auth/server/lib/auth-server";
 import { PromptEditor } from "@/features/prompts/client/components/prompt-editor";
 import { PromptVersionList } from "@/features/prompts/client/components/prompt-version-list";
 import { loadPromptDetail } from "@/features/prompts/server/loaders/load-prompts";
@@ -16,7 +15,7 @@ interface PromptDetailPageProps {
 export default async function PromptDetailPage({
   params,
 }: PromptDetailPageProps) {
-  await requireRoleOrRedirect(ADMIN_ONLY);
+  await requirePageAccess("/prompts/[id]");
 
   const { id } = await params;
   const prompt = await loadPromptDetail(id);

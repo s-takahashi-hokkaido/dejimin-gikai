@@ -5,15 +5,8 @@ import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { BillActionsMenu } from "../bill-actions-menu/bill-actions-menu";
-import { PreviewButton } from "./preview-button";
-import { PublishStatusBadge } from "./publish-status-badge";
-import { FeaturedFilter } from "./featured-filter";
-import { PublishStatusFilter } from "./publish-status-filter";
-import { ReviewStatusFilter } from "./review-status-filter";
-import { SessionFilter } from "./session-filter";
-import { TagFilter } from "./tag-filter";
-import { ViewButton } from "./view-button";
+import { canAccessPage } from "@/features/auth/shared/utils/can-access-page";
+import type { AdminRole } from "@/features/auth/shared/utils/role";
 import { BILL_STATUS_CONFIG } from "../../../shared/constants/bill-config";
 import type {
   BillSortConfig,
@@ -22,6 +15,15 @@ import type {
   BillWithCouncilSession,
 } from "../../../shared/types";
 import { getBillStatusLabel } from "../../../shared/types";
+import { BillActionsMenu } from "../bill-actions-menu/bill-actions-menu";
+import { FeaturedFilter } from "./featured-filter";
+import { PreviewButton } from "./preview-button";
+import { PublishStatusBadge } from "./publish-status-badge";
+import { PublishStatusFilter } from "./publish-status-filter";
+import { ReviewStatusFilter } from "./review-status-filter";
+import { SessionFilter } from "./session-filter";
+import { TagFilter } from "./tag-filter";
+import { ViewButton } from "./view-button";
 
 type Session = { id: string; name: string };
 type Tag = { id: string; label: string };
@@ -106,6 +108,7 @@ function SortableHeadButton({
 }
 
 export function ResizableBillTable({
+  role,
   bills,
   sessions,
   tags,
@@ -116,6 +119,7 @@ export function ResizableBillTable({
   reviewStatus,
   isFeatured,
 }: {
+  role: AdminRole;
   bills: BillWithCouncilSession[];
   sessions: Session[];
   tags: Tag[];
@@ -238,7 +242,7 @@ export function ResizableBillTable({
           </thead>
           <tbody className="[&_tr:last-child]:border-0">
             {bills.map((bill) => (
-              <BillRow key={bill.id} bill={bill} />
+              <BillRow key={bill.id} bill={bill} role={role} />
             ))}
           </tbody>
         </table>
@@ -274,7 +278,17 @@ function ResizableHead({
   );
 }
 
-function BillRow({ bill }: { bill: BillWithCouncilSession }) {
+function BillRow({
+  bill,
+  role,
+}: {
+  bill: BillWithCouncilSession;
+  role: AdminRole;
+}) {
+  // 公開ステータスとプレビューURLの発行は運営者のみ
+  const isAdmin = role === "admin";
+  const editHref = `/bills/${bill.id}/edit`;
+
   return (
     <tr className="border-b transition-colors hover:bg-muted/50">
       <td className="p-2 align-middle overflow-hidden">
@@ -283,13 +297,19 @@ function BillRow({ bill }: { bill: BillWithCouncilSession }) {
         </span>
       </td>
       <td className="p-2 align-middle overflow-hidden">
-        <Link
-          href={`/bills/${bill.id}/edit`}
-          className="block truncate font-medium hover:underline"
-          title={bill.name}
-        >
-          {bill.name}
-        </Link>
+        {canAccessPage(role, editHref) ? (
+          <Link
+            href={editHref}
+            className="block truncate font-medium hover:underline"
+            title={bill.name}
+          >
+            {bill.name}
+          </Link>
+        ) : (
+          <span className="block truncate font-medium" title={bill.name}>
+            {bill.name}
+          </span>
+        )}
       </td>
       <td className="p-2 align-middle overflow-hidden">
         <span className="block truncate text-gray-600">
@@ -301,11 +321,13 @@ function BillRow({ bill }: { bill: BillWithCouncilSession }) {
           <PublishStatusBadge
             billId={bill.id}
             publishStatus={bill.publish_status}
+            editable={isAdmin}
           />
-          {(bill.publish_status === "draft" ||
-            bill.publish_status === "coming_soon") && (
-            <PreviewButton billId={bill.id} />
-          )}
+          {isAdmin &&
+            (bill.publish_status === "draft" ||
+              bill.publish_status === "coming_soon") && (
+              <PreviewButton billId={bill.id} />
+            )}
           {bill.publish_status === "published" && (
             <ViewButton billId={bill.id} />
           )}
@@ -322,7 +344,7 @@ function BillRow({ bill }: { bill: BillWithCouncilSession }) {
         </span>
       </td>
       <td className="p-2 align-middle">
-        <BillActionsMenu billId={bill.id} billName={bill.name} />
+        <BillActionsMenu billId={bill.id} billName={bill.name} role={role} />
       </td>
     </tr>
   );

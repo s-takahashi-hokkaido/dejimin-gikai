@@ -1,9 +1,11 @@
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
+import { requirePageAccess } from "@/features/auth/server/lib/auth-server";
 import { BillsMergePage } from "@/features/bills-merge/client/components/bills-merge-page";
 import { getDuplicateGroups } from "@/features/bills-merge/server/loaders/get-duplicate-groups";
 
 export default async function BillsMergeRoute() {
+  await requirePageAccess("/bills/merge");
   const groups = await getDuplicateGroups();
 
   return (

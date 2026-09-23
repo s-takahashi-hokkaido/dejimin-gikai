@@ -19,9 +19,15 @@ import { StanceBadge } from "./stance-badge";
 interface SessionDetailProps {
   session: InterviewSessionDetail;
   billId: string;
+  /** レポートの公開可否を切り替えられるか（運営者のみ） */
+  canChangeVisibility: boolean;
 }
 
-export function SessionDetail({ session, billId }: SessionDetailProps) {
+export function SessionDetail({
+  session,
+  billId,
+  canChangeVisibility,
+}: SessionDetailProps) {
   const status = getSessionStatus(session);
   const duration = formatDuration(session.started_at, session.completed_at);
   const report = session.interview_report;
@@ -80,7 +86,7 @@ export function SessionDetail({ session, billId }: SessionDetailProps) {
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle className="text-lg">レポート</CardTitle>
-          {report && (
+          {report && canChangeVisibility && (
             <ReportVisibilityToggle
               reportId={report.id}
               sessionId={session.id}

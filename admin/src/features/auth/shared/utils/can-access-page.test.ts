@@ -62,11 +62,18 @@ describe("canAccessPage", () => {
     it.each([
       "/bills",
       `/bills/${BILL_ID}`,
+    ])("議案一覧は閲覧できる: %s", (path) => {
+      expect(canAccessPage("candidate", path)).toBe(true);
+    });
+
+    // 公職選挙法の確認が済むまで出馬者には開かない
+    it.each([
       `/bills/${BILL_ID}/reports`,
       `/bills/${BILL_ID}/reports/session-1`,
       `/bills/${BILL_ID}/topic-analysis`,
-    ])("閲覧はできる: %s", (path) => {
-      expect(canAccessPage("candidate", path)).toBe(true);
+      `/bills/${BILL_ID}/topic-analysis/version-1`,
+    ])("インタビュー結果はまだ閲覧できない: %s", (path) => {
+      expect(canAccessPage("candidate", path)).toBe(false);
     });
 
     it.each([

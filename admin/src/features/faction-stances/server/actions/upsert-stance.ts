@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createAuditedAdminClient } from "@/features/audit-logs/server/lib/create-audited-admin-client";
-import { requireAdmin } from "@/features/auth/server/lib/auth-server";
+import { requireFactionStanceAccess } from "@/features/auth/server/lib/auth-server";
 import { invalidateWebCache } from "@/lib/utils/cache-invalidation";
 import type { StanceInput } from "../../shared/types";
 
@@ -12,7 +12,8 @@ export async function upsertStance(
   data: StanceInput
 ) {
   try {
-    const admin = await requireAdmin();
+    // 運営者は全会派、議員は自会派のみ
+    const admin = await requireFactionStanceAccess(factionId);
 
     const supabase = createAuditedAdminClient(admin);
 

@@ -37,11 +37,14 @@ import {
 interface BillContentsEditFormProps {
   bill: Bill;
   billContents: BillContent[];
+  /** 「Web検索で補完」（Claude CLI を使う）を出すか。運営者のみ */
+  canEnrich: boolean;
 }
 
 export function BillContentsEditForm({
   bill,
   billContents,
+  canEnrich,
 }: BillContentsEditFormProps) {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -139,25 +142,27 @@ export function BillContentsEditForm({
             <CardTitle>議案コンテンツ編集</CardTitle>
             <p className="text-sm text-gray-600 mt-1">{bill.name}</p>
           </div>
-          <Button
-            type="button"
-            variant="outline"
-            onClick={handleEnrich}
-            disabled={isEnriching || isSubmitting}
-            className="shrink-0"
-          >
-            {isEnriching ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Web検索中...
-              </>
-            ) : (
-              <>
-                <Search className="mr-2 h-4 w-4" />
-                Web検索で補完
-              </>
-            )}
-          </Button>
+          {canEnrich && (
+            <Button
+              type="button"
+              variant="outline"
+              onClick={handleEnrich}
+              disabled={isEnriching || isSubmitting}
+              className="shrink-0"
+            >
+              {isEnriching ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Web検索中...
+                </>
+              ) : (
+                <>
+                  <Search className="mr-2 h-4 w-4" />
+                  Web検索で補完
+                </>
+              )}
+            </Button>
+          )}
         </div>
         {isEnriching && (
           <p className="text-xs text-gray-500 mt-2">
