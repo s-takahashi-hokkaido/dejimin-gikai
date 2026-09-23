@@ -30,7 +30,6 @@ export type BillInGroup = {
   thumbnail_url: string | null;
   share_thumbnail_url: string | null;
   is_featured: boolean;
-  committee_id: string | null;
   council_session_id: string | null;
   created_at: string;
   contents: BillContent[];
@@ -51,7 +50,7 @@ export async function getDuplicateGroups(): Promise<DuplicateGroup[]> {
   const { data: bills, error } = await supabase
     .from("bills")
     .select(
-      "id, bill_number, name, status, status_note, publish_status, published_at, thumbnail_url, share_thumbnail_url, is_featured, committee_id, council_session_id, created_at"
+      "id, bill_number, name, status, status_note, publish_status, published_at, thumbnail_url, share_thumbnail_url, is_featured, council_session_id, created_at"
     )
     .neq("bill_number", "")
     .order("bill_number")

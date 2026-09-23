@@ -42,3 +42,28 @@ export function getStatusVariant(
       return "muted";
   }
 }
+
+/**
+ * 議案種別ごとの結果の言い方（決算は「認定」、人事は「同意」、専決処分は「承認」）。
+ * DB の status は approved / rejected に畳んでいるので、表示の時だけ言い換える
+ */
+const RESULT_LABELS_BY_BILL_TYPE: Record<
+  string,
+  { approved: string; rejected: string }
+> = {
+  bill_settlement: { approved: "認定", rejected: "不認定" },
+  bill_personnel: { approved: "同意", rejected: "不同意" },
+  bill_ratification: { approved: "承認", rejected: "不承認" },
+};
+
+/**
+ * 議案種別に合わせた結果のラベルを返す。言い換えが無い場合は null
+ */
+export function getResultLabelForBillType(
+  status: BillStatusEnum,
+  billType: string | null | undefined
+): string | null {
+  if (status !== "approved" && status !== "rejected") return null;
+  if (!billType) return null;
+  return RESULT_LABELS_BY_BILL_TYPE[billType]?.[status] ?? null;
+}

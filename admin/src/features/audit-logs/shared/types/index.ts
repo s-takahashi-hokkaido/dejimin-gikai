@@ -10,6 +10,7 @@ export const AUDIT_TARGET_TABLES = [
   "bills",
   "bill_contents",
   "faction_stances",
+  "bill_committees",
 ] as const;
 
 export type AuditTargetTable = (typeof AUDIT_TARGET_TABLES)[number];
@@ -20,8 +21,9 @@ export type AuditLogFilters = {
   page: number;
 };
 
-/** 一覧の1行。議案名・会派名は表示用に解決したもの */
+/** 一覧の1行。議案名・会派名・委員会名は表示用に解決したもの */
 export type AuditLogListItem = AuditLog & {
   billName: string | null;
   factionName: string | null;
+  committeeName: string | null;
 };

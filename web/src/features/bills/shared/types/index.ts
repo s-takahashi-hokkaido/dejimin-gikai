@@ -68,7 +68,6 @@ export type FeaturedTag = {
 export type BillWithContent = Bill & {
   bill_content?: BillContent;
   faction_stances?: FactionStance[];
-  committee_id: string | null;
   tags: BillTag[];
   featured_tag?: FeaturedTag;
 };

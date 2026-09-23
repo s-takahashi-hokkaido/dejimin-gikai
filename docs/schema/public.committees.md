@@ -8,9 +8,9 @@
 
 | Name | Type | Default | Nullable | Children | Parents | Comment |
 | ---- | ---- | ------- | -------- | -------- | ------- | ------- |
-| id | uuid | gen_random_uuid() | false | [public.bills](public.bills.md) |  |  |
+| id | uuid | gen_random_uuid() | false | [public.bill_committees](public.bill_committees.md) |  |  |
 | name | text |  | false |  |  | 委員会名 |
-| committee_type | committee_type_enum | 'standing'::committee_type_enum | false |  |  | 委員会種別（standing: 常任, parliamentary: 議会運営, special: 調査特別） |
+| committee_type | committee_type_enum | 'standing'::committee_type_enum | false |  |  | 委員会種別（standing: 常任, parliamentary: 議会運営, special: 特別委員会〈調査・予算・決算〉） |
 | description | text |  | true |  |  | 委員会説明 |
 | sort_order | integer | 0 | false |  |  | 表示順 |
 | is_active | boolean | true | false |  |  | 有効フラグ |
@@ -40,7 +40,7 @@
 ```mermaid
 erDiagram
 
-"public.bills" }o--o| "public.committees" : "FOREIGN KEY (committee_id) REFERENCES committees(id)"
+"public.bill_committees" }o--|| "public.committees" : "FOREIGN KEY (committee_id) REFERENCES committees(id) ON DELETE RESTRICT"
 
 "public.committees" {
   uuid id
@@ -52,26 +52,10 @@ erDiagram
   timestamp_with_time_zone created_at
   timestamp_with_time_zone updated_at
 }
-"public.bills" {
-  uuid id
-  text name
-  bill_status_enum status
-  text status_note
-  timestamp_with_time_zone published_at
-  timestamp_with_time_zone created_at
-  timestamp_with_time_zone updated_at
-  text thumbnail_url
-  bill_publish_status publish_status
-  boolean is_featured
-  text share_thumbnail_url
-  uuid council_session_id FK
+"public.bill_committees" {
+  uuid bill_id FK
   uuid committee_id FK
-  integer publish_status_order
-  text bill_number
-  integer status_order
-  text source_url
-  text bill_type
-  text__ discussion_overview_points
+  timestamp_with_time_zone created_at
 }
 ```
 

@@ -55,6 +55,9 @@ export function AuditLogEntry({ log }: { log: AuditLogListItem }) {
         {log.factionName && (
           <span className="text-gray-600">{log.factionName}</span>
         )}
+        {log.committeeName && (
+          <span className="text-gray-600">{log.committeeName}</span>
+        )}
       </div>
 
       <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">

@@ -23,6 +23,7 @@ import type { BillStatus } from "@/features/bills/shared/types";
 import type { Committee } from "@/features/committees/shared/types";
 import type { CouncilSession } from "@/features/council-sessions/shared/types";
 import type { BillCreateInput, BillType } from "../../shared/types";
+import { selectCommitteeOptions } from "../../shared/utils/select-committee-options";
 import { ThumbnailUpload } from "./thumbnail-upload";
 
 const BILL_STATUS_OPTIONS: Array<{ value: BillStatus; label: string }> = [
@@ -263,36 +264,49 @@ export function BillFormFields({
 
       <FormField
         control={control}
-        name="committee_id"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>委員会</FormLabel>
-            <Select
-              onValueChange={(v) => field.onChange(v === "__none__" ? null : v)}
-              value={field.value ?? "__none__"}
-            >
-              <FormControl>
-                <SelectTrigger>
-                  <SelectValue placeholder="委員会を選択" />
-                </SelectTrigger>
-              </FormControl>
-              <SelectContent>
-                <SelectItem value="__none__">なし</SelectItem>
-                {committees
-                  .filter((c) => c.is_active)
-                  .map((committee) => (
-                    <SelectItem key={committee.id} value={committee.id}>
-                      {committee.name}
-                    </SelectItem>
-                  ))}
-              </SelectContent>
-            </Select>
-            <FormDescription>
-              審査を担当する委員会を選択してください（任意）
-            </FormDescription>
-            <FormMessage />
-          </FormItem>
-        )}
+        name="committee_ids"
+        render={({ field }) => {
+          const selectedIds = field.value ?? [];
+          const toggle = (committeeId: string, checked: boolean) =>
+            field.onChange(
+              checked
+                ? [...selectedIds, committeeId]
+                : selectedIds.filter((id) => id !== committeeId)
+            );
+
+          return (
+            <FormItem>
+              <FormLabel>付託委員会</FormLabel>
+              <div className="grid grid-cols-1 gap-2 rounded-md border p-4 sm:grid-cols-2">
+                {selectCommitteeOptions(committees, selectedIds).map(
+                  (committee) => (
+                    <FormItem
+                      key={committee.id}
+                      className="flex flex-row items-center space-x-2 space-y-0"
+                    >
+                      <FormControl>
+                        <Checkbox
+                          checked={selectedIds.includes(committee.id)}
+                          onCheckedChange={(checked) =>
+                            toggle(committee.id, checked === true)
+                          }
+                        />
+                      </FormControl>
+                      <FormLabel className="font-normal">
+                        {committee.name}
+                        {!committee.is_active && "（無効）"}
+                      </FormLabel>
+                    </FormItem>
+                  )
+                )}
+              </div>
+              <FormDescription>
+                付託された委員会をすべて選択してください（任意）。補正予算は複数の常任委員会、決算は第一部・第二部の決算特別委員会に分割付託されることがあります
+              </FormDescription>
+              <FormMessage />
+            </FormItem>
+          );
+        }}
       />
 
       <FormField

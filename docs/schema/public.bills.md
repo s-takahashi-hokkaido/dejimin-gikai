@@ -8,7 +8,7 @@
 
 | Name | Type | Default | Nullable | Extra Definition | Children | Parents | Comment |
 | ---- | ---- | ------- | -------- | ---------------- | -------- | ------- | ------- |
-| id | uuid | uuid_generate_v4() | false |  | [public.bill_contents](public.bill_contents.md) [public.bill_discussions](public.bill_discussions.md) [public.bills_tags](public.bills_tags.md) [public.chats](public.chats.md) [public.faction_stances](public.faction_stances.md) [public.interview_configs](public.interview_configs.md) [public.preview_tokens](public.preview_tokens.md) [public.topic_analysis_versions](public.topic_analysis_versions.md) |  | ID |
+| id | uuid | uuid_generate_v4() | false |  | [public.bill_contents](public.bill_contents.md) [public.bill_discussions](public.bill_discussions.md) [public.bills_tags](public.bills_tags.md) [public.chats](public.chats.md) [public.faction_stances](public.faction_stances.md) [public.interview_configs](public.interview_configs.md) [public.preview_tokens](public.preview_tokens.md) [public.topic_analysis_versions](public.topic_analysis_versions.md) [public.bill_committees](public.bill_committees.md) |  | ID |
 | name | text |  | false |  |  |  | 議案名 |
 | status | bill_status_enum |  | false |  |  |  | 議案のステータス |
 | status_note | text |  | true |  |  |  | ステータス備考 |
@@ -20,7 +20,6 @@
 | is_featured | boolean | false | false |  |  |  | Flag to indicate if this bill is featured on the homepage |
 | share_thumbnail_url | text |  | true |  |  |  | シェア用OGP画像URL |
 | council_session_id | uuid |  | true |  |  | [public.council_sessions](public.council_sessions.md) | 紐付けられた会期ID |
-| committee_id | uuid |  | true |  |  | [public.committees](public.committees.md) | 委員会ID |
 | publish_status_order | integer |  | true | GENERATED ALWAYS AS <br />CASE publish_status<br />    WHEN 'draft'::bill_publish_status THEN 0<br />    WHEN 'coming_soon'::bill_publish_status THEN 1<br />    WHEN 'published'::bill_publish_status THEN 2<br />    ELSE NULL::integer<br />END STORED |  |  | 公開状態ソート順(draft → coming_soon → published の順。Generated Column) |
 | bill_number | text | ''::text | false |  |  |  | 議案番号（例: 「第1号」「報告第1号」など）。空文字は未設定を示す。 |
 | status_order | integer |  | true | GENERATED ALWAYS AS <br />CASE status<br />    WHEN 'approved'::bill_status_enum THEN 0<br />    WHEN 'adopted'::bill_status_enum THEN 0<br />    WHEN 'reported'::bill_status_enum THEN 0<br />    WHEN 'partially_adopted'::bill_status_enum THEN 1<br />    WHEN 'rejected'::bill_status_enum THEN 2<br />    WHEN 'plenary_session'::bill_status_enum THEN 3<br />    WHEN 'in_committee'::bill_status_enum THEN 4<br />    WHEN 'submitted'::bill_status_enum THEN 5<br />    WHEN 'preparing'::bill_status_enum THEN 6<br />    ELSE NULL::integer<br />END STORED |  |  |  |
@@ -34,7 +33,6 @@
 | ---- | ---- | ---------- |
 | bills_bill_type_check | CHECK | CHECK ((bill_type = ANY (ARRAY['bill'::text, 'bill_settlement'::text, 'bill_personnel'::text, 'bill_ratification'::text, 'consultation'::text, 'opinion'::text, 'petition'::text, 'appeal'::text, 'report'::text, 'resolution'::text, 'member_bill'::text]))) |
 | bills_pkey | PRIMARY KEY | PRIMARY KEY (id) |
-| bills_committee_id_fkey | FOREIGN KEY | FOREIGN KEY (committee_id) REFERENCES committees(id) |
 | bills_council_session_id_fkey | FOREIGN KEY | FOREIGN KEY (council_session_id) REFERENCES council_sessions(id) ON DELETE SET NULL |
 
 ## Indexes
@@ -43,7 +41,6 @@
 | ---- | ---------- |
 | bills_pkey | CREATE UNIQUE INDEX bills_pkey ON public.bills USING btree (id) |
 | bills_session_number_type_unique | CREATE UNIQUE INDEX bills_session_number_type_unique ON public.bills USING btree (council_session_id, bill_number, bill_type) WHERE (bill_number <> ''::text) |
-| idx_bills_committee_id | CREATE INDEX idx_bills_committee_id ON public.bills USING btree (committee_id) |
 | idx_bills_council_session_id | CREATE INDEX idx_bills_council_session_id ON public.bills USING btree (council_session_id) |
 | idx_bills_is_featured | CREATE INDEX idx_bills_is_featured ON public.bills USING btree (is_featured) WHERE (is_featured = true) |
 | idx_bills_publish_status | CREATE INDEX idx_bills_publish_status ON public.bills USING btree (publish_status) |
@@ -72,8 +69,8 @@ erDiagram
 "public.interview_configs" }o--|| "public.bills" : "FOREIGN KEY (bill_id) REFERENCES bills(id) ON DELETE CASCADE"
 "public.preview_tokens" }o--|| "public.bills" : "FOREIGN KEY (bill_id) REFERENCES bills(id) ON DELETE CASCADE"
 "public.topic_analysis_versions" }o--|| "public.bills" : "FOREIGN KEY (bill_id) REFERENCES bills(id) ON DELETE CASCADE"
+"public.bill_committees" }o--|| "public.bills" : "FOREIGN KEY (bill_id) REFERENCES bills(id) ON DELETE CASCADE"
 "public.bills" }o--o| "public.council_sessions" : "FOREIGN KEY (council_session_id) REFERENCES council_sessions(id) ON DELETE SET NULL"
-"public.bills" }o--o| "public.committees" : "FOREIGN KEY (committee_id) REFERENCES committees(id)"
 
 "public.bills" {
   uuid id
@@ -88,7 +85,6 @@ erDiagram
   boolean is_featured
   text share_thumbnail_url
   uuid council_session_id FK
-  uuid committee_id FK
   integer publish_status_order
   text bill_number
   integer status_order
@@ -181,6 +177,11 @@ erDiagram
   timestamp_with_time_zone completed_at
   jsonb phase_data
 }
+"public.bill_committees" {
+  uuid bill_id FK
+  uuid committee_id FK
+  timestamp_with_time_zone created_at
+}
 "public.council_sessions" {
   uuid id
   text name
@@ -191,16 +192,6 @@ erDiagram
   text slug
   text council_url
   boolean is_active
-}
-"public.committees" {
-  uuid id
-  text name
-  committee_type_enum committee_type
-  text description
-  integer sort_order
-  boolean is_active
-  timestamp_with_time_zone created_at
-  timestamp_with_time_zone updated_at
 }
 ```
 

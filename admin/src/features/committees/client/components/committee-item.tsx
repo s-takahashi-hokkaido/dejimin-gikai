@@ -19,7 +19,12 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { deleteCommittee } from "../../server/actions/delete-committee";
 import { updateCommittee } from "../../server/actions/update-committee";
-import type { CommitteeWithBillCount } from "../../shared/types";
+import {
+  COMMITTEE_TYPE_LABELS,
+  type CommitteeType,
+  type CommitteeWithBillCount,
+} from "../../shared/types";
+import { CommitteeTypeSelect } from "./committee-type-select";
 
 type CommitteeItemProps = {
   committee: CommitteeWithBillCount;
@@ -28,6 +33,9 @@ type CommitteeItemProps = {
 export function CommitteeItem({ committee }: CommitteeItemProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [editName, setEditName] = useState(committee.name);
+  const [editCommitteeType, setEditCommitteeType] = useState<CommitteeType>(
+    committee.committee_type
+  );
   const [editDescription, setEditDescription] = useState(
     committee.description ?? ""
   );
@@ -55,6 +63,7 @@ export function CommitteeItem({ committee }: CommitteeItemProps) {
       const result = await updateCommittee({
         id: committee.id,
         name: editName.trim(),
+        committee_type: editCommitteeType,
         description: editDescription.trim() || null,
         sort_order: sortOrderNum,
         is_active: editIsActive,
@@ -95,6 +104,7 @@ export function CommitteeItem({ committee }: CommitteeItemProps) {
 
   const handleCancel = () => {
     setEditName(committee.name);
+    setEditCommitteeType(committee.committee_type);
     setEditDescription(committee.description ?? "");
     setEditSortOrder(committee.sort_order.toString());
     setEditIsActive(committee.is_active);
@@ -123,6 +133,15 @@ export function CommitteeItem({ committee }: CommitteeItemProps) {
                 type="number"
                 value={editSortOrder}
                 onChange={(e) => setEditSortOrder(e.target.value)}
+                disabled={isSubmitting}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label>種別</Label>
+              <CommitteeTypeSelect
+                value={editCommitteeType}
+                onChange={setEditCommitteeType}
                 disabled={isSubmitting}
               />
             </div>
@@ -185,6 +204,7 @@ export function CommitteeItem({ committee }: CommitteeItemProps) {
             )}
 
             <div className="flex items-center gap-4 text-sm text-gray-500">
+              <span>{COMMITTEE_TYPE_LABELS[committee.committee_type]}</span>
               <span>表示順: {committee.sort_order}</span>
               <span>議案: {committee.bill_count}件</span>
             </div>

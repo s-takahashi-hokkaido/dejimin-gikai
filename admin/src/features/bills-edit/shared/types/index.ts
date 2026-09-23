@@ -61,7 +61,8 @@ const billBaseSchema = z.object({
   thumbnail_url: z.string().nullable().optional(),
   share_thumbnail_url: z.string().nullable().optional(),
   is_featured: z.boolean(),
-  committee_id: z.string().uuid().nullable().optional(),
+  // 付託委員会（補正予算や決算は複数の委員会に付託される）。bills の列ではなく bill_committees に保存する
+  committee_ids: z.array(z.string().uuid()),
   council_session_id: z.string().uuid().nullable().optional(),
 });
 

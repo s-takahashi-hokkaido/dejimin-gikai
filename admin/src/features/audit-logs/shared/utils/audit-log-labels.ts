@@ -4,6 +4,7 @@ export const AUDIT_TABLE_LABELS: Record<AuditTargetTable, string> = {
   bills: "議案マスタ",
   bill_contents: "議案コンテンツ",
   faction_stances: "会派見解",
+  bill_committees: "付託委員会",
 };
 
 const OPERATION_LABELS: Record<string, string> = {

@@ -10,6 +10,7 @@ import {
 import {
   findAuditLogs,
   findBillNamesByIds,
+  findCommitteeNamesByIds,
   findFactionNamesByIds,
 } from "../repositories/audit-log-repository";
 
@@ -27,14 +28,15 @@ export async function loadAuditLogs(filters: AuditLogFilters): Promise<{
     limit: AUDIT_LOGS_PER_PAGE,
   });
 
-  const { billIds, factionIds } = collectReferencedIds(logs);
-  const [billNames, factionNames] = await Promise.all([
+  const { billIds, factionIds, committeeIds } = collectReferencedIds(logs);
+  const [billNames, factionNames, committeeNames] = await Promise.all([
     findBillNamesByIds(billIds),
     findFactionNamesByIds(factionIds),
+    findCommitteeNamesByIds(committeeIds),
   ]);
 
   return {
-    items: toAuditLogListItems(logs, billNames, factionNames),
+    items: toAuditLogListItems(logs, billNames, factionNames, committeeNames),
     total,
     totalPages: Math.max(1, Math.ceil(total / AUDIT_LOGS_PER_PAGE)),
   };

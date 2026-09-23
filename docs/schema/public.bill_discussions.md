@@ -75,7 +75,6 @@ erDiagram
   boolean is_featured
   text share_thumbnail_url
   uuid council_session_id FK
-  uuid committee_id FK
   integer publish_status_order
   text bill_number
   integer status_order

@@ -15,7 +15,6 @@ const makeBill = (
   name: "テスト議案",
   is_featured: false,
   council_session_id: null,
-  committee_id: null,
   publish_status: "published",
   published_at: null,
   share_thumbnail_url: null,

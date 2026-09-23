@@ -79,6 +79,24 @@ export async function findBillNamesByIds(ids: string[]) {
   return new Map((data ?? []).map((bill) => [bill.id, bill.name]));
 }
 
+export async function findCommitteeNamesByIds(ids: string[]) {
+  if (ids.length === 0) return new Map<string, string>();
+
+  const supabase = createAdminClient();
+  const { data, error } = await supabase
+    .from("committees")
+    .select("id, name")
+    .in("id", ids);
+
+  if (error) {
+    throw new Error(`Failed to fetch committee names: ${error.message}`);
+  }
+
+  return new Map(
+    (data ?? []).map((committee) => [committee.id, committee.name])
+  );
+}
+
 export async function findFactionNamesByIds(ids: string[]) {
   if (ids.length === 0) return new Map<string, string>();
 

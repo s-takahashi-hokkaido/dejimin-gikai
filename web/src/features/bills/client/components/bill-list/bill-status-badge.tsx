@@ -1,8 +1,10 @@
 import { Badge } from "@/components/ui/badge";
 import type { BillStatusEnum } from "../../../shared/types";
+import { getResultLabelForBillType } from "../../../shared/utils/bill-status";
 
 interface BillStatusBadgeProps {
   status: BillStatusEnum;
+  billType?: string | null;
   className?: string;
 }
 
@@ -29,7 +31,11 @@ function getCardStatusLabel(status: BillStatusEnum): string {
   }
 }
 
-export function BillStatusBadge({ status, className }: BillStatusBadgeProps) {
+export function BillStatusBadge({
+  status,
+  billType,
+  className,
+}: BillStatusBadgeProps) {
   const getStatusVariant = (s: BillStatusEnum) => {
     switch (s) {
       case "submitted":
@@ -50,7 +56,8 @@ export function BillStatusBadge({ status, className }: BillStatusBadgeProps) {
 
   return (
     <Badge variant={getStatusVariant(status)} className={className}>
-      {getCardStatusLabel(status)}
+      {getResultLabelForBillType(status, billType) ??
+        getCardStatusLabel(status)}
     </Badge>
   );
 }

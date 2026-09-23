@@ -7,6 +7,7 @@ import {
 
 const BILL_ID = "b0000000-0000-0000-0000-000000000001";
 const FACTION_ID = "f0000000-0000-0000-0000-000000000001";
+const COMMITTEE_ID = "c0000000-0000-0000-0000-000000000001";
 
 function makeLog(overrides: Partial<AuditLog>): AuditLog {
   return {
@@ -33,11 +34,27 @@ const stanceLog = makeLog({
   before_data: { bill_id: BILL_ID, faction_id: FACTION_ID, type: "for" },
 });
 
+const committeeLog = makeLog({
+  action: "bill_committees.insert",
+  target_table: "bill_committees",
+  target_id: null,
+  after_data: { bill_id: BILL_ID, committee_id: COMMITTEE_ID },
+});
+
 describe("collectReferencedIds", () => {
   it("議案IDと会派IDを重複なく集める（削除なら変更前から）", () => {
     expect(collectReferencedIds([makeLog({}), stanceLog, stanceLog])).toEqual({
       billIds: [BILL_ID],
       factionIds: [FACTION_ID],
+      committeeIds: [],
+    });
+  });
+
+  it("付託委員会の履歴から委員会IDを集める", () => {
+    expect(collectReferencedIds([committeeLog])).toEqual({
+      billIds: [BILL_ID],
+      factionIds: [],
+      committeeIds: [COMMITTEE_ID],
     });
   });
 });
@@ -47,7 +64,8 @@ describe("toAuditLogListItems", () => {
     const [item] = toAuditLogListItems(
       [stanceLog],
       new Map([[BILL_ID, "議案A"]]),
-      new Map([[FACTION_ID, "会派X"]])
+      new Map([[FACTION_ID, "会派X"]]),
+      new Map()
     );
 
     expect(item.billName).toBe("議案A");
@@ -63,6 +81,7 @@ describe("toAuditLogListItems", () => {
         }),
       ],
       new Map(),
+      new Map(),
       new Map()
     );
 
@@ -70,9 +89,27 @@ describe("toAuditLogListItems", () => {
   });
 
   it("引けなければ null", () => {
-    const [item] = toAuditLogListItems([stanceLog], new Map(), new Map());
+    const [item] = toAuditLogListItems(
+      [stanceLog],
+      new Map(),
+      new Map(),
+      new Map()
+    );
 
     expect(item.billName).toBeNull();
     expect(item.factionName).toBeNull();
+    expect(item.committeeName).toBeNull();
+  });
+
+  it("付託委員会の履歴に委員会名を付ける", () => {
+    const [item] = toAuditLogListItems(
+      [committeeLog],
+      new Map([[BILL_ID, "議案A"]]),
+      new Map(),
+      new Map([[COMMITTEE_ID, "第一部決算特別委員会"]])
+    );
+
+    expect(item.billName).toBe("議案A");
+    expect(item.committeeName).toBe("第一部決算特別委員会");
   });
 });

@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { getCardStatusLabel, getStatusVariant } from "./bill-status";
+import {
+  getCardStatusLabel,
+  getResultLabelForBillType,
+  getStatusVariant,
+} from "./bill-status";
 
 describe("getCardStatusLabel", () => {
   it.each([
@@ -57,5 +61,35 @@ describe("getStatusVariant", () => {
 
   it("preparing → muted", () => {
     expect(getStatusVariant("preparing")).toBe("muted");
+  });
+});
+
+describe("getResultLabelForBillType", () => {
+  it.each([
+    ["bill_settlement", "approved", "認定"],
+    ["bill_settlement", "rejected", "不認定"],
+    ["bill_personnel", "approved", "同意"],
+    ["bill_personnel", "rejected", "不同意"],
+    ["bill_ratification", "approved", "承認"],
+    ["bill_ratification", "rejected", "不承認"],
+  ] as const)("%s の %s → %s", (billType, status, expected) => {
+    expect(getResultLabelForBillType(status, billType)).toBe(expected);
+  });
+
+  it("言い換えの無い種別は null（可決・否決のまま）", () => {
+    expect(getResultLabelForBillType("approved", "bill")).toBeNull();
+    expect(getResultLabelForBillType("rejected", "opinion")).toBeNull();
+  });
+
+  it("結果が出ていないステータスは null", () => {
+    expect(
+      getResultLabelForBillType("in_committee", "bill_settlement")
+    ).toBeNull();
+    expect(getResultLabelForBillType("adopted", "bill_settlement")).toBeNull();
+  });
+
+  it("種別が無い場合は null", () => {
+    expect(getResultLabelForBillType("approved", null)).toBeNull();
+    expect(getResultLabelForBillType("approved", undefined)).toBeNull();
   });
 });

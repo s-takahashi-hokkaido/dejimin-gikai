@@ -169,6 +169,37 @@ export async function createBillContents(
   }
 }
 
+/**
+ * 付託委員会を別の議案にコピーする（議案の複製用）
+ */
+export async function copyBillCommittees(
+  fromBillId: string,
+  toBillId: string,
+  actor: AuditActor
+) {
+  const supabase = createAuditedAdminClient(actor);
+  const { data, error } = await supabase
+    .from("bill_committees")
+    .select("committee_id")
+    .eq("bill_id", fromBillId);
+
+  if (error) {
+    throw new Error(`Failed to fetch bill committees: ${error.message}`);
+  }
+  if (!data || data.length === 0) return;
+
+  const { error: insertError } = await supabase.from("bill_committees").insert(
+    data.map(({ committee_id }) => ({
+      bill_id: toBillId,
+      committee_id,
+    }))
+  );
+
+  if (insertError) {
+    throw new Error(`Failed to copy bill committees: ${insertError.message}`);
+  }
+}
+
 export async function findPreviewToken(billId: string) {
   const supabase = createAdminClient();
   const { data, error } = await supabase

@@ -56,7 +56,7 @@ export async function createBillRecord(
   actor: AuditActor
 ) {
   const supabase = createAuditedAdminClient(actor);
-  const { error } = await supabase
+  const { data, error } = await supabase
     .from("bills")
     .insert(insertData)
     .select("id")
@@ -65,6 +65,8 @@ export async function createBillRecord(
   if (error) {
     throw new Error(mapBillDbError(error, "作成"));
   }
+
+  return data;
 }
 
 export async function updateBillRecord(
@@ -80,6 +82,39 @@ export async function updateBillRecord(
 
   if (error) {
     throw new Error(mapBillDbError(error, "更新"));
+  }
+}
+
+export async function findBillCommitteeIdsByBillId(billId: string) {
+  const supabase = createAdminClient();
+  const { data, error } = await supabase
+    .from("bill_committees")
+    .select("committee_id")
+    .eq("bill_id", billId);
+
+  if (error) {
+    throw new Error(`Failed to fetch bill committees: ${error.message}`);
+  }
+
+  return data?.map((item) => item.committee_id) ?? [];
+}
+
+/**
+ * 議案の付託委員会を committeeIds に置き換える（削除と追加を1トランザクションで行う）
+ */
+export async function replaceBillCommittees(
+  billId: string,
+  committeeIds: string[],
+  actor: AuditActor
+) {
+  const supabase = createAuditedAdminClient(actor);
+  const { error } = await supabase.rpc("replace_bill_committees", {
+    p_bill_id: billId,
+    p_committee_ids: committeeIds,
+  });
+
+  if (error) {
+    throw new Error(`付託委員会の保存に失敗しました: ${error.message}`);
   }
 }
 

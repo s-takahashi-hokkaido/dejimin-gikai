@@ -7,7 +7,10 @@ import {
 } from "@/lib/utils/cache-invalidation";
 import { getErrorMessage } from "@/lib/utils/get-error-message";
 import { type BillUpdateInput, billUpdateSchema } from "../../shared/types";
-import { updateBillRecord } from "../repositories/bill-edit-repository";
+import {
+  replaceBillCommittees,
+  updateBillRecord,
+} from "../repositories/bill-edit-repository";
 
 export async function updateBill(id: string, input: BillUpdateInput) {
   try {
@@ -15,23 +18,26 @@ export async function updateBill(id: string, input: BillUpdateInput) {
     const admin = await requireAdmin();
 
     // バリデーション
-    const validatedData = billUpdateSchema.parse(input);
+    const { committee_ids, ...billData } = billUpdateSchema.parse(input);
 
     // Supabaseで更新
     await updateBillRecord(
       id,
       {
-        ...validatedData,
-        published_at: validatedData.published_at
-          ? new Date(validatedData.published_at).toISOString()
+        ...billData,
+        published_at: billData.published_at
+          ? new Date(billData.published_at).toISOString()
           : null,
         updated_at: new Date().toISOString(),
       },
       admin
     );
-
-    // web側のキャッシュを無効化
-    await invalidateWebCache([WEB_CACHE_TAGS.BILLS]);
+    try {
+      await replaceBillCommittees(id, committee_ids, admin);
+    } finally {
+      // 付託委員会の保存に失敗しても基本情報は更新済みなので、web側のキャッシュは無効化する
+      await invalidateWebCache([WEB_CACHE_TAGS.BILLS]);
+    }
   } catch (error) {
     console.error("Update bill error:", error);
     throw new Error(

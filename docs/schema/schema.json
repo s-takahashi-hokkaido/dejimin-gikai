@@ -694,12 +694,6 @@
           "comment": "紐付けられた会期ID"
         },
         {
-          "name": "committee_id",
-          "type": "uuid",
-          "nullable": true,
-          "comment": "委員会ID"
-        },
-        {
           "name": "publish_status_order",
           "type": "integer",
           "nullable": true,
@@ -757,14 +751,6 @@
             "council_session_id",
             "bill_number",
             "bill_type"
-          ]
-        },
-        {
-          "name": "idx_bills_committee_id",
-          "def": "CREATE INDEX idx_bills_committee_id ON public.bills USING btree (committee_id)",
-          "table": "public.bills",
-          "columns": [
-            "committee_id"
           ]
         },
         {
@@ -842,19 +828,6 @@
           "table": "public.bills",
           "referenced_table": "",
           "columns": [
-            "id"
-          ]
-        },
-        {
-          "name": "bills_committee_id_fkey",
-          "type": "FOREIGN KEY",
-          "def": "FOREIGN KEY (committee_id) REFERENCES committees(id)",
-          "table": "public.bills",
-          "referenced_table": "public.committees",
-          "columns": [
-            "committee_id"
-          ],
-          "referenced_columns": [
             "id"
           ]
         },
@@ -1575,7 +1548,7 @@
           "type": "committee_type_enum",
           "nullable": false,
           "default": "'standing'::committee_type_enum",
-          "comment": "委員会種別（standing: 常任, parliamentary: 議会運営, special: 調査特別）"
+          "comment": "委員会種別（standing: 常任, parliamentary: 議会運営, special: 特別委員会〈調査・予算・決算〉）"
         },
         {
           "name": "description",
@@ -4158,7 +4131,7 @@
     {
       "name": "public.admin_audit_logs",
       "type": "BASE TABLE",
-      "comment": "管理画面からの変更履歴（議案・議案コンテンツ・会派見解）",
+      "comment": "管理画面からの変更履歴（議案・議案コンテンツ・会派見解・付託委員会）",
       "columns": [
         {
           "name": "id",
@@ -4302,6 +4275,96 @@
           ]
         }
       ]
+    },
+    {
+      "name": "public.bill_committees",
+      "type": "BASE TABLE",
+      "comment": "議案の付託委員会（1議案に複数の委員会を付託できる）",
+      "columns": [
+        {
+          "name": "bill_id",
+          "type": "uuid",
+          "nullable": false,
+          "comment": "議案ID"
+        },
+        {
+          "name": "committee_id",
+          "type": "uuid",
+          "nullable": false,
+          "comment": "委員会ID"
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "nullable": false,
+          "default": "now()",
+          "comment": "作成日時"
+        }
+      ],
+      "indexes": [
+        {
+          "name": "bill_committees_pkey",
+          "def": "CREATE UNIQUE INDEX bill_committees_pkey ON public.bill_committees USING btree (bill_id, committee_id)",
+          "table": "public.bill_committees",
+          "columns": [
+            "bill_id",
+            "committee_id"
+          ]
+        },
+        {
+          "name": "bill_committees_committee_id_idx",
+          "def": "CREATE INDEX bill_committees_committee_id_idx ON public.bill_committees USING btree (committee_id)",
+          "table": "public.bill_committees",
+          "columns": [
+            "committee_id"
+          ]
+        }
+      ],
+      "constraints": [
+        {
+          "name": "bill_committees_bill_id_fkey",
+          "type": "FOREIGN KEY",
+          "def": "FOREIGN KEY (bill_id) REFERENCES bills(id) ON DELETE CASCADE",
+          "table": "public.bill_committees",
+          "referenced_table": "public.bills",
+          "columns": [
+            "bill_id"
+          ],
+          "referenced_columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "bill_committees_committee_id_fkey",
+          "type": "FOREIGN KEY",
+          "def": "FOREIGN KEY (committee_id) REFERENCES committees(id) ON DELETE RESTRICT",
+          "table": "public.bill_committees",
+          "referenced_table": "public.committees",
+          "columns": [
+            "committee_id"
+          ],
+          "referenced_columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "bill_committees_pkey",
+          "type": "PRIMARY KEY",
+          "def": "PRIMARY KEY (bill_id, committee_id)",
+          "table": "public.bill_committees",
+          "referenced_table": "",
+          "columns": [
+            "bill_id",
+            "committee_id"
+          ]
+        }
+      ],
+      "triggers": [
+        {
+          "name": "bill_committees_audit_log",
+          "def": "CREATE TRIGGER bill_committees_audit_log AFTER INSERT OR DELETE OR UPDATE ON public.bill_committees FOR EACH ROW EXECUTE FUNCTION record_admin_audit_log()"
+        }
+      ]
     }
   ],
   "relations": [
@@ -4330,19 +4393,6 @@
       ],
       "parent_cardinality": "exactly_one",
       "def": "FOREIGN KEY (bill_id) REFERENCES bills(id) ON DELETE CASCADE"
-    },
-    {
-      "table": "public.bills",
-      "columns": [
-        "committee_id"
-      ],
-      "cardinality": "zero_or_more",
-      "parent_table": "public.committees",
-      "parent_columns": [
-        "id"
-      ],
-      "parent_cardinality": "zero_or_one",
-      "def": "FOREIGN KEY (committee_id) REFERENCES committees(id)"
     },
     {
       "table": "public.bills",
@@ -4694,6 +4744,32 @@
       ],
       "parent_cardinality": "zero_or_one",
       "def": "FOREIGN KEY (faction_id) REFERENCES factions(id) ON DELETE RESTRICT"
+    },
+    {
+      "table": "public.bill_committees",
+      "columns": [
+        "bill_id"
+      ],
+      "cardinality": "zero_or_more",
+      "parent_table": "public.bills",
+      "parent_columns": [
+        "id"
+      ],
+      "parent_cardinality": "exactly_one",
+      "def": "FOREIGN KEY (bill_id) REFERENCES bills(id) ON DELETE CASCADE"
+    },
+    {
+      "table": "public.bill_committees",
+      "columns": [
+        "committee_id"
+      ],
+      "cardinality": "zero_or_more",
+      "parent_table": "public.committees",
+      "parent_columns": [
+        "id"
+      ],
+      "parent_cardinality": "exactly_one",
+      "def": "FOREIGN KEY (committee_id) REFERENCES committees(id) ON DELETE RESTRICT"
     }
   ],
   "functions": [
@@ -4743,6 +4819,12 @@
       "name": "public.record_admin_audit_log",
       "return_type": "trigger",
       "arguments": "",
+      "type": "FUNCTION"
+    },
+    {
+      "name": "public.replace_bill_committees",
+      "return_type": "void",
+      "arguments": "p_bill_id uuid, p_committee_ids uuid[]",
       "type": "FUNCTION"
     }
   ],
