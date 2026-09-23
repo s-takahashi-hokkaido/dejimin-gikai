@@ -1,9 +1,12 @@
-import type { PromptProvider } from "@/lib/prompt";
-import type { CompiledPrompt, PromptVariables } from "@/lib/prompt";
+import type {
+  CompiledPrompt,
+  PromptProvider,
+  PromptVariables,
+} from "@/lib/prompt";
 
 /**
  * テスト用の PromptProvider モック実装。
- * Langfuse への通信を行わず、固定のプロンプト文字列を返す。
+ * DB を参照せず、固定のプロンプト文字列を返す。
  */
 export class MockPromptProvider implements PromptProvider {
   private readonly content: string;
@@ -18,7 +21,7 @@ export class MockPromptProvider implements PromptProvider {
   ): Promise<CompiledPrompt> {
     return {
       content: this.content,
-      metadata: "{}",
+      versionId: null,
     };
   }
 }

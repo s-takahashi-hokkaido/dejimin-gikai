@@ -3,9 +3,9 @@ import type { Database } from "@dejimin-gikai/supabase";
 import {
   convertToModelMessages,
   gateway,
+  type LanguageModel,
   streamText,
   tool,
-  type LanguageModel,
   type UIMessage,
 } from "ai";
 import { z } from "zod";
@@ -18,13 +18,15 @@ import {
 import { ChatError, ChatErrorCode } from "@/features/chat/shared/types/errors";
 import { findPublicInterviewConfigByBillId } from "@/features/interview-config/server/repositories/interview-config-repository";
 import { findLatestNonArchivedSession } from "@/features/interview-session/server/repositories/interview-session-repository";
-import { env } from "@/lib/env";
-import {
-  type CompiledPrompt,
-  createPromptProvider,
-  type PromptProvider,
-} from "@/lib/prompt";
 import { AI_MODELS } from "@/lib/ai/models";
+import { env } from "@/lib/env";
+import { createPromptProvider, type PromptProvider } from "@/lib/prompt";
+import {
+  buildChatLogRows,
+  extractLatestUserText,
+  normalizeChatPageType,
+} from "../../shared/utils/chat-log";
+import { insertChatLogs } from "../repositories/chat-log-repository";
 import { checkDailyCostGuard, recordChatUsage } from "./cost-tracker";
 
 export type BudgetChatContext = {
@@ -122,6 +124,8 @@ export async function handleChatRequest({
   // Build tools configuration
   const tools = buildTools(shouldSuggestInterview);
 
+  const userText = extractLatestUserText(messages);
+
   // Generate streaming response
   try {
     const result = streamText({
@@ -144,17 +148,45 @@ export async function handleChatRequest({
         } catch (usageError) {
           console.error("Failed to record chat usage:", usageError);
         }
+
+        // 会話ログの保存に失敗してもチャットは止めない
+        try {
+          await insertChatLogs(
+            buildChatLogRows({
+              context: {
+                userId,
+                sessionId: context.sessionId,
+                pageType: normalizeChatPageType(context.pageContext?.type),
+                billId: context.billContext?.id ?? null,
+                promptName,
+                promptVersionId: promptResult.versionId,
+                model: modelName,
+              },
+              userText,
+              assistantText: event.text,
+            })
+          );
+        } catch (logError) {
+          console.error("Failed to save chat logs:", logError);
+        }
       },
-      experimental_telemetry: {
-        isEnabled: true,
-        functionId: promptName,
-        metadata: buildTelemetryMetadata(context, promptResult, userId),
+      // ストリーミング中のエラーは外側の try/catch では捕まらないため、ここで入力とあわせて記録する
+      onError: ({ error }) => {
+        console.error("LLM stream error:", {
+          promptName,
+          model: modelName,
+          userId,
+          sessionId: context.sessionId,
+          billId: context.billContext?.id ?? null,
+          userText,
+          error,
+        });
       },
     });
 
     return result.toUIMessageStreamResponse();
   } catch (error) {
-    console.error("LLM generation error:", error);
+    console.error("LLM generation error:", { promptName, userText, error });
     throw new ChatError(
       ChatErrorCode.LLM_GENERATION_FAILED,
       error instanceof Error ? error.message : String(error)
@@ -187,7 +219,7 @@ async function buildPrompt(
   context: ChatMessageMetadata,
   promptProvider: PromptProvider
 ) {
-  // Budget チャットはインラインプロンプトを使用（Langfuse登録不要）
+  // Budget チャットはインラインプロンプトを使用（DB 管理外）
   if (context.pageContext?.type === "budget") {
     return buildBudgetPrompt(context);
   }
@@ -209,7 +241,7 @@ async function buildPrompt(
           billContent: context.billContext?.bill_content?.content ?? "",
         };
 
-  // Fetch prompt from Langfuse
+  // Fetch prompt from DB
   try {
     const promptResult = await promptProvider.getPrompt(promptName, variables);
     return { promptName, promptResult };
@@ -260,25 +292,7 @@ ${themesText}
 
   return {
     promptName,
-    promptResult: { content, metadata: promptName },
-  };
-}
-
-/**
- * テレメトリメタデータを構築
- */
-function buildTelemetryMetadata(
-  context: ChatMessageMetadata,
-  promptResult: CompiledPrompt,
-  userId: string
-) {
-  return {
-    langfusePrompt: promptResult.metadata,
-    billId: context.billContext?.id || "",
-    pageType: context.pageContext?.type || "bill",
-    difficultyLevel: context.difficultyLevel,
-    userId,
-    sessionId: context.sessionId,
+    promptResult: { content, versionId: null },
   };
 }
 

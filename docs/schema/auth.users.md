@@ -9,7 +9,7 @@ Auth: Stores user login data within a secure schema.
 | Name | Type | Default | Nullable | Extra Definition | Children | Parents | Comment |
 | ---- | ---- | ------- | -------- | ---------------- | -------- | ------- | ------- |
 | instance_id | uuid |  | true |  |  |  |  |
-| id | uuid |  | false |  | [public.expert_registrations](public.expert_registrations.md) [public.admin_profiles](public.admin_profiles.md) |  |  |
+| id | uuid |  | false |  | [public.expert_registrations](public.expert_registrations.md) [public.admin_profiles](public.admin_profiles.md) [public.prompt_versions](public.prompt_versions.md) |  |  |
 | aud | varchar(255) |  | true |  |  |  |  |
 | role | varchar(255) |  | true |  |  |  |  |
 | email | varchar(255) |  | true |  |  |  |  |
@@ -75,6 +75,7 @@ erDiagram
 
 "public.expert_registrations" }o--|| "auth.users" : "FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE"
 "public.admin_profiles" |o--|| "auth.users" : "FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE"
+"public.prompt_versions" }o--o| "auth.users" : "FOREIGN KEY (created_by) REFERENCES auth.users(id) ON DELETE SET NULL"
 
 "auth.users" {
   uuid instance_id
@@ -129,6 +130,15 @@ erDiagram
   text display_name
   timestamp_with_time_zone created_at
   timestamp_with_time_zone updated_at
+}
+"public.prompt_versions" {
+  uuid id
+  uuid prompt_id FK
+  integer version
+  text content
+  text note
+  uuid created_by FK
+  timestamp_with_time_zone created_at
 }
 ```
 

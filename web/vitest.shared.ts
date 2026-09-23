@@ -17,7 +17,6 @@ export const coverageExclude = [
   // 型定義のみ
   "**/types.ts",
   "**/types/index.ts",
-  // テレメトリ・設定
-  "src/lib/telemetry/**",
+  // 設定
   "src/config/**",
 ];

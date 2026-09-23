@@ -1,6 +1,6 @@
 import "server-only";
 
-import { Output, generateText, type LanguageModel } from "ai";
+import { generateText, type LanguageModel, Output } from "ai";
 import { getBillByIdAdmin } from "@/features/bills/server/loaders/get-bill-by-id-admin";
 import { getInterviewConfigAdmin } from "@/features/interview-config/server/loaders/get-interview-config-admin";
 import { getInterviewQuestions } from "@/features/interview-config/server/loaders/get-interview-questions";
@@ -66,14 +66,6 @@ export async function generateInitialQuestion({
       model,
       prompt: enhancedSystemPrompt,
       output: Output.object({ schema: interviewChatTextSchema }),
-      experimental_telemetry: {
-        isEnabled: true,
-        functionId: "interview-initial-question",
-        metadata: {
-          sessionId,
-          billId,
-        },
-      },
     });
 
     const generatedText = result.text;

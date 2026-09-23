@@ -489,6 +489,56 @@ export type Database = {
           },
         ]
       }
+      chat_logs: {
+        Row: {
+          bill_id: string | null
+          created_at: string
+          id: string
+          message: string
+          model: string | null
+          page_type: string
+          prompt_name: string
+          prompt_version_id: string | null
+          role: Database["public"]["Enums"]["chat_role_enum"]
+          session_id: string | null
+          user_id: string
+        }
+        Insert: {
+          bill_id?: string | null
+          created_at?: string
+          id?: string
+          message: string
+          model?: string | null
+          page_type: string
+          prompt_name: string
+          prompt_version_id?: string | null
+          role: Database["public"]["Enums"]["chat_role_enum"]
+          session_id?: string | null
+          user_id: string
+        }
+        Update: {
+          bill_id?: string | null
+          created_at?: string
+          id?: string
+          message?: string
+          model?: string | null
+          page_type?: string
+          prompt_name?: string
+          prompt_version_id?: string | null
+          role?: Database["public"]["Enums"]["chat_role_enum"]
+          session_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chat_logs_prompt_version_id_fkey"
+            columns: ["prompt_version_id"]
+            isOneToOne: false
+            referencedRelation: "prompt_versions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       chat_usage_events: {
         Row: {
           cost_usd: number
@@ -1004,7 +1054,6 @@ export type Database = {
           created_at: string
           id: string
           interview_config_id: string
-          langfuse_session_id: string | null
           rating: number | null
           started_at: string
           updated_at: string
@@ -1016,7 +1065,6 @@ export type Database = {
           created_at?: string
           id?: string
           interview_config_id: string
-          langfuse_session_id?: string | null
           rating?: number | null
           started_at?: string
           updated_at?: string
@@ -1028,7 +1076,6 @@ export type Database = {
           created_at?: string
           id?: string
           interview_config_id?: string
-          langfuse_session_id?: string | null
           rating?: number | null
           started_at?: string
           updated_at?: string
@@ -1185,6 +1232,79 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "bills"
             referencedColumns: ["id"]
+          },
+        ]
+      }
+      prompt_versions: {
+        Row: {
+          content: string
+          created_at: string
+          created_by: string | null
+          id: string
+          note: string | null
+          prompt_id: string
+          version: number
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          note?: string | null
+          prompt_id: string
+          version: number
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          note?: string | null
+          prompt_id?: string
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "prompt_versions_prompt_id_fkey"
+            columns: ["prompt_id"]
+            isOneToOne: false
+            referencedRelation: "prompts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      prompts: {
+        Row: {
+          active_version_id: string | null
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          active_version_id?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          active_version_id?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "prompts_active_version_fkey"
+            columns: ["active_version_id", "id"]
+            isOneToOne: false
+            referencedRelation: "prompt_versions"
+            referencedColumns: ["id", "prompt_id"]
           },
         ]
       }
@@ -1399,6 +1519,34 @@ export type Database = {
           interview_report_id: string
           reaction_type: string
         }[]
+      }
+      create_prompt_version: {
+        Args: {
+          p_base_version_id?: string
+          p_content: string
+          p_created_by?: string
+          p_note?: string
+          p_prompt_id: string
+        }
+        Returns: {
+          content: string
+          created_at: string
+          created_by: string | null
+          id: string
+          note: string | null
+          prompt_id: string
+          version: number
+        }
+        SetofOptions: {
+          from: "*"
+          to: "prompt_versions"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      delete_expired_chat_logs: {
+        Args: { p_retention_days?: number }
+        Returns: number
       }
       get_admin_users: {
         Args: never

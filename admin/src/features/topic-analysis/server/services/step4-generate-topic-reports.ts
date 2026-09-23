@@ -81,14 +81,6 @@ ${sessionList}
 
 ## このトピックに分類された意見
 ${opinionsText}`,
-    experimental_telemetry: {
-      isEnabled: true,
-      functionId: "topic-analysis-step4-report",
-      metadata: {
-        topicName: input.topicName,
-        opinionsCount: String(input.opinions.length),
-      },
-    },
   });
 
   const report = result.object;

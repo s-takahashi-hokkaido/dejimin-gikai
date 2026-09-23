@@ -79,13 +79,6 @@ ${opinionsText}
   - 良い例: 「貿易事務コストを削減すべき」「システムの安全性が不十分」「現場職員への教育支援を充実させるべき」
 - 似たような意見はまとめて1つのトピックにしてください
 - 意見が少ない場合でも最低1つのトピックを抽出してください`,
-    experimental_telemetry: {
-      isEnabled: true,
-      functionId: "topic-analysis-step1-extract",
-      metadata: {
-        batchIndex: String(batchIndex),
-      },
-    },
   });
 
   return object.topics.map((t) => t.name);

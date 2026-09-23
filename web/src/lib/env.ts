@@ -67,12 +67,6 @@ export const env = {
   analytics: {
     gaTrackingId: process.env.NEXT_PUBLIC_GA_TRACKING_ID,
   },
-  langfuse: {
-    publicKey: process.env.LANGFUSE_PUBLIC_KEY,
-    secretKey: process.env.LANGFUSE_SECRET_KEY,
-    baseUrl: process.env.LANGFUSE_BASE_URL || "https://cloud.langfuse.com",
-    promptLabel: process.env.LANGFUSE_PROMPT_LABEL || "production",
-  },
   chat: {
     dailyCostLimitUsd: chatDailyCostLimitUsd,
   },

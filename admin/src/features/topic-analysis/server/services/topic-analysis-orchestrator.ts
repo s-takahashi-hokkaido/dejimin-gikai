@@ -1,6 +1,5 @@
 import "server-only";
 
-import { registerNodeTelemetry } from "@/lib/telemetry/register";
 import { ANALYSIS_STEPS } from "../../shared/constants";
 import type {
   FlatOpinion,
@@ -31,8 +30,6 @@ import { generateOverallSummary } from "./step5-generate-summary";
  * バージョンを作成し、パイプラインを実行する
  */
 export async function runTopicAnalysis(billId: string) {
-  await registerNodeTelemetry();
-
   const version = await createVersion(billId);
   await executeAnalysisPipeline(version.id, billId);
   return { versionId: version.id };

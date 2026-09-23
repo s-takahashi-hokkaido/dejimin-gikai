@@ -78,7 +78,6 @@ erDiagram
   uuid id
   uuid interview_config_id FK
   uuid user_id
-  text langfuse_session_id
   timestamp_with_time_zone started_at
   timestamp_with_time_zone completed_at
   timestamp_with_time_zone created_at
