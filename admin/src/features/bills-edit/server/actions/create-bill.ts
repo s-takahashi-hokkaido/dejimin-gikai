@@ -18,7 +18,7 @@ export async function createBill(input: BillCreateInput) {
 
   try {
     // 管理者権限チェック
-    await requireAdmin();
+    const admin = await requireAdmin();
 
     // バリデーション
     const { committee_ids, ...billData } = billCreateSchema.parse(input);
@@ -31,9 +31,9 @@ export async function createBill(input: BillCreateInput) {
     };
 
     // Supabaseに挿入
-    const bill = await createBillRecord(insertData);
+    const bill = await createBillRecord(insertData, admin);
     try {
-      await replaceBillCommittees(bill.id, committee_ids);
+      await replaceBillCommittees(bill.id, committee_ids, admin);
     } catch (error) {
       // 議案は作成済み。エラーにすると作成し直して重複しかねないので、
       // 編集画面に移って付託委員会を設定し直してもらう

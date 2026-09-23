@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import type { AuditActor } from "@/features/audit-logs/shared/utils/audit-actor";
 import { requireAdmin } from "@/features/auth/server/lib/auth-server";
 import type { Bill } from "../../shared/types";
 import {
@@ -21,7 +22,7 @@ import {
  * 元の議案とそのコンテンツを複製し、新しい議案として作成する
  */
 export async function duplicateBill(billId: string) {
-  await requireAdmin();
+  const admin = await requireAdmin();
 
   // 元の議案を取得
   const originalBill = await _fetchOriginalBill(billId);
@@ -30,23 +31,31 @@ export async function duplicateBill(billId: string) {
   }
 
   // 新しい議案を作成
-  const newBill = await _createDuplicateBill(originalBill.data);
+  const newBill = await _createDuplicateBill(originalBill.data, admin);
   if (!newBill.success) {
     return newBill;
   }
 
   // コンテンツを複製
-  const contentResult = await _duplicateContents(billId, newBill.data.id);
+  const contentResult = await _duplicateContents(
+    billId,
+    newBill.data.id,
+    admin
+  );
   if (!contentResult.success) {
     // コンテンツのない複製が残らないよう、作成した議案を削除する
-    await _deleteBillQuietly(newBill.data.id);
+    await _deleteBillQuietly(newBill.data.id, admin);
     return contentResult;
   }
 
   // 付託委員会を複製
-  const committeeResult = await _duplicateCommittees(billId, newBill.data.id);
+  const committeeResult = await _duplicateCommittees(
+    billId,
+    newBill.data.id,
+    admin
+  );
   if (!committeeResult.success) {
-    await _deleteBillQuietly(newBill.data.id);
+    await _deleteBillQuietly(newBill.data.id, admin);
     return committeeResult;
   }
 
@@ -73,11 +82,11 @@ async function _fetchOriginalBill(billId: string) {
 /**
  * 複製した議案を作成
  */
-async function _createDuplicateBill(originalBill: Bill) {
+async function _createDuplicateBill(originalBill: Bill, actor: AuditActor) {
   const insertData = prepareBillForDuplication(originalBill);
 
   try {
-    const data = await createBill(insertData);
+    const data = await createBill(insertData, actor);
     return { success: true as const, data };
   } catch (error) {
     console.error("Error creating new bill:", error);
@@ -91,9 +100,9 @@ async function _createDuplicateBill(originalBill: Bill) {
 /**
  * 複製途中で失敗した議案を削除（失敗してもログのみ）
  */
-async function _deleteBillQuietly(billId: string) {
+async function _deleteBillQuietly(billId: string, actor: AuditActor) {
   try {
-    await deleteBillById(billId);
+    await deleteBillById(billId, actor);
   } catch (error) {
     console.error("Error deleting partially duplicated bill:", error);
   }
@@ -102,7 +111,11 @@ async function _deleteBillQuietly(billId: string) {
 /**
  * 議案のコンテンツを複製
  */
-async function _duplicateContents(originalBillId: string, newBillId: string) {
+async function _duplicateContents(
+  originalBillId: string,
+  newBillId: string,
+  actor: AuditActor
+) {
   try {
     // 元のコンテンツを取得
     const originalContents = await findBillContentsByBillId(originalBillId);
@@ -119,7 +132,7 @@ async function _duplicateContents(originalBillId: string, newBillId: string) {
     );
 
     // 新しいコンテンツを挿入
-    await createBillContents(newContents);
+    await createBillContents(newContents, actor);
 
     return { success: true as const };
   } catch (error) {
@@ -134,9 +147,13 @@ async function _duplicateContents(originalBillId: string, newBillId: string) {
 /**
  * 議案の付託委員会を複製
  */
-async function _duplicateCommittees(originalBillId: string, newBillId: string) {
+async function _duplicateCommittees(
+  originalBillId: string,
+  newBillId: string,
+  actor: AuditActor
+) {
   try {
-    await copyBillCommittees(originalBillId, newBillId);
+    await copyBillCommittees(originalBillId, newBillId, actor);
     return { success: true as const };
   } catch (error) {
     console.error("Error duplicating committees:", error);

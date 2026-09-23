@@ -1,15 +1,15 @@
 "use server";
 
 import { spawn } from "node:child_process";
-import { createAdminClient } from "@dejimin-gikai/supabase";
+import { createAuditedAdminClient } from "@/features/audit-logs/server/lib/create-audited-admin-client";
 import { requireAdmin } from "@/features/auth/server/lib/auth-server";
 import {
-  EVAL_BATCH_SIZE,
-  FEATURE_THRESHOLD,
-  buildEvalPrompt,
-  extractEvalResults,
   type BillForEval,
+  buildEvalPrompt,
+  EVAL_BATCH_SIZE,
   type EvalResult,
+  extractEvalResults,
+  FEATURE_THRESHOLD,
 } from "../services/auto-feature-evaluator";
 
 const CLAUDE_PATH = process.env.CLAUDE_CLI_PATH ?? "claude";
@@ -95,9 +95,9 @@ export async function runAutoFeature(
   councilSessionId: string
 ): Promise<AutoFeatureResult> {
   try {
-    await requireAdmin();
+    const admin = await requireAdmin();
 
-    const supabase = createAdminClient();
+    const supabase = createAuditedAdminClient(admin);
 
     // 対象会期の published 議案を取得
     const { data: bills } = await supabase

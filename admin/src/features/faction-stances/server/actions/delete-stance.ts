@@ -1,15 +1,15 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { createAdminClient } from "@dejimin-gikai/supabase";
+import { createAuditedAdminClient } from "@/features/audit-logs/server/lib/create-audited-admin-client";
 import { requireAdmin } from "@/features/auth/server/lib/auth-server";
 import { invalidateWebCache } from "@/lib/utils/cache-invalidation";
 
 export async function deleteStance(stanceId: string) {
   try {
-    await requireAdmin();
+    const admin = await requireAdmin();
 
-    const supabase = createAdminClient();
+    const supabase = createAuditedAdminClient(admin);
 
     const { error } = await supabase
       .from("faction_stances")

@@ -54,6 +54,7 @@
 | Name | Definition |
 | ---- | ---------- |
 | update_bills_updated_at | CREATE TRIGGER update_bills_updated_at BEFORE UPDATE ON public.bills FOR EACH ROW EXECUTE FUNCTION update_updated_at_column() |
+| bills_audit_log | CREATE TRIGGER bills_audit_log AFTER INSERT OR DELETE OR UPDATE ON public.bills FOR EACH ROW EXECUTE FUNCTION record_admin_audit_log() |
 
 ## Relations
 

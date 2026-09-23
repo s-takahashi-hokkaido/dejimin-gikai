@@ -27,6 +27,12 @@
 | bill_committees_pkey | CREATE UNIQUE INDEX bill_committees_pkey ON public.bill_committees USING btree (bill_id, committee_id) |
 | bill_committees_committee_id_idx | CREATE INDEX bill_committees_committee_id_idx ON public.bill_committees USING btree (committee_id) |
 
+## Triggers
+
+| Name | Definition |
+| ---- | ---------- |
+| bill_committees_audit_log | CREATE TRIGGER bill_committees_audit_log AFTER INSERT OR DELETE OR UPDATE ON public.bill_committees FOR EACH ROW EXECUTE FUNCTION record_admin_audit_log() |
+
 ## Relations
 
 ```mermaid

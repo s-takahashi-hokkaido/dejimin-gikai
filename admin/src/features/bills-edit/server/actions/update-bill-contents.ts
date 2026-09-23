@@ -23,7 +23,7 @@ export async function updateBillContents(
 ): Promise<UpdateBillContentsResult> {
   try {
     // 管理者権限チェック
-    await requireAdmin();
+    const admin = await requireAdmin();
 
     // バリデーション
     const validatedData = billContentsUpdateSchema.parse(input);
@@ -38,13 +38,16 @@ export async function updateBillContents(
           return;
         }
 
-        await upsertBillContent({
-          billId,
-          difficultyLevel: difficulty,
-          title: data.title || "",
-          summary: data.summary || "",
-          content: data.content || "",
-        });
+        await upsertBillContent(
+          {
+            billId,
+            difficultyLevel: difficulty,
+            title: data.title || "",
+            summary: data.summary || "",
+            content: data.content || "",
+          },
+          admin
+        );
       }
     );
 

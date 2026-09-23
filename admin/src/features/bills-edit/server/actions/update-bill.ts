@@ -15,21 +15,25 @@ import {
 export async function updateBill(id: string, input: BillUpdateInput) {
   try {
     // 管理者権限チェック
-    await requireAdmin();
+    const admin = await requireAdmin();
 
     // バリデーション
     const { committee_ids, ...billData } = billUpdateSchema.parse(input);
 
     // Supabaseで更新
-    await updateBillRecord(id, {
-      ...billData,
-      published_at: billData.published_at
-        ? new Date(billData.published_at).toISOString()
-        : null,
-      updated_at: new Date().toISOString(),
-    });
+    await updateBillRecord(
+      id,
+      {
+        ...billData,
+        published_at: billData.published_at
+          ? new Date(billData.published_at).toISOString()
+          : null,
+        updated_at: new Date().toISOString(),
+      },
+      admin
+    );
     try {
-      await replaceBillCommittees(id, committee_ids);
+      await replaceBillCommittees(id, committee_ids, admin);
     } finally {
       // 付託委員会の保存に失敗しても基本情報は更新済みなので、web側のキャッシュは無効化する
       await invalidateWebCache([WEB_CACHE_TAGS.BILLS]);

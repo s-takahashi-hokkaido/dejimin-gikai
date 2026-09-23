@@ -35,6 +35,7 @@
 | [public.topic_analysis_topics](public.topic_analysis_topics.md) | 7 | トピック解析で抽出されたトピック | BASE TABLE |
 | [public.topic_analysis_versions](public.topic_analysis_versions.md) | 13 | トピック解析のバージョン管理 | BASE TABLE |
 | [public.admin_profiles](public.admin_profiles.md) | 6 | 管理画面利用者のロールと所属会派 | BASE TABLE |
+| [public.admin_audit_logs](public.admin_audit_logs.md) | 12 | 管理画面からの変更履歴（議案・議案コンテンツ・会派見解・付託委員会） | BASE TABLE |
 | [public.bill_committees](public.bill_committees.md) | 3 | 議案の付託委員会（1議案に複数の委員会を付託できる） | BASE TABLE |
 
 ## Stored procedures and functions
@@ -48,6 +49,7 @@
 | public.set_active_council_session | void | target_session_id uuid | FUNCTION |
 | public.update_updated_at_column | trigger |  | FUNCTION |
 | public.get_ai_usage_cost_usd | numeric | from_ts timestamp with time zone, to_ts timestamp with time zone, target_user_id uuid DEFAULT NULL::uuid | FUNCTION |
+| public.record_admin_audit_log | trigger |  | FUNCTION |
 | public.replace_bill_committees | void | p_bill_id uuid, p_committee_ids uuid[] | FUNCTION |
 
 ## Enums
@@ -471,6 +473,20 @@ erDiagram
   text display_name
   timestamp_with_time_zone created_at
   timestamp_with_time_zone updated_at
+}
+"public.admin_audit_logs" {
+  uuid id
+  uuid actor_user_id
+  text actor_email
+  text actor_role
+  uuid actor_faction_id
+  text action
+  text target_table
+  uuid target_id
+  jsonb before_data
+  jsonb after_data
+  uuid bill_id
+  timestamp_with_time_zone created_at
 }
 "public.bill_committees" {
   uuid bill_id FK

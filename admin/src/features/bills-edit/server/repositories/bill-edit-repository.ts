@@ -1,6 +1,8 @@
 import "server-only";
 
 import { createAdminClient } from "@dejimin-gikai/supabase";
+import { createAuditedAdminClient } from "@/features/audit-logs/server/lib/create-audited-admin-client";
+import type { AuditActor } from "@/features/audit-logs/shared/utils/audit-actor";
 import type { BillInsert } from "../../shared/types";
 import type { DifficultyLevel } from "../../shared/types/bill-contents";
 import { mapBillDbError } from "../../shared/utils/map-bill-db-error";
@@ -49,8 +51,11 @@ export async function findBillTagIdsByBillId(billId: string) {
   return data?.map((item) => item.tag_id) ?? [];
 }
 
-export async function createBillRecord(insertData: BillInsert) {
-  const supabase = createAdminClient();
+export async function createBillRecord(
+  insertData: BillInsert,
+  actor: AuditActor
+) {
+  const supabase = createAuditedAdminClient(actor);
   const { data, error } = await supabase
     .from("bills")
     .insert(insertData)
@@ -66,9 +71,10 @@ export async function createBillRecord(insertData: BillInsert) {
 
 export async function updateBillRecord(
   id: string,
-  updateData: Record<string, unknown>
+  updateData: Record<string, unknown>,
+  actor: AuditActor
 ) {
-  const supabase = createAdminClient();
+  const supabase = createAuditedAdminClient(actor);
   const { error } = await supabase
     .from("bills")
     .update(updateData)
@@ -98,9 +104,10 @@ export async function findBillCommitteeIdsByBillId(billId: string) {
  */
 export async function replaceBillCommittees(
   billId: string,
-  committeeIds: string[]
+  committeeIds: string[],
+  actor: AuditActor
 ) {
-  const supabase = createAdminClient();
+  const supabase = createAuditedAdminClient(actor);
   const { error } = await supabase.rpc("replace_bill_committees", {
     p_bill_id: billId,
     p_committee_ids: committeeIds,
@@ -111,14 +118,17 @@ export async function replaceBillCommittees(
   }
 }
 
-export async function upsertBillContent(params: {
-  billId: string;
-  difficultyLevel: DifficultyLevel;
-  title: string;
-  summary: string;
-  content: string;
-}) {
-  const supabase = createAdminClient();
+export async function upsertBillContent(
+  params: {
+    billId: string;
+    difficultyLevel: DifficultyLevel;
+    title: string;
+    summary: string;
+    content: string;
+  },
+  actor: AuditActor
+) {
+  const supabase = createAuditedAdminClient(actor);
   const { error } = await supabase.from("bill_contents").upsert(
     {
       bill_id: params.billId,

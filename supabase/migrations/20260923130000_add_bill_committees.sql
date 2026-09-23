@@ -60,3 +60,12 @@ grant execute on function public.replace_bill_committees(uuid, uuid[]) to servic
 
 -- 予算特別委員会・決算特別委員会も special で扱うため、種別の説明を直す
 comment on column public.committees.committee_type is '委員会種別（standing: 常任, parliamentary: 議会運営, special: 特別委員会〈調査・予算・決算〉）';
+
+-- 付託委員会の変更も監査ログに残す（以前は bills.committee_id の更新として記録されていた）。
+-- bill_committees には id 列が無いので target_id は null になるが、bill_id は after_data / before_data から引ける
+create trigger bill_committees_audit_log
+  after insert or update or delete on public.bill_committees
+  for each row execute function public.record_admin_audit_log();
+
+comment on table public.admin_audit_logs is '管理画面からの変更履歴（議案・議案コンテンツ・会派見解・付託委員会）';
+comment on function public.record_admin_audit_log() is '議案・議案コンテンツ・会派見解・付託委員会の変更を admin_audit_logs に記録するトリガー関数';
