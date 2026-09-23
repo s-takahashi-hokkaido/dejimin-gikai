@@ -35,7 +35,7 @@ function FooterLogoSection() {
           src="/img/logo.svg"
           alt={siteConfig.siteName}
           width={150}
-          height={128}
+          height={40}
           className="h-auto"
         />
       </Link>
