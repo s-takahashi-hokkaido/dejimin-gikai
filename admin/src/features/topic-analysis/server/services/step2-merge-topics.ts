@@ -1,6 +1,8 @@
 import "server-only";
 
+import { openai } from "@ai-sdk/openai";
 import { generateObject } from "ai";
+import { OPENAI_STRUCTURED_OUTPUT_OPTIONS } from "@/lib/ai/models";
 import { TOPIC_ANALYSIS_MODEL } from "../../shared/constants";
 import { topicMergeSchema } from "../../shared/schemas";
 
@@ -17,7 +19,8 @@ export async function mergeTopics(
   const topicsList = rawTopics.map((t, i) => `${i + 1}. ${t}`).join("\n");
 
   const { object } = await generateObject({
-    model: TOPIC_ANALYSIS_MODEL,
+    model: openai(TOPIC_ANALYSIS_MODEL),
+    providerOptions: OPENAI_STRUCTURED_OUTPUT_OPTIONS,
     schema: topicMergeSchema,
     prompt: `あなたは日本の法案に関する市民意見のトピック整理を行います。
 

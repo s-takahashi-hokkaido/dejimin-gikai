@@ -17,7 +17,7 @@
 | updated_at | timestamp with time zone | now() | false |  |  | 更新日時 |
 | name | text |  | false |  |  | 設定名（識別用） |
 | mode | interview_mode_enum | 'loop'::interview_mode_enum | false |  |  | インタビューモード: loop（逐次深掘り）または bulk（一括深掘り） |
-| chat_model | text |  | true |  |  | チャット用AIモデルID（Vercel AI Gateway形式 例:"openai/gpt-4o-mini" NULL=デフォルト） |
+| chat_model | text |  | true |  |  | チャット用AIモデルID（OpenAI API のモデルID 例:"gpt-5-mini" NULL=デフォルト） |
 | estimated_duration | integer |  | true |  |  | 目安所要時間(分・NULLはタイムマネジメントしない) |
 
 ## Constraints

@@ -1,6 +1,8 @@
 import "server-only";
 
+import { openai } from "@ai-sdk/openai";
 import { generateObject } from "ai";
+import { OPENAI_STRUCTURED_OUTPUT_OPTIONS } from "@/lib/ai/models";
 import {
   TOPIC_ANALYSIS_BATCH_SIZE,
   TOPIC_ANALYSIS_MAX_CONCURRENCY,
@@ -56,7 +58,8 @@ async function extractTopicsFromBatch(
     .join("\n\n");
 
   const { object } = await generateObject({
-    model: TOPIC_ANALYSIS_MODEL,
+    model: openai(TOPIC_ANALYSIS_MODEL),
+    providerOptions: OPENAI_STRUCTURED_OUTPUT_OPTIONS,
     schema: topicExtractionSchema,
     prompt: `あなたは議案に対する市民の意見を分析する専門家です。
 

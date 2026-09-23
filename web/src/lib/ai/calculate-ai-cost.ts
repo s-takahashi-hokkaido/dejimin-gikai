@@ -13,7 +13,6 @@ export type SanitizedUsage = {
 };
 
 export const modelPricing: Record<string, ModelPricing> = {
-  // --- OpenAI ---
   [AI_MODELS.gpt4o]: {
     inputTokensPerMillionUsd: 2.5,
     outputTokensPerMillionUsd: 10,
@@ -58,43 +57,17 @@ export const modelPricing: Record<string, ModelPricing> = {
     inputTokensPerMillionUsd: 1.25,
     outputTokensPerMillionUsd: 10,
   },
-  [AI_MODELS.gpt5_1_instant]: {
+  [AI_MODELS.gpt5_1_chat]: {
     inputTokensPerMillionUsd: 1.25,
     outputTokensPerMillionUsd: 10,
   },
-  [AI_MODELS.gpt5_1_thinking]: {
+  [AI_MODELS.gpt5_1]: {
     inputTokensPerMillionUsd: 1.25,
     outputTokensPerMillionUsd: 10,
   },
   [AI_MODELS.gpt5_2]: {
     inputTokensPerMillionUsd: 1.75,
     outputTokensPerMillionUsd: 14,
-  },
-  // --- Google ---
-  [AI_MODELS.gemini3_flash]: {
-    inputTokensPerMillionUsd: 0.5,
-    outputTokensPerMillionUsd: 3,
-  },
-  [AI_MODELS.gemini3_flash_preview]: {
-    inputTokensPerMillionUsd: 0.5,
-    outputTokensPerMillionUsd: 3,
-  },
-  [AI_MODELS.gemini3_1_pro_preview]: {
-    inputTokensPerMillionUsd: 2,
-    outputTokensPerMillionUsd: 12,
-  },
-  // --- Anthropic ---
-  [AI_MODELS.claude_haiku_4_5]: {
-    inputTokensPerMillionUsd: 1,
-    outputTokensPerMillionUsd: 5,
-  },
-  [AI_MODELS.claude_sonnet_4_6]: {
-    inputTokensPerMillionUsd: 3,
-    outputTokensPerMillionUsd: 15,
-  },
-  [AI_MODELS.claude_opus_4_6]: {
-    inputTokensPerMillionUsd: 5,
-    outputTokensPerMillionUsd: 25,
   },
 };
 

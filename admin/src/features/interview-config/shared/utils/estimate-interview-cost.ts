@@ -6,6 +6,8 @@
  * - 1インタビューあたり出力トークン: 約3,000（AI応答の合計）
  */
 
+import { AI_MODELS } from "@/lib/ai/models";
+
 type ModelPricing = {
   inputPerMillion: number;
   outputPerMillion: number;
@@ -20,25 +22,14 @@ const ESTIMATED_OUTPUT_TOKENS = 3_000;
  * web/src/lib/ai/calculate-ai-cost.ts の modelPricing と同じ値
  */
 const MODEL_PRICING: Record<string, ModelPricing> = {
-  // --- OpenAI ---
-  "openai/gpt-4o-mini": { inputPerMillion: 0.15, outputPerMillion: 0.6 },
-  "openai/gpt-5": { inputPerMillion: 1.25, outputPerMillion: 10 },
-  "openai/gpt-5-mini": { inputPerMillion: 0.25, outputPerMillion: 2 },
-  "openai/gpt-5-nano": { inputPerMillion: 0.05, outputPerMillion: 0.4 },
-  "openai/gpt-5-chat": { inputPerMillion: 1.25, outputPerMillion: 10 },
-  "openai/gpt-5.1-instant": { inputPerMillion: 1.25, outputPerMillion: 10 },
-  "openai/gpt-5.1-thinking": { inputPerMillion: 1.25, outputPerMillion: 10 },
-  "openai/gpt-5.2": { inputPerMillion: 1.75, outputPerMillion: 14 },
-  // --- Google ---
-  "google/gemini-3-flash": { inputPerMillion: 0.5, outputPerMillion: 3 },
-  "google/gemini-3.1-pro-preview": {
-    inputPerMillion: 2,
-    outputPerMillion: 12,
-  },
-  // --- Anthropic ---
-  "anthropic/claude-haiku-4.5": { inputPerMillion: 1, outputPerMillion: 5 },
-  "anthropic/claude-sonnet-4.6": { inputPerMillion: 3, outputPerMillion: 15 },
-  "anthropic/claude-opus-4.6": { inputPerMillion: 5, outputPerMillion: 25 },
+  [AI_MODELS.gpt4o_mini]: { inputPerMillion: 0.15, outputPerMillion: 0.6 },
+  [AI_MODELS.gpt5]: { inputPerMillion: 1.25, outputPerMillion: 10 },
+  [AI_MODELS.gpt5_mini]: { inputPerMillion: 0.25, outputPerMillion: 2 },
+  [AI_MODELS.gpt5_nano]: { inputPerMillion: 0.05, outputPerMillion: 0.4 },
+  [AI_MODELS.gpt5_chat]: { inputPerMillion: 1.25, outputPerMillion: 10 },
+  [AI_MODELS.gpt5_1_chat]: { inputPerMillion: 1.25, outputPerMillion: 10 },
+  [AI_MODELS.gpt5_1]: { inputPerMillion: 1.25, outputPerMillion: 10 },
+  [AI_MODELS.gpt5_2]: { inputPerMillion: 1.75, outputPerMillion: 14 },
 };
 
 /**

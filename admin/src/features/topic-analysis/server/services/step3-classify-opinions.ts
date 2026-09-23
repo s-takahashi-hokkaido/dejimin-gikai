@@ -1,6 +1,8 @@
 import "server-only";
 
+import { openai } from "@ai-sdk/openai";
 import { generateObject } from "ai";
+import { OPENAI_STRUCTURED_OUTPUT_OPTIONS } from "@/lib/ai/models";
 import {
   TOPIC_ANALYSIS_BATCH_SIZE,
   TOPIC_ANALYSIS_MAX_CONCURRENCY,
@@ -65,7 +67,8 @@ async function classifyBatch(
   const topicsText = topicNames.map((t, i) => `${i + 1}. ${t}`).join("\n");
 
   const { object } = await generateObject({
-    model: TOPIC_ANALYSIS_MODEL,
+    model: openai(TOPIC_ANALYSIS_MODEL),
+    providerOptions: OPENAI_STRUCTURED_OUTPUT_OPTIONS,
     schema: opinionClassificationSchema,
     prompt: `あなたは議案分析の専門家です。各意見を適切なトピックに分類してください。
 

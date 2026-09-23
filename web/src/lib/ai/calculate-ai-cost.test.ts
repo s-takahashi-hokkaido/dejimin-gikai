@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   calculateUsageCostUsd,
+  modelPricing,
   type SanitizedUsage,
   sanitizeUsage,
 } from "./calculate-ai-cost";
@@ -38,14 +39,28 @@ describe("calculateUsageCostUsd", () => {
 
     // GPT-5.2: $1.75 input + $14.00 output = $15.75
     expect(calculateUsageCostUsd(AI_MODELS.gpt5_2, usage)).toBeCloseTo(15.75);
-    // Claude Sonnet 4.6: $3.00 input + $15.00 output = $18.00
-    expect(
-      calculateUsageCostUsd(AI_MODELS.claude_sonnet_4_6, usage)
-    ).toBeCloseTo(18);
-    // Gemini 3.1 Pro Preview: $2.00 input + $12.00 output = $14.00
-    expect(
-      calculateUsageCostUsd(AI_MODELS.gemini3_1_pro_preview, usage)
-    ).toBeCloseTo(14);
+    // GPT-5 mini: $0.25 input + $2.00 output = $2.25
+    expect(calculateUsageCostUsd(AI_MODELS.gpt5_mini, usage)).toBeCloseTo(2.25);
+    // GPT-5.1 Instant: $1.25 input + $10.00 output = $11.25
+    expect(calculateUsageCostUsd(AI_MODELS.gpt5_1_chat, usage)).toBeCloseTo(
+      11.25
+    );
+  });
+
+  it("has pricing for every model in AI_MODELS", () => {
+    for (const model of Object.values(AI_MODELS)) {
+      expect(modelPricing[model], model).toBeDefined();
+    }
+  });
+
+  it("throws for Vercel AI Gateway style model IDs", () => {
+    const usage: SanitizedUsage = {
+      inputTokens: 1000,
+      outputTokens: 1000,
+      totalTokens: 2000,
+    };
+
+    expect(() => calculateUsageCostUsd("openai/gpt-4o", usage)).toThrow();
   });
 
   it("throws for unknown model", () => {

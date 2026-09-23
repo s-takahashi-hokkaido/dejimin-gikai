@@ -1,6 +1,8 @@
 import "server-only";
 
+import { openai } from "@ai-sdk/openai";
 import { generateObject } from "ai";
+import { OPENAI_STRUCTURED_OUTPUT_OPTIONS } from "@/lib/ai/models";
 import { TOPIC_ANALYSIS_MODEL } from "../../shared/constants";
 import { overallSummarySchema } from "../../shared/schemas";
 
@@ -29,7 +31,8 @@ export async function generateOverallSummary(
     .join("\n\n");
 
   const result = await generateObject({
-    model: TOPIC_ANALYSIS_MODEL,
+    model: openai(TOPIC_ANALYSIS_MODEL),
+    providerOptions: OPENAI_STRUCTURED_OUTPUT_OPTIONS,
     schema: overallSummarySchema,
     prompt: `あなたは市民意見の分析レポートの全体サマリを作成します。
 

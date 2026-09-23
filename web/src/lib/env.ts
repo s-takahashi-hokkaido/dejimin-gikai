@@ -64,9 +64,6 @@ export const env = {
   supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL,
   supabaseAnonKey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
   revalidateSecret: process.env.REVALIDATE_SECRET,
-  analytics: {
-    gaTrackingId: process.env.NEXT_PUBLIC_GA_TRACKING_ID,
-  },
   chat: {
     dailyCostLimitUsd: chatDailyCostLimitUsd,
   },

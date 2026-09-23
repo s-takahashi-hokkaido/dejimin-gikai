@@ -2,7 +2,6 @@ import { openai } from "@ai-sdk/openai";
 import type { Database } from "@dejimin-gikai/supabase";
 import {
   convertToModelMessages,
-  gateway,
   type LanguageModel,
   streamText,
   tool,
@@ -104,7 +103,7 @@ export async function handleChatRequest({
     promptProvider
   );
   // Model configuration
-  const model = deps?.model ?? gateway(AI_MODELS.gpt4o);
+  const model = deps?.model ?? openai(AI_MODELS.gpt4o);
   const modelName =
     typeof model === "string" ? model : (model.modelId ?? "unknown");
 
@@ -135,14 +134,12 @@ export async function handleChatRequest({
       tools,
       onFinish: async (event) => {
         try {
-          const providerCost = extractGatewayCost(event);
           await recordChatUsage({
             userId,
             sessionId: context.sessionId || undefined,
             promptName,
             model: modelName,
             usage: event.totalUsage,
-            costUsd: providerCost,
             metadata: buildUsageMetadata(context, event),
           });
         } catch (usageError) {
@@ -315,25 +312,6 @@ function buildUsageMetadata(
     finishReason,
     stepCount,
   };
-}
-
-function extractGatewayCost(event: {
-  providerMetadata?: unknown;
-}): number | undefined {
-  const providerMetadata = event.providerMetadata;
-  if (!providerMetadata || typeof providerMetadata !== "object") {
-    return undefined;
-  }
-
-  const gatewayCost = (
-    providerMetadata as {
-      gateway?: { cost?: unknown };
-    }
-  ).gateway?.cost;
-
-  const numericCost = Number(gatewayCost);
-
-  return Number.isFinite(numericCost) ? numericCost : undefined;
 }
 
 const INTERVIEW_SUGGESTION_PROMPT = `
