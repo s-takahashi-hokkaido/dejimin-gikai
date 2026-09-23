@@ -1,3 +1,4 @@
+import { requirePageAccess } from "@/features/auth/server/lib/auth-server";
 import { BillList } from "@/features/bills/server/components/bill-list/bill-list";
 import { parseBillSortParams } from "@/features/bills/shared/utils/parse-bill-sort-params";
 
@@ -14,6 +15,7 @@ interface BillsPageProps {
 }
 
 export default async function BillsPage({ searchParams }: BillsPageProps) {
+  const admin = await requirePageAccess("/bills");
   const { sort, order, session, tag, publishStatus, reviewStatus, isFeatured } =
     await searchParams;
   const sortConfig = parseBillSortParams(sort, order);
@@ -26,6 +28,7 @@ export default async function BillsPage({ searchParams }: BillsPageProps) {
       </div>
 
       <BillList
+        role={admin.role}
         sortConfig={sortConfig}
         sessionId={session}
         tagId={tag}

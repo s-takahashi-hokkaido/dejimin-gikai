@@ -1,7 +1,7 @@
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-
+import { requirePageAccess } from "@/features/auth/server/lib/auth-server";
 import { getBillById } from "@/features/bills-edit/server/loaders/get-bill-by-id";
 import { InterviewConfigEditClient } from "@/features/interview-config/client/components/interview-config-edit-client";
 import { getInterviewConfigById } from "@/features/interview-config/server/loaders/get-interview-config";
@@ -17,6 +17,7 @@ interface InterviewEditPageProps {
 export default async function InterviewEditPage({
   params,
 }: InterviewEditPageProps) {
+  await requirePageAccess("/bills/[id]/interview/[configId]/edit");
   const { id, configId } = await params;
   const [bill, config] = await Promise.all([
     getBillById(id),

@@ -1,6 +1,7 @@
 "use server";
 
-import { requireAdmin } from "@/features/auth/server/lib/auth-server";
+import { requireRole } from "@/features/auth/server/lib/auth-server";
+import { EDITOR_ROLES } from "@/features/auth/shared/utils/role";
 import {
   invalidateWebCache,
   WEB_CACHE_TAGS,
@@ -22,8 +23,8 @@ export async function updateBillContents(
   input: BillContentsUpdateInput
 ): Promise<UpdateBillContentsResult> {
   try {
-    // 管理者権限チェック
-    const admin = await requireAdmin();
+    // 議員にも開く（変更は監査ログに残る）
+    const admin = await requireRole(EDITOR_ROLES);
 
     // バリデーション
     const validatedData = billContentsUpdateSchema.parse(input);

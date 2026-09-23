@@ -1,6 +1,6 @@
 import { AuditLogList } from "@/features/audit-logs/server/components/audit-log-list";
 import { parseAuditLogFilters } from "@/features/audit-logs/shared/utils/audit-log-filters";
-import { requireRoleOrRedirect } from "@/features/auth/server/lib/auth-server";
+import { requirePageAccess } from "@/features/auth/server/lib/auth-server";
 
 interface AuditLogsPageProps {
   searchParams: Promise<{
@@ -13,7 +13,7 @@ interface AuditLogsPageProps {
 export default async function AuditLogsPage({
   searchParams,
 }: AuditLogsPageProps) {
-  await requireRoleOrRedirect(["admin"]);
+  await requirePageAccess("/audit-logs");
 
   const filters = parseAuditLogFilters(await searchParams);
 

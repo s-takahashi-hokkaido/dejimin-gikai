@@ -1,10 +1,10 @@
 import { InviteAdminForm } from "@/features/admins/client/components/invite-admin-form";
 import { AdminList } from "@/features/admins/server/components/admin-list";
 import { loadAdmins } from "@/features/admins/server/loaders/load-admins";
-import { requireRoleOrRedirect } from "@/features/auth/server/lib/auth-server";
+import { requirePageAccess } from "@/features/auth/server/lib/auth-server";
 
 export default async function AdminsPage() {
-  const currentAdmin = await requireRoleOrRedirect(["admin"]);
+  const currentAdmin = await requirePageAccess("/admins");
 
   const admins = await loadAdmins();
 

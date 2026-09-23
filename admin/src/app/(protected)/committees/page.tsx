@@ -1,8 +1,10 @@
+import { requirePageAccess } from "@/features/auth/server/lib/auth-server";
 import { CommitteeForm } from "@/features/committees/client/components/committee-form";
 import { CommitteeList } from "@/features/committees/client/components/committee-list";
 import { loadCommittees } from "@/features/committees/server/loaders/load-committees";
 
 export default async function CommitteesPage() {
+  await requirePageAccess("/committees");
   const committees = await loadCommittees();
 
   return (

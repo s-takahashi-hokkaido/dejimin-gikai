@@ -24,6 +24,7 @@ interface BillEditFormProps {
   committeeIds: string[];
   councilSessions: CouncilSession[];
   committees: Committee[];
+  canEditAdminOnlyFields: boolean;
 }
 
 export function BillEditForm({
@@ -31,6 +32,7 @@ export function BillEditForm({
   committeeIds,
   councilSessions,
   committees,
+  canEditAdminOnlyFields,
 }: BillEditFormProps) {
   const { isSubmitting, error, handleSubmit, handleCancel } = useBillForm();
 
@@ -79,6 +81,7 @@ export function BillEditForm({
               billId={bill.id}
               councilSessions={councilSessions}
               committees={committees}
+              canEditAdminOnlyFields={canEditAdminOnlyFields}
             />
 
             {error && (

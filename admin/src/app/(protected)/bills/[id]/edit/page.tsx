@@ -1,11 +1,13 @@
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { requirePageAccess } from "@/features/auth/server/lib/auth-server";
 import { BillEditForm } from "@/features/bills-edit/client/components/bill-edit-form";
 import { BillTagsForm } from "@/features/bills-edit/client/components/bill-tags-form";
 import { getBillById } from "@/features/bills-edit/server/loaders/get-bill-by-id";
 import { getBillCommitteeIds } from "@/features/bills-edit/server/loaders/get-bill-committee-ids";
 import { getBillTagIds } from "@/features/bills-edit/server/loaders/get-bill-tag-ids";
+import { canEditAdminOnlyBillFields } from "@/features/bills-edit/shared/utils/omit-admin-only-bill-fields";
 import { loadCommittees } from "@/features/committees/server/loaders/load-committees";
 import { loadCouncilSessions } from "@/features/council-sessions/server/loaders/load-council-sessions";
 import { StancesManager } from "@/features/faction-stances/client/components/stances-manager";
@@ -20,6 +22,7 @@ interface BillEditPageProps {
 }
 
 export default async function BillEditPage({ params }: BillEditPageProps) {
+  const admin = await requirePageAccess("/bills/[id]/edit");
   const { id } = await params;
   const [
     bill,
@@ -68,12 +71,14 @@ export default async function BillEditPage({ params }: BillEditPageProps) {
           committeeIds={committeeIds}
           councilSessions={councilSessions}
           committees={committees}
+          canEditAdminOnlyFields={canEditAdminOnlyBillFields(admin.role)}
         />
         <StancesManager
           billId={bill.id}
           billStatus={bill.status}
           factions={factions}
           stances={stances}
+          editor={{ role: admin.role, factionId: admin.factionId }}
         />
         <BillTagsForm
           billId={bill.id}

@@ -1,8 +1,10 @@
+import { requirePageAccess } from "@/features/auth/server/lib/auth-server";
 import { TagForm } from "@/features/tags/client/components/tag-form";
 import { TagList } from "@/features/tags/server/components/tag-list";
 import { loadTags } from "@/features/tags/server/loaders/load-tags";
 
 export default async function TagsPage() {
+  await requirePageAccess("/tags");
   const tags = await loadTags();
 
   return (

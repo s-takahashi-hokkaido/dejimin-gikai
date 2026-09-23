@@ -1,3 +1,4 @@
+import { requirePageAccess } from "@/features/auth/server/lib/auth-server";
 import { TopicAnalysisDetailPageContent } from "@/features/topic-analysis/server/components/topic-analysis-detail-page";
 
 interface TopicAnalysisDetailPageProps {
@@ -7,6 +8,7 @@ interface TopicAnalysisDetailPageProps {
 export default async function TopicAnalysisDetailPage({
   params,
 }: TopicAnalysisDetailPageProps) {
+  await requirePageAccess("/bills/[id]/topic-analysis/[versionId]");
   const { id, versionId } = await params;
   return <TopicAnalysisDetailPageContent billId={id} versionId={versionId} />;
 }

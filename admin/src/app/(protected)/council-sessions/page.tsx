@@ -1,8 +1,10 @@
+import { requirePageAccess } from "@/features/auth/server/lib/auth-server";
 import { CouncilSessionForm } from "@/features/council-sessions/client/components/council-session-form";
 import { CouncilSessionList } from "@/features/council-sessions/client/components/council-session-list";
 import { loadCouncilSessions } from "@/features/council-sessions/server/loaders/load-council-sessions";
 
 export default async function CouncilSessionsPage() {
+  await requirePageAccess("/council-sessions");
   const sessions = await loadCouncilSessions();
 
   return (

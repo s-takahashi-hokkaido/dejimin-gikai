@@ -57,6 +57,11 @@ interface BillFormFieldsProps {
   billId?: string;
   councilSessions: CouncilSession[];
   committees: Committee[];
+  /**
+   * 公開日・サムネイル・注目の議案を表示するか。運営者以外は false
+   * （サーバー側でも omitAdminOnlyBillFields で取り除く）
+   */
+  canEditAdminOnlyFields?: boolean;
 }
 
 export function BillFormFields({
@@ -64,6 +69,7 @@ export function BillFormFields({
   billId,
   councilSessions,
   committees,
+  canEditAdminOnlyFields = true,
 }: BillFormFieldsProps) {
   return (
     <>
@@ -202,65 +208,69 @@ export function BillFormFields({
         )}
       />
 
-      <FormField
-        control={control}
-        name="published_at"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>公開日時 *</FormLabel>
-            <FormControl>
-              <Input type="datetime-local" {...field} />
-            </FormControl>
-            <FormDescription>
-              議案が公開される日時を設定してください
-            </FormDescription>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
+      {canEditAdminOnlyFields && (
+        <>
+          <FormField
+            control={control}
+            name="published_at"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>公開日時 *</FormLabel>
+                <FormControl>
+                  <Input type="datetime-local" {...field} />
+                </FormControl>
+                <FormDescription>
+                  議案が公開される日時を設定してください
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
-      <FormField
-        control={control}
-        name="thumbnail_url"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>サムネイル画像</FormLabel>
-            <FormControl>
-              <ThumbnailUpload
-                value={field.value}
-                onChange={field.onChange}
-                billId={billId}
-              />
-            </FormControl>
-            <FormDescription>
-              議案のサムネイル画像を設定してください（任意）
-            </FormDescription>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
+          <FormField
+            control={control}
+            name="thumbnail_url"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>サムネイル画像</FormLabel>
+                <FormControl>
+                  <ThumbnailUpload
+                    value={field.value}
+                    onChange={field.onChange}
+                    billId={billId}
+                  />
+                </FormControl>
+                <FormDescription>
+                  議案のサムネイル画像を設定してください（任意）
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
-      <FormField
-        control={control}
-        name="share_thumbnail_url"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>シェア用OGP画像</FormLabel>
-            <FormControl>
-              <ThumbnailUpload
-                value={field.value}
-                onChange={field.onChange}
-                billId={billId}
-                storagePrefix="share"
-              />
-            </FormControl>
-            <FormDescription>
-              Twitter等のSNSでシェアされた際に表示される画像を設定してください（任意）。設定しない場合はサムネイル画像が使用されます。
-            </FormDescription>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
+          <FormField
+            control={control}
+            name="share_thumbnail_url"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>シェア用OGP画像</FormLabel>
+                <FormControl>
+                  <ThumbnailUpload
+                    value={field.value}
+                    onChange={field.onChange}
+                    billId={billId}
+                    storagePrefix="share"
+                  />
+                </FormControl>
+                <FormDescription>
+                  Twitter等のSNSでシェアされた際に表示される画像を設定してください（任意）。設定しない場合はサムネイル画像が使用されます。
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </>
+      )}
 
       <FormField
         control={control}
@@ -340,26 +350,28 @@ export function BillFormFields({
         )}
       />
 
-      <FormField
-        control={control}
-        name="is_featured"
-        render={({ field }) => (
-          <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
-            <FormControl>
-              <Checkbox
-                checked={field.value}
-                onCheckedChange={field.onChange}
-              />
-            </FormControl>
-            <div className="space-y-1 leading-none">
-              <FormLabel>注目の議案</FormLabel>
-              <FormDescription>
-                トップページなどで優先的に表示されます
-              </FormDescription>
-            </div>
-          </FormItem>
-        )}
-      />
+      {canEditAdminOnlyFields && (
+        <FormField
+          control={control}
+          name="is_featured"
+          render={({ field }) => (
+            <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+              <FormControl>
+                <Checkbox
+                  checked={field.value}
+                  onCheckedChange={field.onChange}
+                />
+              </FormControl>
+              <div className="space-y-1 leading-none">
+                <FormLabel>注目の議案</FormLabel>
+                <FormDescription>
+                  トップページなどで優先的に表示されます
+                </FormDescription>
+              </div>
+            </FormItem>
+          )}
+        />
+      )}
     </>
   );
 }

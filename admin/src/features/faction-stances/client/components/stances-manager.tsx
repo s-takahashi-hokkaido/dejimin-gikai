@@ -15,6 +15,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  canEditFactionStance,
+  type FactionStanceEditor,
+} from "@/features/auth/shared/utils/can-edit-faction-stance";
 
 import { deleteStance } from "../../server/actions/delete-stance";
 import { upsertStance } from "../../server/actions/upsert-stance";
@@ -27,6 +31,8 @@ type FactionStanceRowProps = {
   billStatus: string;
   faction: Faction;
   existingStance: FactionStanceWithFaction | null;
+  /** false のときは読み取り専用で表示する（議員の他会派の欄） */
+  editable: boolean;
 };
 
 function FactionStanceRow({
@@ -34,9 +40,11 @@ function FactionStanceRow({
   billStatus,
   faction,
   existingStance,
+  editable,
 }: FactionStanceRowProps) {
   const router = useRouter();
   const isPreparing = billStatus === "preparing";
+  const isDisabled = isPreparing || !editable;
 
   const [selectedType, setSelectedType] = useState<StanceTypeEnum | "">(
     existingStance?.type ?? ""
@@ -106,7 +114,7 @@ function FactionStanceRow({
           <Select
             value={selectedType}
             onValueChange={(v) => setSelectedType(v as StanceTypeEnum)}
-            disabled={isPreparing}
+            disabled={isDisabled}
           >
             <SelectTrigger>
               <SelectValue placeholder="見解を選択" />
@@ -121,26 +129,28 @@ function FactionStanceRow({
           </Select>
         </div>
 
-        <div className="flex gap-2">
-          <Button
-            size="sm"
-            onClick={handleSave}
-            disabled={isSaving || isPreparing || !selectedType}
-          >
-            {isSaving ? "保存中..." : existingStance ? "更新" : "追加"}
-          </Button>
-          {existingStance && (
+        {editable && (
+          <div className="flex gap-2">
             <Button
               size="sm"
-              variant="outline"
-              onClick={handleDelete}
-              disabled={isDeleting || isPreparing}
-              className="text-red-600 hover:bg-red-50 border-red-200"
+              onClick={handleSave}
+              disabled={isSaving || isPreparing || !selectedType}
             >
-              <Trash2 className="h-4 w-4" />
+              {isSaving ? "保存中..." : existingStance ? "更新" : "追加"}
             </Button>
-          )}
-        </div>
+            {existingStance && (
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={handleDelete}
+                disabled={isDeleting || isPreparing}
+                className="text-red-600 hover:bg-red-50 border-red-200"
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            )}
+          </div>
+        )}
       </div>
 
       <Textarea
@@ -148,7 +158,7 @@ function FactionStanceRow({
         onChange={(e) => setComment(e.target.value)}
         placeholder="コメント・理由（任意）"
         className="min-h-[80px] resize-y text-sm"
-        disabled={isPreparing}
+        disabled={isDisabled}
       />
     </div>
   );
@@ -159,6 +169,7 @@ type StancesManagerProps = {
   billStatus: string;
   factions: Faction[];
   stances: FactionStanceWithFaction[];
+  editor: FactionStanceEditor;
 };
 
 export function StancesManager({
@@ -166,6 +177,7 @@ export function StancesManager({
   billStatus,
   factions,
   stances,
+  editor,
 }: StancesManagerProps) {
   const isPreparing = billStatus === "preparing";
 
@@ -178,6 +190,11 @@ export function StancesManager({
         {isPreparing && (
           <p className="text-sm text-muted-foreground">
             議案上程前のため、見解設定は無効化されています。
+          </p>
+        )}
+        {editor.role === "legislator" && (
+          <p className="text-sm text-muted-foreground">
+            編集できるのは所属会派の見解のみです。他会派の見解は閲覧のみできます。
           </p>
         )}
       </CardHeader>
@@ -195,6 +212,7 @@ export function StancesManager({
                 billStatus={billStatus}
                 faction={faction}
                 existingStance={stanceByFactionId.get(faction.id) ?? null}
+                editable={canEditFactionStance(editor, faction.id)}
               />
             ))}
           </div>

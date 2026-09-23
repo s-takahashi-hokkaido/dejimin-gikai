@@ -1,8 +1,10 @@
+import { requirePageAccess } from "@/features/auth/server/lib/auth-server";
 import { FactionForm } from "@/features/factions/client/components/faction-form";
 import { FactionList } from "@/features/factions/client/components/faction-list";
 import { loadFactions } from "@/features/factions/server/loaders/load-factions";
 
 export default async function FactionsPage() {
+  await requirePageAccess("/factions");
   const factions = await loadFactions();
 
   return (

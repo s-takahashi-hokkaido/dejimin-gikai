@@ -1,11 +1,12 @@
-import { requireAdmin } from "@/features/auth/server/lib/auth-server";
+import { requireRole } from "@/features/auth/server/lib/auth-server";
+import { EDITOR_ROLES } from "@/features/auth/shared/utils/role";
 import type { BillContent } from "../../shared/types/bill-contents";
 import { findBillContentsByBillId } from "../repositories/bill-edit-repository";
 
 export async function getBillContents(billId: string): Promise<BillContent[]> {
   try {
-    // 管理者権限チェック
-    await requireAdmin();
+    // 議案コンテンツの編集画面は議員にも開く
+    await requireRole(EDITOR_ROLES);
 
     return await findBillContentsByBillId(billId);
   } catch (error) {
