@@ -7,10 +7,10 @@ import { deleteBillById } from "../repositories/bill-repository";
 
 export async function deleteBill(id: string) {
   try {
-    await requireAdmin();
+    const admin = await requireAdmin();
 
     // 議案を削除
-    await deleteBillById(id);
+    await deleteBillById(id, admin);
 
     // キャッシュをリフレッシュ
     revalidatePath("/bills");

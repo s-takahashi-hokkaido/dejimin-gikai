@@ -18,6 +18,7 @@ describe("canAccessPage", () => {
       "/factions",
       "/committees",
       "/ai-collection",
+      "/audit-logs",
       "/admins",
     ])("すべてにアクセスできる: %s", (path) => {
       expect(canAccessPage("admin", path)).toBe(true);
@@ -46,6 +47,7 @@ describe("canAccessPage", () => {
       "/factions",
       "/committees",
       "/ai-collection",
+      "/audit-logs",
       "/admins",
     ])("マスタ管理と破壊的操作はできない: %s", (path) => {
       expect(canAccessPage("legislator", path)).toBe(false);
@@ -67,6 +69,7 @@ describe("canAccessPage", () => {
       `/bills/${BILL_ID}/edit`,
       `/bills/${BILL_ID}/contents/edit`,
       "/bills/new",
+      "/audit-logs",
       "/admins",
     ])("編集はできない: %s", (path) => {
       expect(canAccessPage("candidate", path)).toBe(false);
@@ -94,7 +97,7 @@ describe("canAccessPage", () => {
 
 describe("getVisibleNavItems", () => {
   it("運営者にはすべての項目を出す", () => {
-    expect(getVisibleNavItems("admin")).toHaveLength(7);
+    expect(getVisibleNavItems("admin")).toHaveLength(8);
   });
 
   it("議員には議案管理のみ", () => {

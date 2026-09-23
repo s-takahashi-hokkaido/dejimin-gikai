@@ -1,16 +1,17 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { createAdminClient } from "@dejimin-gikai/supabase";
+import { createAuditedAdminClient } from "@/features/audit-logs/server/lib/create-audited-admin-client";
 import { requireAdmin } from "@/features/auth/server/lib/auth-server";
 import { invalidateWebCache } from "@/lib/utils/cache-invalidation";
 import type { DeleteFactionInput } from "../../shared/types";
 
 export async function deleteFaction(input: DeleteFactionInput) {
   try {
-    await requireAdmin();
+    const admin = await requireAdmin();
 
-    const supabase = createAdminClient();
+    // 会派を消すと会派見解もカスケードで消える。監査ログに実行者を残すため
+    const supabase = createAuditedAdminClient(admin);
 
     const { error } = await supabase
       .from("factions")

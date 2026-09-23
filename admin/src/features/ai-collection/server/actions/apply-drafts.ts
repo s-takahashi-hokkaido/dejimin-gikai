@@ -7,16 +7,16 @@
 // 2. supabase db push / migration でデータを移行
 // 3. Supabase CLIの --db-url オプションで本番DBに直接接続
 
-import { createAdminClient } from "@dejimin-gikai/supabase";
 import { revalidatePath } from "next/cache";
+import { createAuditedAdminClient } from "@/features/audit-logs/server/lib/create-audited-admin-client";
 import { requireAdmin } from "@/features/auth/server/lib/auth-server";
 import { invalidateWebCache } from "@/lib/utils/cache-invalidation";
-import { loadRun } from "../utils/storage";
-import {
-  findFactionByName,
-  type FactionRecord,
-} from "../utils/faction-matching";
 import type { BillFieldOverride, DraftBill } from "../../shared/types";
+import {
+  type FactionRecord,
+  findFactionByName,
+} from "../utils/faction-matching";
+import { loadRun } from "../utils/storage";
 
 type ApplyDraftsInput = {
   runId: string;
@@ -35,7 +35,7 @@ export async function applyDrafts(
   input: ApplyDraftsInput
 ): Promise<ApplyResult> {
   try {
-    await requireAdmin();
+    const admin = await requireAdmin();
 
     const run = await loadRun(input.runId);
     if (!run) {
@@ -56,7 +56,7 @@ export async function applyDrafts(
       };
     }
 
-    const supabase = createAdminClient();
+    const supabase = createAuditedAdminClient(admin);
     const warnings: string[] = [];
     let appliedCount = 0;
 

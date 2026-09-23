@@ -1,6 +1,8 @@
 import "server-only";
 import type { Database } from "@dejimin-gikai/supabase";
 import { createAdminClient } from "@dejimin-gikai/supabase";
+import { createAuditedAdminClient } from "@/features/audit-logs/server/lib/create-audited-admin-client";
+import type { AuditActor } from "@/features/audit-logs/shared/utils/audit-actor";
 import type {
   BillInsert,
   BillPublishStatus,
@@ -103,8 +105,8 @@ export async function findBillById(billId: string) {
   return data;
 }
 
-export async function createBill(insertData: BillInsert) {
-  const supabase = createAdminClient();
+export async function createBill(insertData: BillInsert, actor: AuditActor) {
+  const supabase = createAuditedAdminClient(actor);
   const { data, error } = await supabase
     .from("bills")
     .insert(insertData)
@@ -117,8 +119,8 @@ export async function createBill(insertData: BillInsert) {
   return data;
 }
 
-export async function deleteBillById(id: string) {
-  const supabase = createAdminClient();
+export async function deleteBillById(id: string, actor: AuditActor) {
+  const supabase = createAuditedAdminClient(actor);
   const { error } = await supabase.from("bills").delete().eq("id", id);
 
   if (error) {
@@ -128,9 +130,10 @@ export async function deleteBillById(id: string) {
 
 export async function updateBillPublishStatus(
   billId: string,
-  publishStatus: BillPublishStatus
+  publishStatus: BillPublishStatus,
+  actor: AuditActor
 ) {
-  const supabase = createAdminClient();
+  const supabase = createAuditedAdminClient(actor);
   const { error } = await supabase
     .from("bills")
     .update({ publish_status: publishStatus })
@@ -154,8 +157,11 @@ export async function findBillContentsByBillId(billId: string) {
   return data;
 }
 
-export async function createBillContents(contents: BillContentInsert[]) {
-  const supabase = createAdminClient();
+export async function createBillContents(
+  contents: BillContentInsert[],
+  actor: AuditActor
+) {
+  const supabase = createAuditedAdminClient(actor);
   const { error } = await supabase.from("bill_contents").insert(contents);
 
   if (error) {

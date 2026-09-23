@@ -1,6 +1,8 @@
 import "server-only";
 
 import { createAdminClient } from "@dejimin-gikai/supabase";
+import { createAuditedAdminClient } from "@/features/audit-logs/server/lib/create-audited-admin-client";
+import type { AuditActor } from "@/features/audit-logs/shared/utils/audit-actor";
 
 export async function findAllCouncilSessions() {
   const supabase = createAdminClient();
@@ -74,8 +76,12 @@ export async function updateCouncilSessionRecord(
   return data;
 }
 
-export async function deleteCouncilSessionRecord(id: string) {
-  const supabase = createAdminClient();
+export async function deleteCouncilSessionRecord(
+  id: string,
+  actor: AuditActor
+) {
+  // 定例会を消すと議案の council_session_id が null になる。監査ログに実行者を残すため
+  const supabase = createAuditedAdminClient(actor);
   const { error } = await supabase
     .from("council_sessions")
     .delete()

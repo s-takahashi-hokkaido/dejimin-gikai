@@ -1,8 +1,8 @@
 "use server";
 
 import type { Database } from "@dejimin-gikai/supabase";
-import { createAdminClient } from "@dejimin-gikai/supabase";
 import { revalidatePath } from "next/cache";
+import { createAuditedAdminClient } from "@/features/audit-logs/server/lib/create-audited-admin-client";
 import { requireAdmin } from "@/features/auth/server/lib/auth-server";
 
 type ScalarUpdate = {
@@ -40,9 +40,9 @@ type MergeResult = {
 
 export async function mergeBills(input: MergeBillsInput): Promise<MergeResult> {
   try {
-    await requireAdmin();
+    const admin = await requireAdmin();
 
-    const supabase = createAdminClient();
+    const supabase = createAuditedAdminClient(admin);
     const warnings: string[] = [];
     const allBillIds = [input.keepBillId, ...input.deleteBillIds];
 
