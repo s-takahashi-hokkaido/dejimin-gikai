@@ -16,15 +16,12 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-const isDev = process.env.NODE_ENV === "development";
-
 export const metadata: Metadata = {
   title: `${siteConfig.siteName} Admin`,
   description: `${siteConfig.siteName}の管理者向けダッシュボード`,
   icons: {
-    icon: isDev
-      ? "/icons/pwa/icon_sapporo_dev.svg"
-      : "/icons/pwa/icon_sapporo.svg",
+    icon: "/icons/pwa/icon_sapporo.svg",
+    apple: "/icons/pwa/icon_ios.png",
   },
 };
 
