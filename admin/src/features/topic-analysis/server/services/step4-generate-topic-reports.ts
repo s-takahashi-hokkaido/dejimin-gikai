@@ -1,5 +1,6 @@
 import "server-only";
 
+import { openai } from "@ai-sdk/openai";
 import { generateObject } from "ai";
 import {
   TOPIC_ANALYSIS_MAX_CONCURRENCY,
@@ -56,7 +57,7 @@ async function generateSingleTopicReport(
   const sessionList = sessionIds.map((id, i) => `  ${i + 1}. ${id}`).join("\n");
 
   const result = await generateObject({
-    model: TOPIC_ANALYSIS_MODEL,
+    model: openai(TOPIC_ANALYSIS_MODEL),
     schema: topicReportSchema,
     prompt: `あなたは市民意見の分析レポートを作成します。
 

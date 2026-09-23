@@ -1,5 +1,6 @@
 import "server-only";
 
+import { openai } from "@ai-sdk/openai";
 import { convertToModelMessages, Output, streamText } from "ai";
 import { getBillById } from "@/features/bills-edit/server/loaders/get-bill-by-id";
 import { getBillContents } from "@/features/bills-edit/server/loaders/get-bill-contents";
@@ -90,7 +91,7 @@ export async function handleConfigGeneration({
   const result =
     stage === "theme_proposal"
       ? streamText({
-          model: AI_MODELS.gpt5_2,
+          model: openai(AI_MODELS.gpt5_2),
           system: systemPrompt,
           messages: modelMessages,
           output: Output.object({ schema: themeProposalSchema }),
@@ -99,7 +100,7 @@ export async function handleConfigGeneration({
           },
         })
       : streamText({
-          model: AI_MODELS.gpt5_2,
+          model: openai(AI_MODELS.gpt5_2),
           system: systemPrompt,
           messages: modelMessages,
           output: Output.object({ schema: questionProposalSchema }),

@@ -1,8 +1,8 @@
 import "server-only";
 
+import { openai } from "@ai-sdk/openai";
 import {
   convertToModelMessages,
-  gateway,
   type LanguageModel,
   type LanguageModelUsage,
   Output,
@@ -30,7 +30,10 @@ import type {
   InterviewMessage,
   InterviewSession,
 } from "@/features/interview-session/shared/types";
-import { AI_MODELS, DEFAULT_INTERVIEW_CHAT_MODEL } from "@/lib/ai/models";
+import {
+  DEFAULT_INTERVIEW_CHAT_MODEL,
+  INTERVIEW_SUMMARY_MODEL,
+} from "@/lib/ai/models";
 import { env } from "@/lib/env";
 import { logger } from "@/lib/logger";
 import { mergeMessagesWithIds } from "../../shared/utils/merge-messages-with-ids";
@@ -217,14 +220,14 @@ async function generateStreamingResponse({
   configChatModel?: string | null;
   stage: string;
 }) {
-  // summaryフェーズはGemini固定、chatフェーズは設定のモデルを優先
+  // summaryフェーズは固定のモデル、chatフェーズは設定のモデルを優先
   // コスト記録に使うためモデルIDは文字列としても保持する
   const modelId = isSummaryPhase
-    ? AI_MODELS.gemini3_flash
+    ? INTERVIEW_SUMMARY_MODEL
     : (configChatModel ?? DEFAULT_INTERVIEW_CHAT_MODEL);
   const model = isSummaryPhase
-    ? (summaryModel ?? gateway(modelId))
-    : (chatModel ?? gateway(modelId));
+    ? (summaryModel ?? openai(modelId))
+    : (chatModel ?? openai(modelId));
 
   const functionId = isSummaryPhase ? "interview-summary" : "interview-chat";
 

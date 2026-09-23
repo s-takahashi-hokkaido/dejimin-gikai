@@ -298,7 +298,7 @@ describe("handleInterviewChatRequest 統合テスト", () => {
       // 巻き込まないようユーザー単位上限(既定0.5USD)だけを超える額にする。
       await recordChatUsage({
         userId: testUser.id,
-        model: "openai/gpt-4o",
+        model: "gpt-4o",
         usage: {
           inputTokens: 0,
           outputTokens: 0,

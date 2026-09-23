@@ -2323,7 +2323,7 @@
           "name": "chat_model",
           "type": "text",
           "nullable": true,
-          "comment": "チャット用AIモデルID（Vercel AI Gateway形式 例:\"openai/gpt-4o-mini\" NULL=デフォルト）"
+          "comment": "チャット用AIモデルID（OpenAI API のモデルID 例:\"gpt-5-mini\" NULL=デフォルト）"
         },
         {
           "name": "estimated_duration",

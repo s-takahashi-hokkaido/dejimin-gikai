@@ -1,5 +1,6 @@
 import "server-only";
 
+import { openai } from "@ai-sdk/openai";
 import { generateObject } from "ai";
 import {
   TOPIC_ANALYSIS_BATCH_SIZE,
@@ -56,7 +57,7 @@ async function extractTopicsFromBatch(
     .join("\n\n");
 
   const { object } = await generateObject({
-    model: TOPIC_ANALYSIS_MODEL,
+    model: openai(TOPIC_ANALYSIS_MODEL),
     schema: topicExtractionSchema,
     prompt: `あなたは議案に対する市民の意見を分析する専門家です。
 

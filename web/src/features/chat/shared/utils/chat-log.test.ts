@@ -13,7 +13,7 @@ const context: ChatLogContext = {
   billId: "bill-1",
   promptName: "bill-chat-system-normal",
   promptVersionId: "version-1",
-  model: "openai/gpt-4o",
+  model: "gpt-4o",
 };
 
 describe("extractLatestUserText", () => {
@@ -90,7 +90,7 @@ describe("buildChatLogRows", () => {
         prompt_version_id: "version-1",
         role: "assistant",
         message: "応答",
-        model: "openai/gpt-4o",
+        model: "gpt-4o",
       },
     ]);
   });

@@ -10,7 +10,7 @@ export const TOPIC_ANALYSIS_MAX_CONCURRENCY = 10;
 export const TOPIC_ANALYSIS_MAX_REPRESENTATIVES = 5;
 
 /** トピック解析で使用するモデル */
-export const TOPIC_ANALYSIS_MODEL = AI_MODELS.gemini3_flash_preview;
+export const TOPIC_ANALYSIS_MODEL = AI_MODELS.gpt5_mini;
 
 /** 解析パイプラインの全ステップ数 */
 export const ANALYSIS_TOTAL_STEPS = 7;

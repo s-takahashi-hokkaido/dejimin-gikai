@@ -1,30 +1,24 @@
 /**
- * AIモデルの識別子を一元管理する定数（Vercel AI Gateway形式）
+ * AIモデルの識別子を一元管理する定数（OpenAI API のモデルID）
+ *
+ * LLM は OpenAI を直接呼ぶ（`@ai-sdk/openai` の `openai(modelId)`）。
+ * プライバシーポリシーで送信先を OpenAI 1社としているため、他社のモデルは足さないこと。
  */
 export const AI_MODELS = {
-  // --- OpenAI ---
-  gpt4o: "openai/gpt-4o",
-  gpt4o_mini: "openai/gpt-4o-mini",
-  gpt4_1: "openai/gpt-4.1",
-  gpt4_1_mini: "openai/gpt-4.1-mini",
-  gpt4_1_nano: "openai/gpt-4.1-nano",
-  o3_mini: "openai/o3-mini",
-  o4_mini: "openai/o4-mini",
-  gpt5: "openai/gpt-5",
-  gpt5_mini: "openai/gpt-5-mini",
-  gpt5_nano: "openai/gpt-5-nano",
-  gpt5_chat: "openai/gpt-5-chat",
-  gpt5_1_instant: "openai/gpt-5.1-instant",
-  gpt5_1_thinking: "openai/gpt-5.1-thinking",
-  gpt5_2: "openai/gpt-5.2",
-  // --- Google ---
-  gemini3_flash: "google/gemini-3-flash",
-  gemini3_flash_preview: "google/gemini-3-flash-preview",
-  gemini3_1_pro_preview: "google/gemini-3.1-pro-preview",
-  // --- Anthropic ---
-  claude_haiku_4_5: "anthropic/claude-haiku-4.5",
-  claude_sonnet_4_6: "anthropic/claude-sonnet-4.6",
-  claude_opus_4_6: "anthropic/claude-opus-4.6",
+  gpt4o: "gpt-4o",
+  gpt4o_mini: "gpt-4o-mini",
+  gpt4_1: "gpt-4.1",
+  gpt4_1_mini: "gpt-4.1-mini",
+  gpt4_1_nano: "gpt-4.1-nano",
+  o3_mini: "o3-mini",
+  o4_mini: "o4-mini",
+  gpt5: "gpt-5",
+  gpt5_mini: "gpt-5-mini",
+  gpt5_nano: "gpt-5-nano",
+  gpt5_chat: "gpt-5-chat-latest",
+  gpt5_1: "gpt-5.1",
+  gpt5_1_chat: "gpt-5.1-chat-latest",
+  gpt5_2: "gpt-5.2",
 } as const;
 
 export type AiModel = (typeof AI_MODELS)[keyof typeof AI_MODELS];
@@ -37,3 +31,10 @@ export type AiModel = (typeof AI_MODELS)[keyof typeof AI_MODELS];
  * interview_configs.chat_model で上書きする。
  */
 export const DEFAULT_INTERVIEW_CHAT_MODEL = AI_MODELS.gpt5_mini;
+
+/**
+ * インタビューの要約（summary フェーズ）で使うモデル
+ *
+ * 議案ごとの chat_model に左右されず、要約の品質を一定にするため固定する。
+ */
+export const INTERVIEW_SUMMARY_MODEL = AI_MODELS.gpt5_mini;
