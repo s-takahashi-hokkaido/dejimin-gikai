@@ -101,7 +101,7 @@ describe("canAccessPage", () => {
 
 describe("getVisibleNavItems", () => {
   it("運営者にはすべての項目を出す", () => {
-    expect(getVisibleNavItems("admin")).toHaveLength(8);
+    expect(getVisibleNavItems("admin")).toHaveLength(9);
   });
 
   it("議員には議案管理のみ", () => {

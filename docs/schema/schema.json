@@ -2798,12 +2798,6 @@
           "comment": "ユーザーID（匿名認証）"
         },
         {
-          "name": "langfuse_session_id",
-          "type": "text",
-          "nullable": true,
-          "comment": "LangfuseセッションID"
-        },
-        {
           "name": "started_at",
           "type": "timestamp with time zone",
           "nullable": false,
@@ -4365,6 +4359,398 @@
           "def": "CREATE TRIGGER bill_committees_audit_log AFTER INSERT OR DELETE OR UPDATE ON public.bill_committees FOR EACH ROW EXECUTE FUNCTION record_admin_audit_log()"
         }
       ]
+    },
+    {
+      "name": "public.prompts",
+      "type": "BASE TABLE",
+      "comment": "AIチャットのシステムプロンプト",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "nullable": false,
+          "default": "gen_random_uuid()"
+        },
+        {
+          "name": "name",
+          "type": "text",
+          "nullable": false,
+          "comment": "プロンプト名（コードから参照するキー。例: bill-chat-system-normal）"
+        },
+        {
+          "name": "description",
+          "type": "text",
+          "nullable": true,
+          "comment": "用途の説明"
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "nullable": false,
+          "default": "now()"
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "nullable": false,
+          "default": "now()"
+        },
+        {
+          "name": "active_version_id",
+          "type": "uuid",
+          "nullable": true,
+          "comment": "本番で使う版"
+        }
+      ],
+      "indexes": [
+        {
+          "name": "prompts_pkey",
+          "def": "CREATE UNIQUE INDEX prompts_pkey ON public.prompts USING btree (id)",
+          "table": "public.prompts",
+          "columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "prompts_name_key",
+          "def": "CREATE UNIQUE INDEX prompts_name_key ON public.prompts USING btree (name)",
+          "table": "public.prompts",
+          "columns": [
+            "name"
+          ]
+        }
+      ],
+      "constraints": [
+        {
+          "name": "prompts_pkey",
+          "type": "PRIMARY KEY",
+          "def": "PRIMARY KEY (id)",
+          "table": "public.prompts",
+          "referenced_table": "",
+          "columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "prompts_name_key",
+          "type": "UNIQUE",
+          "def": "UNIQUE (name)",
+          "table": "public.prompts",
+          "referenced_table": "",
+          "columns": [
+            "name"
+          ]
+        },
+        {
+          "name": "prompts_active_version_fkey",
+          "type": "FOREIGN KEY",
+          "def": "FOREIGN KEY (active_version_id, id) REFERENCES prompt_versions(id, prompt_id)",
+          "table": "public.prompts",
+          "referenced_table": "public.prompt_versions",
+          "columns": [
+            "active_version_id",
+            "id"
+          ],
+          "referenced_columns": [
+            "id",
+            "prompt_id"
+          ]
+        }
+      ],
+      "triggers": [
+        {
+          "name": "update_prompts_updated_at",
+          "def": "CREATE TRIGGER update_prompts_updated_at BEFORE UPDATE ON public.prompts FOR EACH ROW EXECUTE FUNCTION update_updated_at_column()"
+        }
+      ]
+    },
+    {
+      "name": "public.prompt_versions",
+      "type": "BASE TABLE",
+      "comment": "プロンプトの版（追記のみ）",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "nullable": false,
+          "default": "gen_random_uuid()"
+        },
+        {
+          "name": "prompt_id",
+          "type": "uuid",
+          "nullable": false
+        },
+        {
+          "name": "version",
+          "type": "integer",
+          "nullable": false,
+          "comment": "版番号（プロンプトごとに1から連番）"
+        },
+        {
+          "name": "content",
+          "type": "text",
+          "nullable": false,
+          "comment": "本文。{{変数名}} は呼び出し時に埋め込まれる"
+        },
+        {
+          "name": "note",
+          "type": "text",
+          "nullable": true,
+          "comment": "変更メモ"
+        },
+        {
+          "name": "created_by",
+          "type": "uuid",
+          "nullable": true,
+          "comment": "作成した管理者"
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "nullable": false,
+          "default": "now()"
+        }
+      ],
+      "indexes": [
+        {
+          "name": "prompt_versions_pkey",
+          "def": "CREATE UNIQUE INDEX prompt_versions_pkey ON public.prompt_versions USING btree (id)",
+          "table": "public.prompt_versions",
+          "columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "prompt_versions_prompt_id_version_key",
+          "def": "CREATE UNIQUE INDEX prompt_versions_prompt_id_version_key ON public.prompt_versions USING btree (prompt_id, version)",
+          "table": "public.prompt_versions",
+          "columns": [
+            "prompt_id",
+            "version"
+          ]
+        },
+        {
+          "name": "prompt_versions_id_prompt_id_key",
+          "def": "CREATE UNIQUE INDEX prompt_versions_id_prompt_id_key ON public.prompt_versions USING btree (id, prompt_id)",
+          "table": "public.prompt_versions",
+          "columns": [
+            "id",
+            "prompt_id"
+          ]
+        }
+      ],
+      "constraints": [
+        {
+          "name": "prompt_versions_version_check",
+          "type": "CHECK",
+          "def": "CHECK ((version \u003e 0))",
+          "table": "public.prompt_versions",
+          "referenced_table": "",
+          "columns": [
+            "version"
+          ]
+        },
+        {
+          "name": "prompt_versions_created_by_fkey",
+          "type": "FOREIGN KEY",
+          "def": "FOREIGN KEY (created_by) REFERENCES auth.users(id) ON DELETE SET NULL",
+          "table": "public.prompt_versions",
+          "referenced_table": "auth.users",
+          "columns": [
+            "created_by"
+          ],
+          "referenced_columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "prompt_versions_prompt_id_fkey",
+          "type": "FOREIGN KEY",
+          "def": "FOREIGN KEY (prompt_id) REFERENCES prompts(id) ON DELETE CASCADE",
+          "table": "public.prompt_versions",
+          "referenced_table": "public.prompts",
+          "columns": [
+            "prompt_id"
+          ],
+          "referenced_columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "prompt_versions_pkey",
+          "type": "PRIMARY KEY",
+          "def": "PRIMARY KEY (id)",
+          "table": "public.prompt_versions",
+          "referenced_table": "",
+          "columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "prompt_versions_prompt_id_version_key",
+          "type": "UNIQUE",
+          "def": "UNIQUE (prompt_id, version)",
+          "table": "public.prompt_versions",
+          "referenced_table": "",
+          "columns": [
+            "prompt_id",
+            "version"
+          ]
+        },
+        {
+          "name": "prompt_versions_id_prompt_id_key",
+          "type": "UNIQUE",
+          "def": "UNIQUE (id, prompt_id)",
+          "table": "public.prompt_versions",
+          "referenced_table": "",
+          "columns": [
+            "id",
+            "prompt_id"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "public.chat_logs",
+      "type": "BASE TABLE",
+      "comment": "AIチャットの会話ログ（保存期間90日。delete_expired_chat_logs で削除する）",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "nullable": false,
+          "default": "gen_random_uuid()"
+        },
+        {
+          "name": "user_id",
+          "type": "uuid",
+          "nullable": false,
+          "comment": "ユーザーID（Supabase匿名認証）"
+        },
+        {
+          "name": "session_id",
+          "type": "text",
+          "nullable": true,
+          "comment": "チャットのセッションID（ブラウザが発行）"
+        },
+        {
+          "name": "page_type",
+          "type": "text",
+          "nullable": false,
+          "comment": "チャットを開いたページ(home / bill / budget)"
+        },
+        {
+          "name": "bill_id",
+          "type": "uuid",
+          "nullable": true,
+          "comment": "議案ID（議案ページのみ）"
+        },
+        {
+          "name": "prompt_name",
+          "type": "text",
+          "nullable": false,
+          "comment": "使ったシステムプロンプトの名前"
+        },
+        {
+          "name": "prompt_version_id",
+          "type": "uuid",
+          "nullable": true,
+          "comment": "使ったプロンプトの版（DB管理外のプロンプトは NULL）"
+        },
+        {
+          "name": "role",
+          "type": "chat_role_enum",
+          "nullable": false,
+          "comment": "発言者(user / assistant)"
+        },
+        {
+          "name": "message",
+          "type": "text",
+          "nullable": false,
+          "comment": "発言の本文"
+        },
+        {
+          "name": "model",
+          "type": "text",
+          "nullable": true,
+          "comment": "応答したモデル（assistant のみ）"
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "nullable": false,
+          "default": "now()"
+        }
+      ],
+      "indexes": [
+        {
+          "name": "chat_logs_pkey",
+          "def": "CREATE UNIQUE INDEX chat_logs_pkey ON public.chat_logs USING btree (id)",
+          "table": "public.chat_logs",
+          "columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "chat_logs_created_at_idx",
+          "def": "CREATE INDEX chat_logs_created_at_idx ON public.chat_logs USING btree (created_at)",
+          "table": "public.chat_logs",
+          "columns": [
+            "created_at"
+          ]
+        },
+        {
+          "name": "chat_logs_session_id_idx",
+          "def": "CREATE INDEX chat_logs_session_id_idx ON public.chat_logs USING btree (session_id)",
+          "table": "public.chat_logs",
+          "columns": [
+            "session_id"
+          ]
+        },
+        {
+          "name": "chat_logs_bill_id_idx",
+          "def": "CREATE INDEX chat_logs_bill_id_idx ON public.chat_logs USING btree (bill_id)",
+          "table": "public.chat_logs",
+          "columns": [
+            "bill_id"
+          ]
+        }
+      ],
+      "constraints": [
+        {
+          "name": "chat_logs_page_type_check",
+          "type": "CHECK",
+          "def": "CHECK ((page_type = ANY (ARRAY['home'::text, 'bill'::text, 'budget'::text])))",
+          "table": "public.chat_logs",
+          "referenced_table": "",
+          "columns": [
+            "page_type"
+          ]
+        },
+        {
+          "name": "chat_logs_prompt_version_id_fkey",
+          "type": "FOREIGN KEY",
+          "def": "FOREIGN KEY (prompt_version_id) REFERENCES prompt_versions(id) ON DELETE SET NULL",
+          "table": "public.chat_logs",
+          "referenced_table": "public.prompt_versions",
+          "columns": [
+            "prompt_version_id"
+          ],
+          "referenced_columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "chat_logs_pkey",
+          "type": "PRIMARY KEY",
+          "def": "PRIMARY KEY (id)",
+          "table": "public.chat_logs",
+          "referenced_table": "",
+          "columns": [
+            "id"
+          ]
+        }
+      ]
     }
   ],
   "relations": [
@@ -4770,6 +5156,60 @@
       ],
       "parent_cardinality": "exactly_one",
       "def": "FOREIGN KEY (committee_id) REFERENCES committees(id) ON DELETE RESTRICT"
+    },
+    {
+      "table": "public.prompts",
+      "columns": [
+        "active_version_id",
+        "id"
+      ],
+      "cardinality": "zero_or_more",
+      "parent_table": "public.prompt_versions",
+      "parent_columns": [
+        "id",
+        "prompt_id"
+      ],
+      "parent_cardinality": "exactly_one",
+      "def": "FOREIGN KEY (active_version_id, id) REFERENCES prompt_versions(id, prompt_id)"
+    },
+    {
+      "table": "public.prompt_versions",
+      "columns": [
+        "created_by"
+      ],
+      "cardinality": "zero_or_more",
+      "parent_table": "auth.users",
+      "parent_columns": [
+        "id"
+      ],
+      "parent_cardinality": "zero_or_one",
+      "def": "FOREIGN KEY (created_by) REFERENCES auth.users(id) ON DELETE SET NULL"
+    },
+    {
+      "table": "public.prompt_versions",
+      "columns": [
+        "prompt_id"
+      ],
+      "cardinality": "zero_or_more",
+      "parent_table": "public.prompts",
+      "parent_columns": [
+        "id"
+      ],
+      "parent_cardinality": "exactly_one",
+      "def": "FOREIGN KEY (prompt_id) REFERENCES prompts(id) ON DELETE CASCADE"
+    },
+    {
+      "table": "public.chat_logs",
+      "columns": [
+        "prompt_version_id"
+      ],
+      "cardinality": "zero_or_more",
+      "parent_table": "public.prompt_versions",
+      "parent_columns": [
+        "id"
+      ],
+      "parent_cardinality": "zero_or_one",
+      "def": "FOREIGN KEY (prompt_version_id) REFERENCES prompt_versions(id) ON DELETE SET NULL"
     }
   ],
   "functions": [
@@ -4825,6 +5265,18 @@
       "name": "public.replace_bill_committees",
       "return_type": "void",
       "arguments": "p_bill_id uuid, p_committee_ids uuid[]",
+      "type": "FUNCTION"
+    },
+    {
+      "name": "public.create_prompt_version",
+      "return_type": "prompt_versions",
+      "arguments": "p_prompt_id uuid, p_content text, p_note text DEFAULT NULL::text, p_created_by uuid DEFAULT NULL::uuid, p_base_version_id uuid DEFAULT NULL::uuid",
+      "type": "FUNCTION"
+    },
+    {
+      "name": "public.delete_expired_chat_logs",
+      "return_type": "int4",
+      "arguments": "p_retention_days integer DEFAULT 90",
       "type": "FUNCTION"
     }
   ],

@@ -24,7 +24,7 @@
 | [public.interview_messages](public.interview_messages.md) | 5 | インタビュー内の質問と回答を保存するテーブル | BASE TABLE |
 | [public.interview_questions](public.interview_questions.md) | 8 | 事前定義されたインタビュー質問を管理するテーブル | BASE TABLE |
 | [public.interview_report](public.interview_report.md) | 14 | インタビュー結果のレポートを保存するテーブル（AIが自動生成） | BASE TABLE |
-| [public.interview_sessions](public.interview_sessions.md) | 10 | インタビューセッションを管理するテーブル | BASE TABLE |
+| [public.interview_sessions](public.interview_sessions.md) | 9 | インタビューセッションを管理するテーブル | BASE TABLE |
 | [public.press_conference_items](public.press_conference_items.md) | 7 | 記者会見項目 | BASE TABLE |
 | [public.press_conference_turns](public.press_conference_turns.md) | 7 | 記者会見の発言ターン | BASE TABLE |
 | [public.press_conferences](public.press_conferences.md) | 8 | 記者会見 | BASE TABLE |
@@ -37,6 +37,9 @@
 | [public.admin_profiles](public.admin_profiles.md) | 6 | 管理画面利用者のロールと所属会派 | BASE TABLE |
 | [public.admin_audit_logs](public.admin_audit_logs.md) | 12 | 管理画面からの変更履歴（議案・議案コンテンツ・会派見解・付託委員会） | BASE TABLE |
 | [public.bill_committees](public.bill_committees.md) | 3 | 議案の付託委員会（1議案に複数の委員会を付託できる） | BASE TABLE |
+| [public.prompts](public.prompts.md) | 6 | AIチャットのシステムプロンプト | BASE TABLE |
+| [public.prompt_versions](public.prompt_versions.md) | 7 | プロンプトの版（追記のみ） | BASE TABLE |
+| [public.chat_logs](public.chat_logs.md) | 11 | AIチャットの会話ログ（保存期間90日。delete_expired_chat_logs で削除する） | BASE TABLE |
 
 ## Stored procedures and functions
 
@@ -51,6 +54,8 @@
 | public.get_ai_usage_cost_usd | numeric | from_ts timestamp with time zone, to_ts timestamp with time zone, target_user_id uuid DEFAULT NULL::uuid | FUNCTION |
 | public.record_admin_audit_log | trigger |  | FUNCTION |
 | public.replace_bill_committees | void | p_bill_id uuid, p_committee_ids uuid[] | FUNCTION |
+| public.create_prompt_version | prompt_versions | p_prompt_id uuid, p_content text, p_note text DEFAULT NULL::text, p_created_by uuid DEFAULT NULL::uuid, p_base_version_id uuid DEFAULT NULL::uuid | FUNCTION |
+| public.delete_expired_chat_logs | int4 | p_retention_days integer DEFAULT 90 | FUNCTION |
 
 ## Enums
 
@@ -113,6 +118,10 @@ erDiagram
 "public.admin_profiles" }o--o| "public.factions" : "FOREIGN KEY (faction_id) REFERENCES factions(id) ON DELETE RESTRICT"
 "public.bill_committees" }o--|| "public.bills" : "FOREIGN KEY (bill_id) REFERENCES bills(id) ON DELETE CASCADE"
 "public.bill_committees" }o--|| "public.committees" : "FOREIGN KEY (committee_id) REFERENCES committees(id) ON DELETE RESTRICT"
+"public.prompts" }o--|| "public.prompt_versions" : "FOREIGN KEY (active_version_id, id) REFERENCES prompt_versions(id, prompt_id)"
+"public.prompt_versions" }o--o| "auth.users" : "FOREIGN KEY (created_by) REFERENCES auth.users(id) ON DELETE SET NULL"
+"public.prompt_versions" }o--|| "public.prompts" : "FOREIGN KEY (prompt_id) REFERENCES prompts(id) ON DELETE CASCADE"
+"public.chat_logs" }o--o| "public.prompt_versions" : "FOREIGN KEY (prompt_version_id) REFERENCES prompt_versions(id) ON DELETE SET NULL"
 
 "auth.users" {
   uuid instance_id
@@ -376,7 +385,6 @@ erDiagram
   uuid id
   uuid interview_config_id FK
   uuid user_id
-  text langfuse_session_id
   timestamp_with_time_zone started_at
   timestamp_with_time_zone completed_at
   timestamp_with_time_zone created_at
@@ -491,6 +499,36 @@ erDiagram
 "public.bill_committees" {
   uuid bill_id FK
   uuid committee_id FK
+  timestamp_with_time_zone created_at
+}
+"public.prompts" {
+  uuid id FK
+  text name
+  text description
+  timestamp_with_time_zone created_at
+  timestamp_with_time_zone updated_at
+  uuid active_version_id FK
+}
+"public.prompt_versions" {
+  uuid id
+  uuid prompt_id FK
+  integer version
+  text content
+  text note
+  uuid created_by FK
+  timestamp_with_time_zone created_at
+}
+"public.chat_logs" {
+  uuid id
+  uuid user_id
+  text session_id
+  text page_type
+  uuid bill_id
+  text prompt_name
+  uuid prompt_version_id FK
+  chat_role_enum role
+  text message
+  text model
   timestamp_with_time_zone created_at
 }
 ```
