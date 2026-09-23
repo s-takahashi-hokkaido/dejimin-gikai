@@ -5,6 +5,7 @@ import { InterviewLPPage } from "@/features/interview-config/client/components/i
 import { getInterviewConfig } from "@/features/interview-config/server/loaders/get-interview-config";
 import { getLatestInterviewSession } from "@/features/interview-session/server/loaders/get-latest-interview-session";
 import { env } from "@/lib/env";
+import { resolveDefaultOgImageUrl } from "@/lib/utils/og-image";
 
 interface InterviewPageProps {
   params: Promise<{
@@ -26,7 +27,7 @@ export async function generateMetadata({
 
   const billName = bill.bill_content?.title ?? bill.name;
   const description = `議案についてのAIインタビュー - ${billName}`;
-  const defaultOgpUrl = new URL("/ogp.svg", env.webUrl).toString();
+  const defaultOgpUrl = resolveDefaultOgImageUrl(env.webUrl);
   const shareImageUrl =
     bill.share_thumbnail_url || bill.thumbnail_url || defaultOgpUrl;
 

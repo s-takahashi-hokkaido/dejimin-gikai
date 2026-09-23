@@ -70,8 +70,8 @@
 |---------|------|------|
 | `web/public/img/logo.svg` | サイトロゴ | 「みらい議会／＠札幌市」テキストロゴに差し替え |
 | `web/public/img/hero_background.png` | TOPヒーロー背景 | 札幌の街並み or 雪景色 + テーマカラーオーバーレイ |
-| `web/public/ogp.jpg` (1200×630) | OGP/SNSシェア画像 | 札幌市版に差し替え |
-| `web/public/icons/pwa/icon_fukuoka.svg` | PWAアイコン | **ファイル名ごと `icon_sapporo.svg` 等にリネーム**し、参照側 (`layout.tsx`, `manifest.json`) も書き換え |
+| `web/public/ogp.png` (1200×630) | OGP/SNSシェア画像 | 札幌市版に差し替え。SNS各社はSVGを受け付けないため必ずPNG/JPGにする（原本は `docs/assets/ogp.svg`、参照先は `siteConfig.ogImage`） |
+| `web/public/icons/pwa/icon_fukuoka.svg` | PWAアイコン | **ファイル名ごと `icon_sapporo.svg` 等にリネーム**し、参照側 (`layout.tsx`, `manifest.json`) も書き換え。`admin/public/icons/pwa/` 配下も同じアイコンに差し替えること |
 | `web/public/icons/pwa/icon_ios.png` (180×180) | iOS PWA | 札幌アイコンに差し替え |
 | `web/public/icons/pwa/icon_android_192.png` / `icon_android_512.png` | Android PWA | 同上 |
 
@@ -158,7 +158,7 @@ FORK_GUIDELINES が直接禁じているのは upstream のティール (`#2aa69
       `icon_android_512.png` を札幌市アイコンに差し替え
 - [ ] `web/public/img/logo.svg` を札幌市版テキストロゴに差し替え
 - [ ] `web/public/img/hero_background.png` を札幌市らしい画像に差し替え
-- [ ] `web/public/ogp.jpg` を札幌市版 OGP に差し替え
+- [ ] `web/public/ogp.png` を札幌市版 OGP に差し替え（原本 `docs/assets/ogp.svg` を 1200×630 の PNG に書き出す）
 - [ ] （任意）`globals.css` のカラートークンを札幌色に更新
 
 ### Phase C: コンテンツ・データ差し替え（複数 PR）
