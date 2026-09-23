@@ -6,7 +6,9 @@ import { getErrorMessage } from "@/lib/utils/get-error-message";
 import type { CreateAdminInput } from "../../shared/types";
 import { validateEmail } from "../../shared/utils/validate-email";
 import {
+  createAdminRoleProfile,
   createAuthUser,
+  deleteAuthUser,
   findAdminUsers,
 } from "../repositories/admin-repository";
 
@@ -39,8 +41,9 @@ export async function createAdmin(input: CreateAdminInput) {
     }
 
     // パスワード指定で管理者ユーザーを作成
+    let userId: string;
     try {
-      await createAuthUser({ email, password });
+      userId = await createAuthUser({ email, password });
     } catch (createError) {
       const msg = getErrorMessage(createError, "");
       if (
@@ -53,6 +56,21 @@ export async function createAdmin(input: CreateAdminInput) {
       }
       return {
         error: `管理者の作成に失敗しました: ${getErrorMessage(createError, "不明なエラー")}`,
+      };
+    }
+
+    // 利用資格は admin_profiles で判定するため、行が無いとログイン直後に弾かれる。
+    // 作れなかった場合はログインできないユーザーを残さないよう Auth ユーザーも消す
+    try {
+      await createAdminRoleProfile({ userId, displayName: email });
+    } catch (profileError) {
+      try {
+        await deleteAuthUser(userId);
+      } catch (rollbackError) {
+        console.error("Rollback of auth user failed:", rollbackError);
+      }
+      return {
+        error: `管理者の作成に失敗しました: ${getErrorMessage(profileError, "不明なエラー")}`,
       };
     }
 

@@ -381,7 +381,7 @@ export async function findPublishedBillsByTag(
 }
 
 /**
- * 注目の議案を取得（is_featured = true）
+ * 注目の議案を取得（公開済みかつ is_featured = true）
  */
 export async function findFeaturedBillsWithContents(
   difficultyLevel: DifficultyLevelEnum,
@@ -411,6 +411,7 @@ export async function findFeaturedBillsWithContents(
       )
     `
     )
+    .eq("publish_status", "published")
     .eq("is_featured", true)
     .eq("bill_contents.difficulty_level", difficultyLevel)
     .order("published_at", { ascending: false });

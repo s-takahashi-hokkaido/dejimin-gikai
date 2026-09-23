@@ -545,6 +545,23 @@ describe("bill-repository 統合テスト", () => {
       expect(found).toBeUndefined();
     });
 
+    it.each([
+      "draft",
+      "coming_soon",
+    ] as const)("is_featured=trueでも%sの議案は含まれない", async (status) => {
+      const bill = await createTestBill({
+        publish_status: status,
+        is_featured: true,
+      });
+      billIds.push(bill.id);
+      await createTestBillContent(bill.id, { difficulty_level: "normal" });
+
+      const result = await findFeaturedBillsWithContents("normal", null);
+
+      const found = result.find((b) => b.id === bill.id);
+      expect(found).toBeUndefined();
+    });
+
     it("councilSessionIdがnullの場合は全会期から取得できる", async () => {
       const bill = await createTestBill({
         publish_status: "published",
