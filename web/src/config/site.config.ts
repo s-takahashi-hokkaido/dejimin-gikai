@@ -4,13 +4,13 @@
  * @see docs/20260520_1900_札幌市版FORK_GUIDELINES適応手順書.md
  */
 export const siteConfig = {
-  siteName: "みらい議会＠札幌市",
+  siteName: "デジ民議会",
   siteDescription:
     "札幌市議会で今どんな議案が検討されているか、わかりやすく伝えるプラットフォームです",
   cityName: "札幌市",
   councilName: "札幌市議会",
   keywords: [
-    "みらい議会ー札幌市版",
+    "デジ民議会",
     "議案",
     "札幌市",
     "市議会",
@@ -22,7 +22,7 @@ export const siteConfig = {
   /** 議案・議決結果の一覧ページ */
   councilBillsDetailUrl:
     "https://www.city.sapporo.jp/gikai/html/giantouichiran.html",
-  twitterHashtag: "みらい議会札幌市版", // # なし
+  twitterHashtag: "デジ民議会", // # なし
   /**
    * OGP / SNS シェア用のデフォルト画像。
    * X・Facebook・LINE 等は OGP 画像に SVG を受け付けないため PNG を配信する。
@@ -38,9 +38,6 @@ export const siteConfig = {
     aboutNote: "",
     donation: "https://team-mir.ai/support/donation",
     teamAbout: "https://team-mir.ai/about",
-    terms: "https://team-mir.ai/terms",
-    privacy: "https://team-mir.ai/privacy",
-    faq: "https://team-mirai.notion.site/FAQ-28cf6f56bae180bd84e7f7ae80f806a1",
   },
   /**
    * ページを管理する政党名（空文字列の場合は政党名を省略した汎用表現を使用）

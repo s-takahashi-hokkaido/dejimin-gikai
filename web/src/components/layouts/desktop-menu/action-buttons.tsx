@@ -19,17 +19,20 @@ export function DesktopMenuActionButtons() {
         {siteConfig.siteName}とは
       </LinkButton>
 
-      <LinkButton
-        href={siteConfig.externalLinks.donation}
-        icon={{
-          src: "/icons/heart-icon.svg",
-          alt: "寄附",
-          width: 20,
-          height: 20,
-        }}
-      >
-        寄附で応援する
-      </LinkButton>
+      {/* 寄附先はチームみらいのため、フッターと同じくチームみらいセクション表示時のみ出す */}
+      {siteConfig.features.showTeamMiraiSection && (
+        <LinkButton
+          href={siteConfig.externalLinks.donation}
+          icon={{
+            src: "/icons/heart-icon.svg",
+            alt: "寄附",
+            width: 20,
+            height: 20,
+          }}
+        >
+          寄附で応援する
+        </LinkButton>
+      )}
     </div>
   );
 }
