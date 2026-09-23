@@ -5,7 +5,7 @@
   <!-- 中央ボックス -->
   <rect x="200" y="140" width="800" height="350" rx="12" stroke="#3b82c4" stroke-width="4" fill="white"/>
   <!-- メインテキスト -->
-  <text x="600" y="270" font-family="Noto Sans JP, sans-serif" font-size="80" font-weight="bold" fill="#3b82c4" text-anchor="middle">みらい議会</text>
+  <text x="600" y="270" font-family="Noto Sans JP, sans-serif" font-size="80" font-weight="bold" fill="#3b82c4" text-anchor="middle">デジ民議会</text>
   <!-- 区切り線 -->
   <line x1="280" y1="305" x2="920" y2="305" stroke="#3b82c4" stroke-width="2"/>
   <!-- サブテキスト -->

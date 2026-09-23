@@ -3,7 +3,7 @@
  * Fork して別の地方議会向けに使用する場合はこのファイルを変更してください。
  */
 export const siteConfig = {
-  siteName: "みらい議会ー札幌市版",
+  siteName: "デジ民議会",
   cityName: "札幌市",
   councilName: "札幌市議会",
   councilBaseUrl: "https://www.city.sapporo.jp/gikai/",
