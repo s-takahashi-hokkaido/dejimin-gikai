@@ -67,7 +67,7 @@ erDiagram
   uuid user_id
   text session_id
   text page_type
-  uuid bill_id FK
+  uuid bill_id
   text prompt_name
   uuid prompt_version_id FK
   chat_role_enum role

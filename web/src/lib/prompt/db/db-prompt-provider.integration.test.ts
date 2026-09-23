@@ -57,6 +57,21 @@ describe("DbPromptProvider 統合テスト", () => {
     expect(result.content).toBe("1版");
   });
 
+  it("編集を始めた版から有効な版が変わっていたら、新しい版を保存しない", async () => {
+    const first = await createVersion("1版");
+    await createVersion("別の管理者が先に保存した2版");
+
+    const { error } = await adminClient.rpc("create_prompt_version", {
+      p_prompt_id: promptId,
+      p_content: "1版をもとに編集した本文",
+      p_base_version_id: first.id,
+    });
+
+    expect(error?.code).toBe("P0409");
+    const result = await new DbPromptProvider().getPrompt(promptName);
+    expect(result.content).toBe("別の管理者が先に保存した2版");
+  });
+
   it("有効な版が無ければエラーにする", async () => {
     await expect(new DbPromptProvider().getPrompt(promptName)).rejects.toThrow(
       "has no active version"

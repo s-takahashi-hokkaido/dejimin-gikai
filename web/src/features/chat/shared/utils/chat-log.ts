@@ -13,6 +13,20 @@ export type ChatLogContext = {
   model: string;
 };
 
+const PAGE_TYPES = ["home", "bill", "budget"] as const;
+
+/**
+ * ブラウザが送ってきたページ種別を、会話ログに入れられる値に揃える
+ *
+ * handleChatRequest は home・budget 以外を議案のチャットとして扱うため、
+ * それ以外の値は "bill" にする（DB の check 制約でログごと落ちないように）。
+ */
+export function normalizeChatPageType(
+  value: string | undefined
+): ChatLogContext["pageType"] {
+  return PAGE_TYPES.find((type) => type === value) ?? "bill";
+}
+
 /**
  * 最新のユーザーの発言のテキストを取り出す
  *

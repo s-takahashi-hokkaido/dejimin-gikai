@@ -15,10 +15,15 @@ import {
 
 type PromptEditorProps = {
   promptId: string;
+  activeVersionId: string | null;
   activeContent: string;
 };
 
-export function PromptEditor({ promptId, activeContent }: PromptEditorProps) {
+export function PromptEditor({
+  promptId,
+  activeVersionId,
+  activeContent,
+}: PromptEditorProps) {
   const contentId = useId();
   const noteId = useId();
   const [content, setContent] = useState(activeContent);
@@ -47,7 +52,12 @@ export function PromptEditor({ promptId, activeContent }: PromptEditorProps) {
 
     setIsSubmitting(true);
     try {
-      const result = await savePromptVersion({ promptId, content, note });
+      const result = await savePromptVersion({
+        promptId,
+        content,
+        note,
+        baseVersionId: activeVersionId,
+      });
       if (result.error) {
         toast.error(result.error);
       } else {

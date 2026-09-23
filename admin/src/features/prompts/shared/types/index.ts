@@ -28,4 +28,6 @@ export type SavePromptVersionInput = {
   promptId: string;
   content: string;
   note: string;
+  /** 編集を始めた時点の有効な版 */
+  baseVersionId: string | null;
 };

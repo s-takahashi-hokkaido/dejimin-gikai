@@ -52,6 +52,7 @@ export default async function PromptDetailPage({
           // 版が切り替わったら、その版の本文で編集し直す
           key={prompt.activeVersion?.id ?? "none"}
           promptId={prompt.id}
+          activeVersionId={prompt.activeVersion?.id ?? null}
           activeContent={prompt.activeVersion?.content ?? ""}
         />
       </section>

@@ -12,7 +12,7 @@ AIチャットの会話ログ（保存期間90日。delete_expired_chat_logs で
 | user_id | uuid |  | false |  |  | ユーザーID（Supabase匿名認証） |
 | session_id | text |  | true |  |  | チャットのセッションID（ブラウザが発行） |
 | page_type | text |  | false |  |  | チャットを開いたページ(home / bill / budget) |
-| bill_id | uuid |  | true |  | [public.bills](public.bills.md) | 議案ID（議案ページのみ） |
+| bill_id | uuid |  | true |  |  | 議案ID（議案ページのみ） |
 | prompt_name | text |  | false |  |  | 使ったシステムプロンプトの名前 |
 | prompt_version_id | uuid |  | true |  | [public.prompt_versions](public.prompt_versions.md) | 使ったプロンプトの版（DB管理外のプロンプトは NULL） |
 | role | chat_role_enum |  | false |  |  | 発言者(user / assistant) |
@@ -25,7 +25,6 @@ AIチャットの会話ログ（保存期間90日。delete_expired_chat_logs で
 | Name | Type | Definition |
 | ---- | ---- | ---------- |
 | chat_logs_page_type_check | CHECK | CHECK ((page_type = ANY (ARRAY['home'::text, 'bill'::text, 'budget'::text]))) |
-| chat_logs_bill_id_fkey | FOREIGN KEY | FOREIGN KEY (bill_id) REFERENCES bills(id) ON DELETE SET NULL |
 | chat_logs_prompt_version_id_fkey | FOREIGN KEY | FOREIGN KEY (prompt_version_id) REFERENCES prompt_versions(id) ON DELETE SET NULL |
 | chat_logs_pkey | PRIMARY KEY | PRIMARY KEY (id) |
 
@@ -43,7 +42,6 @@ AIチャットの会話ログ（保存期間90日。delete_expired_chat_logs で
 ```mermaid
 erDiagram
 
-"public.chat_logs" }o--o| "public.bills" : "FOREIGN KEY (bill_id) REFERENCES bills(id) ON DELETE SET NULL"
 "public.chat_logs" }o--o| "public.prompt_versions" : "FOREIGN KEY (prompt_version_id) REFERENCES prompt_versions(id) ON DELETE SET NULL"
 
 "public.chat_logs" {
@@ -51,34 +49,13 @@ erDiagram
   uuid user_id
   text session_id
   text page_type
-  uuid bill_id FK
+  uuid bill_id
   text prompt_name
   uuid prompt_version_id FK
   chat_role_enum role
   text message
   text model
   timestamp_with_time_zone created_at
-}
-"public.bills" {
-  uuid id
-  text name
-  bill_status_enum status
-  text status_note
-  timestamp_with_time_zone published_at
-  timestamp_with_time_zone created_at
-  timestamp_with_time_zone updated_at
-  text thumbnail_url
-  bill_publish_status publish_status
-  boolean is_featured
-  text share_thumbnail_url
-  uuid council_session_id FK
-  uuid committee_id FK
-  integer publish_status_order
-  text bill_number
-  integer status_order
-  text source_url
-  text bill_type
-  text__ discussion_overview_points
 }
 "public.prompt_versions" {
   uuid id

@@ -531,13 +531,6 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "chat_logs_bill_id_fkey"
-            columns: ["bill_id"]
-            isOneToOne: false
-            referencedRelation: "bills"
-            referencedColumns: ["id"]
-          },
-          {
             foreignKeyName: "chat_logs_prompt_version_id_fkey"
             columns: ["prompt_version_id"]
             isOneToOne: false
@@ -1529,6 +1522,7 @@ export type Database = {
       }
       create_prompt_version: {
         Args: {
+          p_base_version_id?: string
           p_content: string
           p_created_by?: string
           p_note?: string

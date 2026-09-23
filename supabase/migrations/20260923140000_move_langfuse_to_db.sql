@@ -61,22 +61,33 @@ comment on column public.prompt_versions.note is '変更メモ';
 comment on column public.prompt_versions.created_by is '作成した管理者';
 
 -- 新しい版を追加して有効にする。版番号の採番と付け替えを1トランザクションで行う
+--
+-- p_base_version_id を渡すと、有効な版がそれから変わっていた場合は保存しない
+-- （別の管理者が先に保存した版を、古い本文で黙って上書きしないため）
 create function public.create_prompt_version(
   p_prompt_id uuid,
   p_content text,
   p_note text default null,
-  p_created_by uuid default null
+  p_created_by uuid default null,
+  p_base_version_id uuid default null
 ) returns public.prompt_versions
 language plpgsql
 set search_path = ''
 as $$
 declare
   v_version public.prompt_versions;
+  v_active_version_id uuid;
 begin
   -- 同時に保存されたときに版番号が重ならないよう、親の行をロックする
-  perform 1 from public.prompts where id = p_prompt_id for update;
+  select active_version_id into v_active_version_id
+  from public.prompts where id = p_prompt_id for update;
   if not found then
     raise exception 'prompt not found: %', p_prompt_id;
+  end if;
+
+  if p_base_version_id is not null
+     and v_active_version_id is distinct from p_base_version_id then
+    raise exception 'active version has changed' using errcode = 'P0409';
   end if;
 
   insert into public.prompt_versions (prompt_id, version, content, note, created_by)
@@ -98,7 +109,7 @@ begin
 end;
 $$;
 
-revoke execute on function public.create_prompt_version(uuid, text, text, uuid)
+revoke execute on function public.create_prompt_version(uuid, text, text, uuid, uuid)
   from public, anon, authenticated;
 
 -- 初期データ: Langfuse の production ラベルの本文（2026-09-23 時点）
@@ -211,7 +222,8 @@ create table public.chat_logs (
   user_id uuid not null,
   session_id text,
   page_type text not null check (page_type in ('home', 'bill', 'budget')),
-  bill_id uuid references public.bills(id) on delete set null,
+  -- ブラウザが送ってきた値をそのまま記録する。存在しない議案 ID でもログを落とさないよう外部キーは張らない
+  bill_id uuid,
   prompt_name text not null,
   prompt_version_id uuid references public.prompt_versions(id) on delete set null,
   role public.chat_role_enum not null,

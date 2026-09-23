@@ -1,6 +1,16 @@
 import "server-only";
 import { createAdminClient } from "@dejimin-gikai/supabase";
 
+/** create_prompt_version が返す「有効な版が変わっていた」のエラーコード */
+const ACTIVE_VERSION_CHANGED = "P0409";
+
+export class ActiveVersionChangedError extends Error {
+  constructor() {
+    super("active version has changed");
+    this.name = "ActiveVersionChangedError";
+  }
+}
+
 export async function findPrompts() {
   const supabase = createAdminClient();
   const { data, error } = await supabase
@@ -39,6 +49,8 @@ export async function createPromptVersion(params: {
   content: string;
   note: string | null;
   createdBy: string;
+  /** 編集を始めた時点の有効な版。有効な版が変わっていたら保存しない */
+  baseVersionId: string | null;
 }) {
   const supabase = createAdminClient();
   const { data, error } = await supabase.rpc("create_prompt_version", {
@@ -46,9 +58,13 @@ export async function createPromptVersion(params: {
     p_content: params.content,
     p_note: params.note ?? undefined,
     p_created_by: params.createdBy,
+    p_base_version_id: params.baseVersionId ?? undefined,
   });
 
   if (error) {
+    if (error.code === ACTIVE_VERSION_CHANGED) {
+      throw new ActiveVersionChangedError();
+    }
     throw new Error(`Failed to create prompt version: ${error.message}`);
   }
   return data;

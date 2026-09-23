@@ -3,6 +3,7 @@ import {
   buildChatLogRows,
   type ChatLogContext,
   extractLatestUserText,
+  normalizeChatPageType,
 } from "./chat-log";
 
 const context: ChatLogContext = {
@@ -46,6 +47,17 @@ describe("extractLatestUserText", () => {
         { role: "assistant", parts: [{ type: "text", text: "応答" }] },
       ])
     ).toBe("");
+  });
+});
+
+describe("normalizeChatPageType", () => {
+  it.each(["home", "bill", "budget"] as const)("%s はそのまま返す", (type) => {
+    expect(normalizeChatPageType(type)).toBe(type);
+  });
+
+  it("未指定や想定外の値は議案のチャットとして扱う", () => {
+    expect(normalizeChatPageType(undefined)).toBe("bill");
+    expect(normalizeChatPageType("unknown")).toBe("bill");
   });
 });
 

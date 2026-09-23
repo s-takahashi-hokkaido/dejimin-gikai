@@ -24,6 +24,7 @@ import { createPromptProvider, type PromptProvider } from "@/lib/prompt";
 import {
   buildChatLogRows,
   extractLatestUserText,
+  normalizeChatPageType,
 } from "../../shared/utils/chat-log";
 import { insertChatLogs } from "../repositories/chat-log-repository";
 import { checkDailyCostGuard, recordChatUsage } from "./cost-tracker";
@@ -155,7 +156,7 @@ export async function handleChatRequest({
               context: {
                 userId,
                 sessionId: context.sessionId,
-                pageType: context.pageContext?.type ?? "bill",
+                pageType: normalizeChatPageType(context.pageContext?.type),
                 billId: context.billContext?.id ?? null,
                 promptName,
                 promptVersionId: promptResult.versionId,

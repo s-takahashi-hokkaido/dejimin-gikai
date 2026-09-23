@@ -5,6 +5,7 @@ import { requireAdmin } from "@/features/auth/server/lib/auth-server";
 import { getErrorMessage } from "@/lib/utils/get-error-message";
 import type { SavePromptVersionInput } from "../../shared/types";
 import {
+  ActiveVersionChangedError,
   createPromptVersion,
   updateActivePromptVersion,
 } from "../repositories/prompt-repository";
@@ -23,11 +24,18 @@ export async function savePromptVersion(input: SavePromptVersionInput) {
       content: input.content,
       note: input.note.trim() || null,
       createdBy: admin.id,
+      baseVersionId: input.baseVersionId,
     });
 
     revalidatePath("/prompts");
     return { data: { version: version.version } };
   } catch (error) {
+    if (error instanceof ActiveVersionChangedError) {
+      return {
+        error:
+          "編集を始めてから有効な版が変わりました。ページを再読み込みして最新の版を確認してください",
+      };
+    }
     console.error("Save prompt version error:", error);
     return {
       error: getErrorMessage(error, "プロンプトの保存中にエラーが発生しました"),

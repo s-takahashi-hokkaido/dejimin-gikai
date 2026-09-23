@@ -21,7 +21,7 @@ export function PromptVersionList({
   const handleActivate = async (version: PromptVersion) => {
     if (
       !confirm(
-        `版 ${version.version} に戻し、本番の AI チャットにすぐ反映します。よろしいですか？`
+        `版 ${version.version} に戻し、本番の AI チャットにすぐ反映します。編集欄の保存していない変更は破棄されます。よろしいですか？`
       )
     ) {
       return;
