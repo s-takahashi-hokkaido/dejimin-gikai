@@ -449,6 +449,10 @@
         {
           "name": "update_bill_contents_updated_at",
           "def": "CREATE TRIGGER update_bill_contents_updated_at BEFORE UPDATE ON public.bill_contents FOR EACH ROW EXECUTE FUNCTION update_updated_at_column()"
+        },
+        {
+          "name": "bill_contents_audit_log",
+          "def": "CREATE TRIGGER bill_contents_audit_log AFTER INSERT OR DELETE OR UPDATE ON public.bill_contents FOR EACH ROW EXECUTE FUNCTION record_admin_audit_log()"
         }
       ]
     },
@@ -872,6 +876,10 @@
         {
           "name": "update_bills_updated_at",
           "def": "CREATE TRIGGER update_bills_updated_at BEFORE UPDATE ON public.bills FOR EACH ROW EXECUTE FUNCTION update_updated_at_column()"
+        },
+        {
+          "name": "bills_audit_log",
+          "def": "CREATE TRIGGER bills_audit_log AFTER INSERT OR DELETE OR UPDATE ON public.bills FOR EACH ROW EXECUTE FUNCTION record_admin_audit_log()"
         }
       ]
     },
@@ -2012,6 +2020,10 @@
         {
           "name": "set_faction_stances_updated_at",
           "def": "CREATE TRIGGER set_faction_stances_updated_at BEFORE UPDATE ON public.faction_stances FOR EACH ROW EXECUTE FUNCTION update_updated_at_column()"
+        },
+        {
+          "name": "faction_stances_audit_log",
+          "def": "CREATE TRIGGER faction_stances_audit_log AFTER INSERT OR DELETE OR UPDATE ON public.faction_stances FOR EACH ROW EXECUTE FUNCTION record_admin_audit_log()"
         }
       ]
     },
@@ -4142,6 +4154,154 @@
           ]
         }
       ]
+    },
+    {
+      "name": "public.admin_audit_logs",
+      "type": "BASE TABLE",
+      "comment": "管理画面からの変更履歴（議案・議案コンテンツ・会派見解）",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "nullable": false,
+          "default": "gen_random_uuid()"
+        },
+        {
+          "name": "actor_user_id",
+          "type": "uuid",
+          "nullable": true,
+          "comment": "実行者のユーザーID（null は SQL・スクリプトによる直接操作）"
+        },
+        {
+          "name": "actor_email",
+          "type": "text",
+          "nullable": true,
+          "comment": "実行時点の実行者メールアドレス"
+        },
+        {
+          "name": "actor_role",
+          "type": "text",
+          "nullable": true,
+          "comment": "実行時点の実行者ロール"
+        },
+        {
+          "name": "actor_faction_id",
+          "type": "uuid",
+          "nullable": true,
+          "comment": "実行時点の実行者の所属会派ID"
+        },
+        {
+          "name": "action",
+          "type": "text",
+          "nullable": false,
+          "comment": "操作（例: bills.update, faction_stances.delete）"
+        },
+        {
+          "name": "target_table",
+          "type": "text",
+          "nullable": false,
+          "comment": "対象テーブル"
+        },
+        {
+          "name": "target_id",
+          "type": "uuid",
+          "nullable": true,
+          "comment": "対象行のID"
+        },
+        {
+          "name": "before_data",
+          "type": "jsonb",
+          "nullable": true,
+          "comment": "変更前の行（作成時は null）"
+        },
+        {
+          "name": "after_data",
+          "type": "jsonb",
+          "nullable": true,
+          "comment": "変更後の行（削除時は null）"
+        },
+        {
+          "name": "bill_id",
+          "type": "uuid",
+          "nullable": true,
+          "extra_def": "GENERATED ALWAYS AS \nCASE\n    WHEN (target_table = 'bills'::text) THEN target_id\n    ELSE (COALESCE((after_data -\u003e\u003e 'bill_id'::text), (before_data -\u003e\u003e 'bill_id'::text)))::uuid\nEND STORED",
+          "comment": "関連する議案ID（生成列。議案単位の絞り込み用）"
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "nullable": false,
+          "default": "now()"
+        }
+      ],
+      "indexes": [
+        {
+          "name": "admin_audit_logs_pkey",
+          "def": "CREATE UNIQUE INDEX admin_audit_logs_pkey ON public.admin_audit_logs USING btree (id)",
+          "table": "public.admin_audit_logs",
+          "columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "admin_audit_logs_created_at_idx",
+          "def": "CREATE INDEX admin_audit_logs_created_at_idx ON public.admin_audit_logs USING btree (created_at DESC)",
+          "table": "public.admin_audit_logs",
+          "columns": [
+            "created_at"
+          ]
+        },
+        {
+          "name": "admin_audit_logs_target_idx",
+          "def": "CREATE INDEX admin_audit_logs_target_idx ON public.admin_audit_logs USING btree (target_table, target_id)",
+          "table": "public.admin_audit_logs",
+          "columns": [
+            "target_table",
+            "target_id"
+          ]
+        },
+        {
+          "name": "admin_audit_logs_actor_idx",
+          "def": "CREATE INDEX admin_audit_logs_actor_idx ON public.admin_audit_logs USING btree (actor_user_id)",
+          "table": "public.admin_audit_logs",
+          "columns": [
+            "actor_user_id"
+          ]
+        },
+        {
+          "name": "admin_audit_logs_bill_id_idx",
+          "def": "CREATE INDEX admin_audit_logs_bill_id_idx ON public.admin_audit_logs USING btree (bill_id, created_at DESC)",
+          "table": "public.admin_audit_logs",
+          "columns": [
+            "bill_id",
+            "created_at"
+          ]
+        }
+      ],
+      "constraints": [
+        {
+          "name": "admin_audit_logs_actor_consistent",
+          "type": "CHECK",
+          "def": "CHECK ((((actor_user_id IS NULL) AND (actor_email IS NULL) AND (actor_role IS NULL)) OR ((actor_user_id IS NOT NULL) AND (actor_email IS NOT NULL) AND (actor_role IS NOT NULL))))",
+          "table": "public.admin_audit_logs",
+          "referenced_table": "",
+          "columns": [
+            "actor_user_id",
+            "actor_email",
+            "actor_role"
+          ]
+        },
+        {
+          "name": "admin_audit_logs_pkey",
+          "type": "PRIMARY KEY",
+          "def": "PRIMARY KEY (id)",
+          "table": "public.admin_audit_logs",
+          "referenced_table": "",
+          "columns": [
+            "id"
+          ]
+        }
+      ]
     }
   ],
   "relations": [
@@ -4577,6 +4737,12 @@
       "name": "public.get_ai_usage_cost_usd",
       "return_type": "numeric",
       "arguments": "from_ts timestamp with time zone, to_ts timestamp with time zone, target_user_id uuid DEFAULT NULL::uuid",
+      "type": "FUNCTION"
+    },
+    {
+      "name": "public.record_admin_audit_log",
+      "return_type": "trigger",
+      "arguments": "",
       "type": "FUNCTION"
     }
   ],

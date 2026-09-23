@@ -1,11 +1,11 @@
 "use server";
 
-import { createAdminClient } from "@dejimin-gikai/supabase";
 import { revalidatePath } from "next/cache";
+import { createAuditedAdminClient } from "@/features/audit-logs/server/lib/create-audited-admin-client";
 import { requireAdmin } from "@/features/auth/server/lib/auth-server";
 import { invalidateWebCache } from "@/lib/utils/cache-invalidation";
-import { loadRun } from "../utils/storage";
 import { findFactionByName } from "../utils/faction-matching";
+import { loadRun } from "../utils/storage";
 
 type ReapplyStancesInput = {
   runId: string;
@@ -29,7 +29,7 @@ export async function reapplyStances(
   input: ReapplyStancesInput
 ): Promise<ReapplyResult> {
   try {
-    await requireAdmin();
+    const admin = await requireAdmin();
 
     const run = await loadRun(input.runId);
     if (!run) {
@@ -53,7 +53,7 @@ export async function reapplyStances(
       };
     }
 
-    const supabase = createAdminClient();
+    const supabase = createAuditedAdminClient(admin);
     const warnings: string[] = [];
     let appliedCount = 0;
 

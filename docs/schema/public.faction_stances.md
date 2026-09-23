@@ -39,6 +39,7 @@
 | Name | Definition |
 | ---- | ---------- |
 | set_faction_stances_updated_at | CREATE TRIGGER set_faction_stances_updated_at BEFORE UPDATE ON public.faction_stances FOR EACH ROW EXECUTE FUNCTION update_updated_at_column() |
+| faction_stances_audit_log | CREATE TRIGGER faction_stances_audit_log AFTER INSERT OR DELETE OR UPDATE ON public.faction_stances FOR EACH ROW EXECUTE FUNCTION record_admin_audit_log() |
 
 ## Relations
 

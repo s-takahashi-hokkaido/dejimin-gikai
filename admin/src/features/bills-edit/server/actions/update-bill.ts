@@ -12,19 +12,23 @@ import { updateBillRecord } from "../repositories/bill-edit-repository";
 export async function updateBill(id: string, input: BillUpdateInput) {
   try {
     // 管理者権限チェック
-    await requireAdmin();
+    const admin = await requireAdmin();
 
     // バリデーション
     const validatedData = billUpdateSchema.parse(input);
 
     // Supabaseで更新
-    await updateBillRecord(id, {
-      ...validatedData,
-      published_at: validatedData.published_at
-        ? new Date(validatedData.published_at).toISOString()
-        : null,
-      updated_at: new Date().toISOString(),
-    });
+    await updateBillRecord(
+      id,
+      {
+        ...validatedData,
+        published_at: validatedData.published_at
+          ? new Date(validatedData.published_at).toISOString()
+          : null,
+        updated_at: new Date().toISOString(),
+      },
+      admin
+    );
 
     // web側のキャッシュを無効化
     await invalidateWebCache([WEB_CACHE_TAGS.BILLS]);

@@ -13,7 +13,7 @@ import { createBillRecord } from "../repositories/bill-edit-repository";
 export async function createBill(input: BillCreateInput) {
   try {
     // 管理者権限チェック
-    await requireAdmin();
+    const admin = await requireAdmin();
 
     // バリデーション
     const validatedData = billCreateSchema.parse(input);
@@ -26,7 +26,7 @@ export async function createBill(input: BillCreateInput) {
     };
 
     // Supabaseに挿入
-    await createBillRecord(insertData);
+    await createBillRecord(insertData, admin);
 
     // web側のキャッシュを無効化
     await invalidateWebCache([WEB_CACHE_TAGS.BILLS]);
