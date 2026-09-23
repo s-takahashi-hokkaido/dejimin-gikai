@@ -28,10 +28,12 @@ export async function updateBill(id: string, input: BillUpdateInput) {
         : null,
       updated_at: new Date().toISOString(),
     });
-    await replaceBillCommittees(id, committee_ids);
-
-    // web側のキャッシュを無効化
-    await invalidateWebCache([WEB_CACHE_TAGS.BILLS]);
+    try {
+      await replaceBillCommittees(id, committee_ids);
+    } finally {
+      // 付託委員会の保存に失敗しても基本情報は更新済みなので、web側のキャッシュは無効化する
+      await invalidateWebCache([WEB_CACHE_TAGS.BILLS]);
+    }
   } catch (error) {
     console.error("Update bill error:", error);
     throw new Error(

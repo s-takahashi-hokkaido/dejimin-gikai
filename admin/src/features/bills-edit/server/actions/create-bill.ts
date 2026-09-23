@@ -14,6 +14,8 @@ import {
 } from "../repositories/bill-edit-repository";
 
 export async function createBill(input: BillCreateInput) {
+  let redirectTo = "/bills";
+
   try {
     // 管理者権限チェック
     await requireAdmin();
@@ -33,10 +35,10 @@ export async function createBill(input: BillCreateInput) {
     try {
       await replaceBillCommittees(bill.id, committee_ids);
     } catch (error) {
-      // 議案は作成済みなので、作り直すと重複する。編集画面での再設定を促す
-      throw new Error(
-        `議案は作成しましたが、付託委員会を保存できませんでした。議案一覧から編集して設定し直してください（${getErrorMessage(error, "不明なエラー")}）`
-      );
+      // 議案は作成済み。エラーにすると作成し直して重複しかねないので、
+      // 編集画面に移って付託委員会を設定し直してもらう
+      console.error("Create bill committees error:", error);
+      redirectTo = `/bills/${bill.id}/edit`;
     }
 
     // web側のキャッシュを無効化
@@ -48,6 +50,6 @@ export async function createBill(input: BillCreateInput) {
     );
   }
 
-  // 成功したら一覧ページへリダイレクト
-  redirect("/bills");
+  // 成功したら一覧ページへ（付託委員会だけ保存できなかった場合は編集画面へ）リダイレクト
+  redirect(redirectTo);
 }
