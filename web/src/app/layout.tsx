@@ -19,9 +19,9 @@ const lexendGiga = Lexend_Giga({
 });
 
 const ogImage = {
-  url: "/ogp.svg",
-  width: 1200,
-  height: 630,
+  url: siteConfig.ogImage.path,
+  width: siteConfig.ogImage.width,
+  height: siteConfig.ogImage.height,
   alt: `${siteConfig.siteName}のOGPイメージ`,
 };
 
@@ -45,7 +45,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: siteConfig.siteName,
     description: siteConfig.siteDescription,
-    images: [ogImage.url],
+    images: [ogImage],
   },
   robots: {
     index: true,

@@ -23,6 +23,16 @@ export const siteConfig = {
   councilBillsDetailUrl:
     "https://www.city.sapporo.jp/gikai/html/giantouichiran.html",
   twitterHashtag: "みらい議会札幌市版", // # なし
+  /**
+   * OGP / SNS シェア用のデフォルト画像。
+   * X・Facebook・LINE 等は OGP 画像に SVG を受け付けないため PNG を配信する。
+   * デザインの原本は docs/assets/ogp.svg（変更時は 1200x630 の PNG に書き出す）。
+   */
+  ogImage: {
+    path: "/ogp.png",
+    width: 1200,
+    height: 630,
+  },
   externalLinks: {
     report: "https://forms.gle/PbZdpdRzTrsAuDST7",
     aboutNote: "",

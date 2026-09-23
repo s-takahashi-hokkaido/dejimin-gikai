@@ -4,6 +4,7 @@ import { getDifficultyLevel } from "@/features/bill-difficulty/server/loaders/ge
 import { getBillById } from "@/features/bills/server/loaders/get-bill-by-id";
 import { BillDetailLayout } from "@/features/bills/server/components/bill-detail/bill-detail-layout";
 import { env } from "@/lib/env";
+import { resolveDefaultOgImageUrl } from "@/lib/utils/og-image";
 
 interface BillDetailPageProps {
   params: Promise<{
@@ -25,7 +26,7 @@ export async function generateMetadata({
 
   // bill_contentのsummaryがあればそれを使用、なければデフォルト値を使用
   const description = bill.bill_content?.summary || "議案の詳細情報";
-  const defaultOgpUrl = new URL("/ogp.svg", env.webUrl).toString();
+  const defaultOgpUrl = resolveDefaultOgImageUrl(env.webUrl);
 
   // シェア用OGP画像（share_thumbnail_url > thumbnail_url > デフォルト）
   // ページ表示用のthumbnail_urlとは別に、SNSシェア用の画像を優先

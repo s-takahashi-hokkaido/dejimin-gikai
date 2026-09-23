@@ -5,11 +5,11 @@
   <!-- 中央ボックス -->
   <rect x="200" y="140" width="800" height="350" rx="12" stroke="#3b82c4" stroke-width="4" fill="white"/>
   <!-- メインテキスト -->
-  <text x="600" y="270" font-family="sans-serif" font-size="80" font-weight="bold" fill="#3b82c4" text-anchor="middle">みらい議会</text>
+  <text x="600" y="270" font-family="Noto Sans JP, sans-serif" font-size="80" font-weight="bold" fill="#3b82c4" text-anchor="middle">みらい議会</text>
   <!-- 区切り線 -->
   <line x1="280" y1="305" x2="920" y2="305" stroke="#3b82c4" stroke-width="2"/>
   <!-- サブテキスト -->
-  <text x="600" y="360" font-family="sans-serif" font-size="36" fill="#555555" text-anchor="middle">（非公式）　札幌市版</text>
+  <text x="600" y="360" font-family="Noto Sans JP, sans-serif" font-size="36" fill="#555555" text-anchor="middle">（非公式）　札幌市版</text>
   <!-- 下部キャッチコピー -->
-  <text x="600" y="560" font-family="sans-serif" font-size="24" fill="#888888" text-anchor="middle">札幌市議会で今どんな議案が検討されているか、わかりやすく伝えるプラットフォーム</text>
+  <text x="600" y="560" font-family="Noto Sans JP, sans-serif" font-size="24" fill="#888888" text-anchor="middle">札幌市議会で今どんな議案が検討されているか、わかりやすく伝えるプラットフォーム</text>
 </svg>
