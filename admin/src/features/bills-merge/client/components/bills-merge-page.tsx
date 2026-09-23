@@ -1,6 +1,6 @@
 "use client";
 
-import type { Database } from "@mirai-gikai/supabase";
+import type { Database } from "@dejimin-gikai/supabase";
 import { GitMerge, Loader2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";

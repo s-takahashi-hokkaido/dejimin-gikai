@@ -1,6 +1,6 @@
 import "server-only";
 
-import { createAdminClient } from "@mirai-gikai/supabase";
+import { createAdminClient } from "@dejimin-gikai/supabase";
 import type { CommitteeWithBillCount } from "../../shared/types";
 
 export async function loadCommittees(): Promise<CommitteeWithBillCount[]> {

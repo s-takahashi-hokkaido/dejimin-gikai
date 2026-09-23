@@ -1,4 +1,4 @@
-import type { Database } from "@mirai-gikai/supabase";
+import type { Database } from "@dejimin-gikai/supabase";
 import { z } from "zod";
 import { isValidChatModel } from "../utils/chat-model-options";
 

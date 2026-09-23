@@ -1,6 +1,6 @@
 "use client";
 
-import { createBrowserClient } from "@mirai-gikai/supabase";
+import { createBrowserClient } from "@dejimin-gikai/supabase";
 import { useEffect, useState } from "react";
 
 // Create a singleton Supabase client with persistent session

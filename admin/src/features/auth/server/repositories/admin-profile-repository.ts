@@ -1,6 +1,6 @@
 import "server-only";
-import type { Database } from "@mirai-gikai/supabase";
-import { createAdminClient } from "@mirai-gikai/supabase";
+import type { Database } from "@dejimin-gikai/supabase";
+import { createAdminClient } from "@dejimin-gikai/supabase";
 
 export type AdminProfileRow =
   Database["public"]["Tables"]["admin_profiles"]["Row"];

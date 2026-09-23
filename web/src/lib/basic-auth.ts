@@ -3,7 +3,7 @@ import {
   type BasicAuthConfig,
   isPageSpeedInsightsUA,
   validateBasicAuthHeader,
-} from "@mirai-gikai/shared/auth/basic-auth";
+} from "@dejimin-gikai/shared/auth/basic-auth";
 
 // 純粋関数は packages/shared に集約し、ここからは再エクスポートする
 export {
@@ -13,7 +13,7 @@ export {
   isPageSpeedInsightsUA,
   parseBasicAuth,
   validateBasicAuthHeader,
-} from "@mirai-gikai/shared/auth/basic-auth";
+} from "@dejimin-gikai/shared/auth/basic-auth";
 
 export function getBasicAuthConfig(): BasicAuthConfig | null {
   const username = process.env.BASIC_AUTH_USER;

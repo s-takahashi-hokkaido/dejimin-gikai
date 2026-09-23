@@ -1,4 +1,4 @@
-import type { Database } from "@mirai-gikai/supabase";
+import type { Database } from "@dejimin-gikai/supabase";
 
 // 難易度レベルのEnum
 export type DifficultyLevelEnum =

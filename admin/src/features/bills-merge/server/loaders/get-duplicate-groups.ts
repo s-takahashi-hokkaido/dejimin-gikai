@@ -1,6 +1,6 @@
 import "server-only";
 
-import { createAdminClient } from "@mirai-gikai/supabase";
+import { createAdminClient } from "@dejimin-gikai/supabase";
 import { requireAdmin } from "@/features/auth/server/lib/auth-server";
 
 export type BillContent = {

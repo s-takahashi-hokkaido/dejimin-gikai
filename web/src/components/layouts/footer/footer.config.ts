@@ -57,7 +57,7 @@ export const policyLinks: FooterPolicyLink[] = [
   },
   {
     label: "ソースコード（GitHub）",
-    href: "https://github.com/s-takahashi-hokkaido/mirai-gikai-hokkaido",
+    href: "https://github.com/s-takahashi-hokkaido/dejimin-gikai",
     external: true,
   },
 ];

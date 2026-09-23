@@ -34,15 +34,15 @@ PRの数に応じてエージェント数を決める（目安: 4-5が上限）�
 ```bash
 # {team} はチーム名の略称（例: test4, refactor2）
 # {x} はエージェント識別子（a, b, c, d...）
-git worktree add ../mirai-gikai-{team}-{x} -b {team}-{x}-base
-mkdir -p ../mirai-gikai-{team}-{x}/.claude
-cp .claude/settings.local.json ../mirai-gikai-{team}-{x}/.claude/
+git worktree add ../dejimin-gikai-{team}-{x} -b {team}-{x}-base
+mkdir -p ../dejimin-gikai-{team}-{x}/.claude
+cp .claude/settings.local.json ../dejimin-gikai-{team}-{x}/.claude/
 ```
 
 依存パッケージのインストール（全worktreeをバックグラウンドで並列実行）:
 
 ```bash
-cd ../mirai-gikai-{team}-{x} && pnpm install --frozen-lockfile
+cd ../dejimin-gikai-{team}-{x} && pnpm install --frozen-lockfile
 ```
 
 ### Phase 3: チーム組成＆エージェント起動
@@ -133,7 +133,7 @@ PRコメント対応:
 SendMessage(type: "shutdown_request", recipient: "agent-{x}")
 
 # worktree削除
-git worktree remove ../mirai-gikai-{team}-{x}
+git worktree remove ../dejimin-gikai-{team}-{x}
 git branch -D {team}-{x}-base
 
 # チーム削除
@@ -154,5 +154,5 @@ TeamDelete
 
 - エージェント数は4-5が実用的上限（APIレート制限、CI負荷）
 - CIのflaky testに注意 → 失敗時はログ確認してから再実行
-- worktreeパスは `../mirai-gikai-{name}` 形式
+- worktreeパスは `../dejimin-gikai-{name}` 形式
 - `settings.local.json` のコピーは必須（権限設定のため）

@@ -1,4 +1,4 @@
-import { createUnauthorizedResponse } from "@mirai-gikai/shared/auth/basic-auth";
+import { createUnauthorizedResponse } from "@dejimin-gikai/shared/auth/basic-auth";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import {

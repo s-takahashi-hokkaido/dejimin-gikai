@@ -1,7 +1,7 @@
 "use server";
 
-import type { Database } from "@mirai-gikai/supabase";
-import { createAdminClient } from "@mirai-gikai/supabase";
+import type { Database } from "@dejimin-gikai/supabase";
+import { createAdminClient } from "@dejimin-gikai/supabase";
 import { revalidatePath } from "next/cache";
 import { requireAdmin } from "@/features/auth/server/lib/auth-server";
 

@@ -26,7 +26,7 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
-      "@mirai-gikai/supabase": path.resolve(
+      "@dejimin-gikai/supabase": path.resolve(
         __dirname,
         "../packages/supabase/src"
       ),

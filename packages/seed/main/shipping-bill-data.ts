@@ -1,4 +1,4 @@
-import type { Database } from "@mirai-gikai/supabase";
+import type { Database } from "@dejimin-gikai/supabase";
 
 type InterviewConfigInsert =
   Database["public"]["Tables"]["interview_configs"]["Insert"];

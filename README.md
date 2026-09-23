@@ -16,10 +16,7 @@
 
 ---
 
-# みらい議会
-
-[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/team-mirai-volunteer/mirai-gikai)
-[![codecov](https://codecov.io/gh/team-mirai/mirai-gikai/branch/develop/graph/badge.svg)](https://codecov.io/gh/team-mirai/mirai-gikai)
+# 開発者向け情報
 
 ## セットアップ
 
@@ -38,6 +35,19 @@ pnpm db:reset
 
 # サーバー起動
 pnpm dev
+```
+
+### 旧名称（mirai-gikai-hokkaido）のローカル環境から移行する場合
+
+Supabase の `project_id` を `mirai-gikai-hokkaido` から `dejimin-gikai` に変更したため、ローカルの Docker コンテナとボリュームは別物として作り直されます。旧コンテナが動いているとポートが競合するので、先に止めてから起動し直してください。ローカル DB のデータは引き継がれないため、シードを入れ直します。
+
+```bash
+# 旧名称のコンテナを停止（--no-backup を付けると旧ボリュームも削除される）
+npx supabase stop --project-id mirai-gikai-hokkaido
+
+# 新しい名称で起動し、DB を初期化
+npx supabase start
+pnpm db:reset
 ```
 
 ## マイグレーション
