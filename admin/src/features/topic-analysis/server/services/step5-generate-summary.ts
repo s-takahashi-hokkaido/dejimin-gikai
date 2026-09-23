@@ -52,15 +52,6 @@ ${billTitle}
 
 ## トピック別レポート
 ${topicsList}`,
-    experimental_telemetry: {
-      isEnabled: true,
-      functionId: "topic-analysis-step5-summary",
-      metadata: {
-        topicsCount: String(topics.length),
-        totalOpinions: String(totalOpinionsCount),
-        totalSessions: String(totalSessionsCount),
-      },
-    },
   });
 
   return result.object.summary;

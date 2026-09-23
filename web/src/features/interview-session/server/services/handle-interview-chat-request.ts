@@ -9,11 +9,13 @@ import {
   streamText,
 } from "ai";
 import { getBillByIdAdmin } from "@/features/bills/server/loaders/get-bill-by-id-admin";
+import type { BillWithContent } from "@/features/bills/shared/types";
 import {
   checkDailyCostGuard,
   recordChatUsage,
 } from "@/features/chat/server/services/cost-tracker";
 import { ChatError, ChatErrorCode } from "@/features/chat/shared/types/errors";
+import type { InterviewConfig } from "@/features/interview-config/server/loaders/get-interview-config-admin";
 import { getInterviewConfigAdmin } from "@/features/interview-config/server/loaders/get-interview-config-admin";
 import { getInterviewQuestions } from "@/features/interview-config/server/loaders/get-interview-questions";
 import { createInterviewSession } from "@/features/interview-session/server/actions/create-interview-session";
@@ -23,8 +25,6 @@ import {
   interviewChatTextSchema,
   interviewChatWithReportSchema,
 } from "@/features/interview-session/shared/schemas";
-import type { BillWithContent } from "@/features/bills/shared/types";
-import type { InterviewConfig } from "@/features/interview-config/server/loaders/get-interview-config-admin";
 import type {
   InterviewChatRequestParams,
   InterviewMessage,
@@ -76,9 +76,6 @@ export async function handleInterviewChatRequest({
   isRetry = false,
   deps,
 }: InterviewChatRequestParams & { deps?: InterviewChatDeps }) {
-  // リクエスト単位のトレースID（同一リクエスト内のLLM呼び出しをまとめる）
-  const traceId = crypto.randomUUID();
-
   // インタビュー設定と法案情報を取得（テスト時はdeps経由でNext.js依存をバイパス）
   const getInterviewConfigFn =
     deps?.getInterviewConfig ?? getInterviewConfigAdmin;
@@ -187,12 +184,7 @@ export async function handleInterviewChatRequest({
     chatModel: deps?.chatModel,
     summaryModel: deps?.summaryModel,
     configChatModel: interviewConfig.chat_model,
-    telemetry: {
-      sessionId: session.id,
-      billId,
-      traceId,
-      stage: currentStage,
-    },
+    stage: currentStage,
   });
 }
 
@@ -212,7 +204,7 @@ async function generateStreamingResponse({
   chatModel,
   summaryModel,
   configChatModel,
-  telemetry,
+  stage,
 }: {
   systemPrompt: string;
   messages: { role: string; content: string }[];
@@ -223,12 +215,7 @@ async function generateStreamingResponse({
   chatModel?: LanguageModel;
   summaryModel?: LanguageModel;
   configChatModel?: string | null;
-  telemetry?: {
-    sessionId: string;
-    billId: string;
-    traceId: string;
-    stage: string;
-  };
+  stage: string;
 }) {
   // summaryフェーズはGemini固定、chatフェーズは設定のモデルを優先
   // コスト記録に使うためモデルIDは文字列としても保持する
@@ -241,8 +228,18 @@ async function generateStreamingResponse({
 
   const functionId = isSummaryPhase ? "interview-summary" : "interview-chat";
 
-  const handleError = (error: unknown) => {
-    console.error("LLM generation error:", error);
+  // ストリーミング中のエラーは呼び出し側の try/catch では捕まらないため、ここで入力とあわせて記録する
+  const handleError = ({ error }: { error: unknown }) => {
+    console.error("LLM generation error:", {
+      functionId,
+      model: modelId,
+      sessionId,
+      billId,
+      stage,
+      userText: messages.findLast((message) => message.role === "user")
+        ?.content,
+      error,
+    });
     throw new Error(
       `LLM generation failed: ${error instanceof Error ? error.message : String(error)}`
     );
@@ -276,7 +273,7 @@ async function generateStreamingResponse({
           metadata: {
             feature: "interview",
             billId,
-            stage: telemetry?.stage ?? null,
+            stage,
           },
         });
       }
@@ -296,18 +293,6 @@ async function generateStreamingResponse({
     messages: await convertToModelMessages(uiMessages),
     onError: handleError,
     onFinish: handleFinish,
-    experimental_telemetry: telemetry
-      ? {
-          isEnabled: true as const,
-          functionId,
-          metadata: {
-            langfuseTraceId: telemetry.traceId,
-            sessionId: telemetry.sessionId,
-            billId: telemetry.billId,
-            stage: telemetry.stage,
-          },
-        }
-      : undefined,
   } as const;
 
   try {
@@ -332,7 +317,7 @@ async function generateStreamingResponse({
       headers: { "Content-Type": "text/plain; charset=utf-8" },
     });
   } catch (error) {
-    handleError(error);
+    handleError({ error });
     throw error;
   }
 }

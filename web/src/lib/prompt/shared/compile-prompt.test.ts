@@ -2,51 +2,34 @@ import { describe, expect, it } from "vitest";
 import { compilePrompt } from "./compile-prompt";
 
 describe("compilePrompt", () => {
-  it("プロンプトをコンパイルして正しい形式で返す", () => {
-    const fetchedPrompt = {
-      compile: (variables: Record<string, string>) =>
-        `Hello, ${variables.name}!`,
-      toJSON: () => '{"name":"greeting","version":1}',
-    };
-
-    const result = compilePrompt(fetchedPrompt, { name: "World" });
-
-    expect(result).toEqual({
-      content: "Hello, World!",
-      metadata: '{"name":"greeting","version":1}',
-    });
+  it("{{変数名}} を値で置き換える", () => {
+    expect(compilePrompt("議案: {{billName}}", { billName: "第1号" })).toBe(
+      "議案: 第1号"
+    );
   });
 
-  it("variables付きでcompileが呼ばれる", () => {
-    const variables = { city: "Tokyo", lang: "ja" };
-    let receivedVariables: Record<string, string> = {};
-
-    const fetchedPrompt = {
-      compile: (vars: Record<string, string>) => {
-        receivedVariables = vars;
-        return "compiled";
-      },
-      toJSON: () => "{}",
-    };
-
-    compilePrompt(fetchedPrompt, variables);
-
-    expect(receivedVariables).toEqual({ city: "Tokyo", lang: "ja" });
+  it("同じ変数が複数回あれば全て置き換える", () => {
+    expect(compilePrompt("{{a}} と {{a}}", { a: "x" })).toBe("x と x");
   });
 
-  it("variablesなしの場合は空オブジェクトでcompileが呼ばれる", () => {
-    let receivedVariables: Record<string, string> | undefined;
+  it("括弧の内側の空白を許容する", () => {
+    expect(compilePrompt("{{ billName }}", { billName: "第1号" })).toBe(
+      "第1号"
+    );
+  });
 
-    const fetchedPrompt = {
-      compile: (vars: Record<string, string>) => {
-        receivedVariables = vars;
-        return "compiled";
-      },
-      toJSON: () => "{}",
-    };
+  it("値が渡されなかった変数は空文字にする", () => {
+    expect(compilePrompt("[{{missing}}]", {})).toBe("[]");
+    expect(compilePrompt("[{{missing}}]")).toBe("[]");
+  });
 
-    compilePrompt(fetchedPrompt);
+  it("値の中の {{...}} は置き換えない", () => {
+    expect(compilePrompt("{{a}} {{b}}", { a: "{{b}}", b: "B" })).toBe(
+      "{{b}} B"
+    );
+  });
 
-    expect(receivedVariables).toEqual({});
+  it("変数が無い本文はそのまま返す", () => {
+    expect(compilePrompt("固定の本文", { a: "x" })).toBe("固定の本文");
   });
 });

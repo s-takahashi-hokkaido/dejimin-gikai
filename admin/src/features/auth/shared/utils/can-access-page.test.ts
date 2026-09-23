@@ -19,6 +19,8 @@ describe("canAccessPage", () => {
       "/committees",
       "/ai-collection",
       "/audit-logs",
+      "/prompts",
+      "/prompts/some-id",
       "/admins",
     ])("すべてにアクセスできる: %s", (path) => {
       expect(canAccessPage("admin", path)).toBe(true);
@@ -48,6 +50,8 @@ describe("canAccessPage", () => {
       "/committees",
       "/ai-collection",
       "/audit-logs",
+      "/prompts",
+      "/prompts/some-id",
       "/admins",
     ])("マスタ管理と破壊的操作はできない: %s", (path) => {
       expect(canAccessPage("legislator", path)).toBe(false);

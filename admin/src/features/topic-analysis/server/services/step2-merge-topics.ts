@@ -41,13 +41,6 @@ ${billTitle}
 
 ## トピック一覧
 ${topicsList}`,
-    experimental_telemetry: {
-      isEnabled: true,
-      functionId: "topic-analysis-step2-merge",
-      metadata: {
-        rawTopicsCount: String(rawTopics.length),
-      },
-    },
   });
 
   return object.merged_topics.map((t) => t.name);

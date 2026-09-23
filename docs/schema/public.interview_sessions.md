@@ -11,7 +11,6 @@
 | id | uuid | gen_random_uuid() | false | [public.interview_messages](public.interview_messages.md) [public.interview_report](public.interview_report.md) |  |  |
 | interview_config_id | uuid |  | false |  | [public.interview_configs](public.interview_configs.md) | インタビュー設定ID |
 | user_id | uuid |  | false |  |  | ユーザーID（匿名認証） |
-| langfuse_session_id | text |  | true |  |  | LangfuseセッションID |
 | started_at | timestamp with time zone | now() | false |  |  | 開始日時 |
 | completed_at | timestamp with time zone |  | true |  |  | 完了日時 |
 | created_at | timestamp with time zone | now() | false |  |  | 作成日時 |
@@ -56,7 +55,6 @@ erDiagram
   uuid id
   uuid interview_config_id FK
   uuid user_id
-  text langfuse_session_id
   timestamp_with_time_zone started_at
   timestamp_with_time_zone completed_at
   timestamp_with_time_zone created_at

@@ -20,6 +20,7 @@ export const NAV_ITEMS: readonly NavItem[] = [
   { href: "/committees", label: "委員会管理" },
   { href: "/ai-collection", label: "AI情報収集" },
   { href: "/audit-logs", label: "変更履歴" },
+  { href: "/prompts", label: "プロンプト" },
   { href: "/admins", label: "管理者" },
 ];
 
@@ -32,6 +33,7 @@ const TOP_LEVEL_RULES: Record<string, readonly AdminRole[]> = {
   committees: ADMIN_ONLY,
   "ai-collection": ADMIN_ONLY,
   "audit-logs": ADMIN_ONLY,
+  prompts: ADMIN_ONLY,
   admins: ADMIN_ONLY,
 };
 

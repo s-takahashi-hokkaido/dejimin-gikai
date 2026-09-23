@@ -4,5 +4,6 @@ export interface PromptVariables {
 
 export interface CompiledPrompt {
   content: string;
-  metadata: string;
+  /** 使った版の ID（DB 管理外のプロンプトは null） */
+  versionId: string | null;
 }

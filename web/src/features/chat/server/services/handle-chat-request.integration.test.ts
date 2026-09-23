@@ -1,19 +1,19 @@
-import { describe, it, expect, beforeEach, afterEach } from "vitest";
-import type { LanguageModelUsage, UIMessage } from "ai";
 import {
   adminClient,
-  createTestUser,
   cleanupTestUser,
+  createTestUser,
   type TestUser,
 } from "@test-utils/utils";
+import type { LanguageModelUsage, UIMessage } from "ai";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { ChatError, ChatErrorCode } from "@/features/chat/shared/types/errors";
 import { createStreamMock } from "@/test-utils/mock-language-model";
 import { createMockPromptProvider } from "@/test-utils/mock-prompt-provider";
-import {
-  handleChatRequest,
-  type ChatMessageMetadata,
-} from "./handle-chat-request";
-import { ChatError, ChatErrorCode } from "@/features/chat/shared/types/errors";
 import { recordChatUsage } from "./cost-tracker";
+import {
+  type ChatMessageMetadata,
+  handleChatRequest,
+} from "./handle-chat-request";
 
 /**
  * Response のボディストリームを全て読み込み、テキストとして返す。
@@ -64,6 +64,7 @@ describe("handleChatRequest 統合テスト", () => {
       .from("chat_usage_events")
       .delete()
       .eq("user_id", testUser.id);
+    await adminClient.from("chat_logs").delete().eq("user_id", testUser.id);
     await cleanupTestUser(testUser.id);
   });
 
@@ -126,7 +127,7 @@ describe("handleChatRequest 統合テスト", () => {
       const trackingPromptProvider = {
         getPrompt: async (name: string) => {
           receivedPromptNames.push(name);
-          return { content: "ホームチャット用プロンプト", metadata: "{}" };
+          return { content: "ホームチャット用プロンプト", versionId: null };
         },
       };
 
@@ -200,6 +201,67 @@ describe("handleChatRequest 統合テスト", () => {
 
       expect(usageEvents).toHaveLength(1);
       expect(usageEvents?.[0].session_id).toBeNull();
+    });
+  });
+
+  describe("chat_logs の保存", () => {
+    it("最新のユーザーの発言と AI の応答だけが保存される", async () => {
+      const sessionId = `test-session-${Date.now()}`;
+      const mockModel = createStreamMock(["こんにちは", "！"]);
+      const messages: UIMessage<ChatMessageMetadata>[] = [
+        {
+          id: "msg-1",
+          role: "user",
+          parts: [{ type: "text", text: "前の質問" }],
+          metadata: {
+            difficultyLevel: "normal",
+            sessionId,
+            pageContext: { type: "home" },
+          },
+        },
+        {
+          id: "msg-2",
+          role: "assistant",
+          parts: [{ type: "text", text: "前の応答" }],
+        },
+        {
+          id: "msg-3",
+          role: "user",
+          parts: [{ type: "text", text: "今回の質問" }],
+        },
+      ];
+
+      const response = await handleChatRequest({
+        messages,
+        userId: testUser.id,
+        deps: {
+          model: mockModel,
+          promptProvider: {
+            getPrompt: async () => ({ content: "p", versionId: null }),
+          },
+        },
+      });
+      await consumeResponseStream(response);
+      await new Promise((resolve) => setTimeout(resolve, 200));
+
+      const { data: logs } = await adminClient
+        .from("chat_logs")
+        .select("*")
+        .eq("user_id", testUser.id)
+        // chat_role_enum の定義順（user → assistant）で並べる
+        .order("role");
+
+      expect(logs?.map((log) => [log.role, log.message])).toEqual([
+        ["user", "今回の質問"],
+        ["assistant", "こんにちは！"],
+      ]);
+      expect(logs?.[0]).toMatchObject({
+        session_id: sessionId,
+        page_type: "home",
+        bill_id: null,
+        prompt_name: "top-chat-system",
+        prompt_version_id: null,
+      });
     });
   });
 

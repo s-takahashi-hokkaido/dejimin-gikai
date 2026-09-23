@@ -84,13 +84,6 @@ ${opinionsText}
 - topic_namesには分類先のトピック名を配列で指定してください
 - 1つの意見が複数のトピックに該当する場合は複数指定してください
 - どのトピックにも該当しない意見は空配列にしてください`,
-    experimental_telemetry: {
-      isEnabled: true,
-      functionId: "topic-analysis-step3-classify",
-      metadata: {
-        batchIndex: String(batchIndex),
-      },
-    },
   });
 
   return object.classifications;

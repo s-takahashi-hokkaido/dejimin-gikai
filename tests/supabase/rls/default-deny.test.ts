@@ -16,6 +16,9 @@ const tables = [
   "bill_contents",
   "mirai_stances",
   "chats",
+  "chat_logs",
+  "prompts",
+  "prompt_versions",
   "tags",
   "bills_tags",
   "preview_tokens",
@@ -42,6 +45,21 @@ describe("RLS default deny（全テーブル共通）", () => {
         }
       });
     }
+
+    it("create_prompt_version: 実行できない", async () => {
+      const { error } = await anon.rpc("create_prompt_version", {
+        p_prompt_id: "00000000-0000-0000-0000-000000000000",
+        p_content: "不正な版",
+      });
+      // 権限エラー（42501）で拒否されること
+      expect(error?.code).toBe("42501");
+    });
+
+    it("delete_expired_chat_logs: 実行できない", async () => {
+      const { error } = await anon.rpc("delete_expired_chat_logs", {});
+      // 権限エラー（42501）で拒否されること
+      expect(error?.code).toBe("42501");
+    });
 
     it("bills: INSERT が拒否される", async () => {
       const { error } = await anon.from("bills").insert({

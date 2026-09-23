@@ -1,10 +1,9 @@
-import { executePhase1 } from "@/features/topic-analysis/server/services/topic-analysis-orchestrator";
 import { updateVersionStatus } from "@/features/topic-analysis/server/repositories/topic-analysis-repository";
+import { executePhase1 } from "@/features/topic-analysis/server/services/topic-analysis-orchestrator";
 import {
   triggerNextPhase,
   verifyInternalAuth,
 } from "@/features/topic-analysis/server/utils/trigger-next-phase";
-import { registerNodeTelemetry } from "@/lib/telemetry/register";
 
 export const maxDuration = 300;
 
@@ -32,7 +31,6 @@ export async function POST(request: Request) {
   }
 
   try {
-    await registerNodeTelemetry();
     await executePhase1(versionId, billId);
     await triggerNextPhase(2, versionId, billId);
     return new Response(JSON.stringify({ success: true }), {
