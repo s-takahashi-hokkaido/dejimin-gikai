@@ -18,8 +18,10 @@ const lexendGiga = Lexend_Giga({
   weight: ["400", "500", "700", "800", "900"],
 });
 
+// SNS 各社は OGP 画像に SVG を受け付けないため PNG を配信する。
+// デザインの原本は web/public/ogp.svg（変更時は 1200x630 の PNG に書き出す）。
 const ogImage = {
-  url: "/ogp.svg",
+  url: "/ogp.png",
   width: 1200,
   height: 630,
   alt: `${siteConfig.siteName}のOGPイメージ`,
