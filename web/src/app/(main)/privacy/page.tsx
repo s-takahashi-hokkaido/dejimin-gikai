@@ -72,7 +72,7 @@ export default function PrivacyPage() {
             Cookieとは、サーバーが利用者の識別を目的として、利用者のブラウザに送信し、端末に保存される情報です。
           </LegalParagraph>
           <LegalParagraph>
-            Cookieの保存は、お使いのブラウザの設定でCookieを無効にすることで拒否することができます。
+            ブラウザの設定でCookieを無効にすると、Cookieの保存を拒否できます。ただし、その場合はAIチャットとAIインタビューをご利用いただけず、難易度の設定も保存されません。
           </LegalParagraph>
         </section>
 
