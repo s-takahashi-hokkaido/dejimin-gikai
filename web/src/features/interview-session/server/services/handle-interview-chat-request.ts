@@ -333,7 +333,7 @@ async function generateStreamingResponse({
  * 上限に達していれば ChatError を投げる。
  * 判定処理自体が失敗した場合は、ログに記録して続行する（チャット側と同じ方針）。
  */
-async function assertWithinCostLimit(userId: string): Promise<void> {
+export async function assertWithinCostLimit(userId: string): Promise<void> {
   try {
     const guard = await checkDailyCostGuard({
       userId,
