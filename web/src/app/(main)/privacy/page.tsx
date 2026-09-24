@@ -71,6 +71,9 @@ export default function PrivacyPage() {
           <LegalParagraph>
             Cookieとは、サーバーが利用者の識別を目的として、利用者のブラウザに送信し、端末に保存される情報です。
           </LegalParagraph>
+          <LegalParagraph>
+            Cookieの保存は、お使いのブラウザの設定でCookieを無効にすることで拒否することができます。
+          </LegalParagraph>
         </section>
 
         <section className="space-y-4">
