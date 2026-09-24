@@ -21,6 +21,14 @@ import {
 import { INTERVIEW_TARGET, sapporoSessions } from "./sapporo-bills/sessions";
 import { createAdminClient, clearAllData } from "../shared/helper";
 
+// 本会議で採決があったことを示す status（これ以外は会派賛否を登録しない）
+const VOTED_STATUSES: readonly string[] = [
+  "approved",
+  "rejected",
+  "adopted",
+  "partially_adopted",
+];
+
 async function seedDatabase() {
   const supabase = createAdminClient();
   console.log("🌱 Starting database seeding...");
@@ -136,9 +144,9 @@ async function seedDatabase() {
           committee_id: requireId(committeeIdByName, name, "committee"),
         }))
       );
-      // 採決のあった議案だけ会派賛否を登録する（報告・会期中の議案は除く）
+      // 採決のあった議案だけ会派賛否を登録する（審議中・報告の議案は除く）
       const stances = session.bills
-        .filter((bill) => bill.status !== "reported" && bill.status !== "submitted")
+        .filter((bill) => VOTED_STATUSES.includes(bill.status))
         .flatMap((bill) => {
           for (const name of bill.againstFactions) requireId(factionIdByName, name, "faction");
           return insertedFactions.map((faction) => ({
