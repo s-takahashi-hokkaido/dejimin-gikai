@@ -106,7 +106,7 @@ export default function PrivacyPage() {
         <section className="space-y-4">
           <LegalSectionTitle>第7条（インタビュー結果の公開）</LegalSectionTitle>
           <LegalParagraph>
-            AIインタビューの要約とご意見の整理は、ご本人が公開に同意し、運営者が確認したものに限り、本サービス上で公開されることがあります。やり取りの全文は公開しません。公開に同意しない場合も、第4条の閲覧は行われます。
+            ご本人がAIインタビューの結果の公開を許可すると、結果ページ（要約・ご意見の整理・やり取りの全文）は、そのURLを知っている人が閲覧できるようになります。本サービス上の一覧に掲載するのは、そのうち運営者が確認したものに限ります。公開を許可しない場合も、第4条の閲覧は行われます。
           </LegalParagraph>
         </section>
 

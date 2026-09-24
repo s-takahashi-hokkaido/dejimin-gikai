@@ -17,7 +17,7 @@ import { getInterviewChatLink } from "@/features/interview-config/shared/utils/i
 const CONSENT_ITEMS = [
   `回答の内容は、${siteConfig.councilName}の議員や議員選挙の候補者が参照する場合があります。`,
   "回答の内容は、AIの応答を作るため、米国のOpenAIに送信されます。",
-  `回答の要約は、公開に同意した場合に限り、運営者が確認したうえで${siteConfig.siteName}上に公開されることがあります。`,
+  "インタビューの最後に公開を許可した場合、要約とやり取りの全文が結果ページで公開されます。",
   "回答の削除をご希望の場合は、結果ページのURLを添えてお問い合わせください。",
 ];
 
