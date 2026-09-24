@@ -214,7 +214,7 @@ export const committees: CommitteeInsert[] = [
 
 // タグデータ
 export const tags: TagInsert[] = [
-  // --- Featured（トップページタブ） ---
+  // 全タグをトップページに表示する（featured_priority の昇順）
   {
     label: "財政・予算",
     description: "補正予算、基金設置・廃止、債務負担行為など財政全般に関する議案",
@@ -240,46 +240,45 @@ export const tags: TagInsert[] = [
     description: "除雪、冬期路面管理、防災・危機管理に関する議案",
     featured_priority: 5,
   },
-  // --- 通常タグ ---
   {
     label: "交通・インフラ",
     description: "道路、橋梁、地下鉄・市電、上下水道など都市インフラに関する議案",
-    featured_priority: null,
+    featured_priority: 6,
   },
   {
     label: "環境",
     description: "環境保全、廃棄物処理、脱炭素・省エネルギーに関する議案",
-    featured_priority: null,
+    featured_priority: 7,
   },
   {
     label: "経済・産業",
     description: "中小企業支援、農業振興、雇用対策に関する議案",
-    featured_priority: null,
+    featured_priority: 8,
   },
   {
     label: "観光・文化・スポーツ",
     description: "観光振興、文化施設、スポーツ施設に関する議案",
-    featured_priority: null,
+    featured_priority: 9,
   },
   {
     label: "DX・行政改革",
     description: "ICT活用、行政手続きデジタル化、組織改編に関する議案",
-    featured_priority: null,
+    featured_priority: 10,
   },
   {
     label: "税・使用料",
     description: "市税条例、各種施設使用料・手数料の改定に関する議案",
-    featured_priority: null,
+    featured_priority: 11,
   },
   {
     label: "人権・市民生活",
     description: "男女共同参画、消費者保護、地域コミュニティに関する議案",
-    featured_priority: null,
+    featured_priority: 12,
   },
   {
     label: "議会・選挙",
     description: "議員定数、政務活動費、選挙管理に関する議案",
-    featured_priority: null,
+    featured_priority: 13,
   },
 ];
 
