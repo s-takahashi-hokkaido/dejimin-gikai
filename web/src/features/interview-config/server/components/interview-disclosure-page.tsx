@@ -62,10 +62,6 @@ function StaticDisclosureSection() {
                 入力されたデータがAIモデル（Anthropic社等）の学習に再利用されることはありません。
               </li>
               <li>
-                <span className="font-bold">活用の範囲：</span>
-                回答内容は、党内における政策検討、およびAIを用いた統計的分析に限定して活用いたします。
-              </li>
-              <li>
                 <span className="font-bold">分析プロセスの透明化：</span>
                 AIを用いた分析手法およびそのプロセスについては、客観性を担保するため、適宜その詳細を開示するものとします。
               </li>

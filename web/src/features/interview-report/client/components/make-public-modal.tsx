@@ -59,9 +59,6 @@ export function MakePublicModal({
           <CheckListItem>
             さまざまな当事者の意見が公開されることで、より深い議案議論が実現できます。
           </CheckListItem>
-          <p className="text-sm text-black">
-            非公開で提出した場合でも、ご意見は党内での政策検討に活用させていただきます。
-          </p>
         </div>
 
         <div className="space-y-3 mt-6">
