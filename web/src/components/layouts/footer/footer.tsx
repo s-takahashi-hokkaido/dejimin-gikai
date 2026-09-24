@@ -94,7 +94,9 @@ function FooterPolicies() {
 function FooterDisclaimer() {
   return (
     <p className="text-[11px] text-slate-500 text-center mt-1 mb-3">
-      このサービスは政党チームみらいが運営しているものではありません
+      このサービスは政党チームみらいが運営しているものではありません。
+      <br />
+      また、札幌市・札幌市議会の公式サービスでもありません。
     </p>
   );
 }
