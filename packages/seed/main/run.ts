@@ -1,11 +1,7 @@
 import {
-  bills,
   tags,
-  councilSessions,
   factions,
   committees,
-  createAllFactionStances,
-  createBillsTags,
   createInterviewConfig,
   createInterviewQuestions,
   createInterviewSessions,
@@ -17,22 +13,12 @@ import {
   createAdditionalDemoSessions,
   createAdditionalDemoMessages,
   createAdditionalDemoReports,
-  currentSessionBillNames,
-  previousSessionBillNames,
-  billCommitteeMap,
   DEMO_REPORT_ID,
   DEMO_REPORT_ID_WORK,
   DEMO_REPORT_ID_DAILY,
   DEMO_REPORT_ID_CITIZEN,
 } from "./data";
-import { createBillContents } from "./bill-contents-data";
-import {
-  createShippingBillInterviewConfig,
-  createShippingBillQuestions,
-  createShippingBillSessions,
-  createShippingBillMessages,
-  createShippingBillReports,
-} from "./shipping-bill-data";
+import { INTERVIEW_TARGET, sapporoSessions } from "./sapporo-bills/sessions";
 import { createAdminClient, clearAllData } from "../shared/helper";
 
 async function seedDatabase() {
@@ -52,18 +38,6 @@ async function seedDatabase() {
     if (tagsError) throw new Error(`Failed to insert tags: ${tagsError.message}`);
     if (!insertedTags) throw new Error("No tags were inserted");
     console.log(`✅ Inserted ${insertedTags.length} tags`);
-
-    // Insert council sessions
-    console.log("🏛️  Inserting council sessions...");
-    const { data: insertedCouncilSessions, error: councilSessionsError } =
-      await supabase
-        .from("council_sessions")
-        .insert(councilSessions)
-        .select("id, slug");
-
-    if (councilSessionsError) throw new Error(`Failed to insert council sessions: ${councilSessionsError.message}`);
-    if (!insertedCouncilSessions) throw new Error("No council sessions were inserted");
-    console.log(`✅ Inserted ${insertedCouncilSessions.length} council sessions`);
 
     // Insert committees
     console.log("🏢 Inserting committees...");
@@ -87,106 +61,129 @@ async function seedDatabase() {
     if (!insertedFactions) throw new Error("No factions were inserted");
     console.log(`✅ Inserted ${insertedFactions.length} factions`);
 
-    // Insert bills
-    console.log("📄 Inserting bills...");
-    const { data: insertedBills, error: billsError } = await supabase
-      .from("bills")
-      .insert(bills)
-      .select("id, name");
+    const committeeIdByName = new Map(insertedCommittees.map((c) => [c.name, c.id]));
+    const factionIdByName = new Map(insertedFactions.map((f) => [f.name, f.id]));
+    const tagIdByLabel = new Map(insertedTags.map((t) => [t.label, t.id]));
+    const requireId = (map: Map<string, string>, key: string, kind: string) => {
+      const id = map.get(key);
+      if (!id) throw new Error(`Unknown ${kind}: ${key}`);
+      return id;
+    };
 
-    if (billsError) throw new Error(`Failed to insert bills: ${billsError.message}`);
-    if (!insertedBills) throw new Error("No bills were inserted");
-    console.log(`✅ Inserted ${insertedBills.length} bills`);
+    // Insert council sessions and bills (sapporo-bills/ の実データ)
+    console.log("🏛️  Inserting council sessions and bills...");
+    let councilSessionCount = 0;
+    let billCount = 0;
+    let contentCount = 0;
+    let stanceCount = 0;
+    let billsTagsCount = 0;
+    let billCommitteeCount = 0;
+    let interviewTargetBillId: string | null = null;
 
-    // Link bills to council sessions
-    const currentSession = insertedCouncilSessions.find((s) => s.slug === "r8-2");
-    const previousSession = insertedCouncilSessions.find((s) => s.slug === "r8-1");
+    for (const session of sapporoSessions) {
+      const { data: insertedSession, error: sessionError } = await supabase
+        .from("council_sessions")
+        .insert({
+          slug: session.slug,
+          name: session.name,
+          start_date: session.startDate,
+          end_date: session.endDate,
+          council_url: session.councilUrl,
+          is_active: session.isActive,
+        })
+        .select("id")
+        .single();
+      if (sessionError) throw new Error(`Failed to insert council session ${session.slug}: ${sessionError.message}`);
+      councilSessionCount++;
 
-    if (currentSession) {
-      const currentBills = insertedBills.filter((b) =>
-        currentSessionBillNames.includes(b.name)
+      const { data: insertedBills, error: billsError } = await supabase
+        .from("bills")
+        .insert(
+          session.bills.map((bill) => ({
+            council_session_id: insertedSession.id,
+            bill_number: bill.billNumber,
+            bill_type: bill.billType,
+            name: bill.name,
+            source_url: bill.sourceUrl,
+            status: bill.status,
+            status_note: bill.statusNote,
+            published_at: bill.publishedAt,
+            publish_status: "published" as const,
+            is_featured: bill.isFeatured,
+          }))
+        )
+        .select("id, bill_number, bill_type");
+      if (billsError) throw new Error(`Failed to insert bills for ${session.slug}: ${billsError.message}`);
+      billCount += insertedBills.length;
+
+      const billIdByKey = new Map(
+        insertedBills.map((b) => [`${b.bill_number}|${b.bill_type}`, b.id])
       );
-      for (const bill of currentBills) {
-        await supabase
-          .from("bills")
-          .update({ council_session_id: currentSession.id })
-          .eq("id", bill.id);
-      }
-      console.log(`🔗 Linked ${currentBills.length} bills to current session (r8-2)`);
-    }
+      const billIdOf = (billNumber: string, billType: string) =>
+        requireId(billIdByKey, `${billNumber}|${billType}`, "bill");
 
-    if (previousSession) {
-      const previousBills = insertedBills.filter((b) =>
-        previousSessionBillNames.includes(b.name)
+      const contents = session.bills.flatMap((bill) => {
+        const billId = billIdOf(bill.billNumber, bill.billType);
+        return (["normal", "hard"] as const).map((level) => ({
+          bill_id: billId,
+          difficulty_level: level,
+          ...bill.contents[level],
+        }));
+      });
+      const billCommittees = session.bills.flatMap((bill) =>
+        bill.committees.map((name) => ({
+          bill_id: billIdOf(bill.billNumber, bill.billType),
+          committee_id: requireId(committeeIdByName, name, "committee"),
+        }))
       );
-      for (const bill of previousBills) {
-        await supabase
-          .from("bills")
-          .update({ council_session_id: previousSession.id })
-          .eq("id", bill.id);
-      }
-      console.log(`🔗 Linked ${previousBills.length} bills to previous session (r8-1)`);
-    }
-
-    // Link bills to committees
-    const billCommittees = Object.entries(billCommitteeMap).flatMap(
-      ([billName, committeeNames]) => {
-        const bill = insertedBills.find((b) => b.name === billName);
-        if (!bill) return [];
-        return committeeNames.flatMap((committeeName) => {
-          const committee = insertedCommittees.find((c) => c.name === committeeName);
-          return committee ? [{ bill_id: bill.id, committee_id: committee.id }] : [];
+      // 採決のあった議案だけ会派賛否を登録する（報告・会期中の議案は除く）
+      const stances = session.bills
+        .filter((bill) => bill.status !== "reported" && bill.status !== "submitted")
+        .flatMap((bill) => {
+          for (const name of bill.againstFactions) requireId(factionIdByName, name, "faction");
+          return insertedFactions.map((faction) => ({
+            bill_id: billIdOf(bill.billNumber, bill.billType),
+            faction_id: faction.id,
+            type: bill.againstFactions.includes(faction.name) ? ("against" as const) : ("for" as const),
+          }));
         });
+      const billsTags = session.bills.flatMap((bill) =>
+        bill.tags.map((label) => ({
+          bill_id: billIdOf(bill.billNumber, bill.billType),
+          tag_id: requireId(tagIdByLabel, label, "tag"),
+        }))
+      );
+
+      const { error: contentsError } = await supabase.from("bill_contents").insert(contents);
+      if (contentsError) throw new Error(`Failed to insert bill contents for ${session.slug}: ${contentsError.message}`);
+      if (billCommittees.length > 0) {
+        const { error } = await supabase.from("bill_committees").insert(billCommittees);
+        if (error) throw new Error(`Failed to insert bill committees for ${session.slug}: ${error.message}`);
       }
-    );
-    const { error: billCommitteesError } = await supabase
-      .from("bill_committees")
-      .insert(billCommittees);
-    if (billCommitteesError)
-      throw new Error(`Failed to insert bill committees: ${billCommitteesError.message}`);
-    console.log(`🔗 Linked ${billCommittees.length} bill-committee pairs`);
+      if (stances.length > 0) {
+        const { error } = await supabase.from("faction_stances").insert(stances);
+        if (error) throw new Error(`Failed to insert faction stances for ${session.slug}: ${error.message}`);
+      }
+      const { error: billsTagsError } = await supabase.from("bills_tags").insert(billsTags);
+      if (billsTagsError) throw new Error(`Failed to insert bills-tags for ${session.slug}: ${billsTagsError.message}`);
 
-    // Insert bill_contents
-    console.log("📚 Inserting bill contents...");
-    const billContents = createBillContents(insertedBills);
+      contentCount += contents.length;
+      billCommitteeCount += billCommittees.length;
+      stanceCount += stances.length;
+      billsTagsCount += billsTags.length;
 
-    const { data: insertedContents, error: contentsError } = await supabase
-      .from("bill_contents")
-      .insert(billContents)
-      .select("id");
-
-    if (contentsError) throw new Error(`Failed to insert bill contents: ${contentsError.message}`);
-    if (!insertedContents) throw new Error("No bill contents were inserted");
-    console.log(`✅ Inserted ${insertedContents.length} bill contents`);
-
-    // Insert faction_stances (複数会派分)
-    console.log("🎯 Inserting faction stances...");
-    const factionStances = createAllFactionStances(insertedBills, insertedFactions);
-
-    const { data: insertedStances, error: stancesError } = await supabase
-      .from("faction_stances")
-      .insert(factionStances)
-      .select("id");
-
-    if (stancesError) throw new Error(`Failed to insert faction stances: ${stancesError.message}`);
-    console.log(`✅ Inserted ${insertedStances?.length ?? 0} faction stances`);
-
-    // Insert bills_tags
-    console.log("🔗 Inserting bills-tags relations...");
-    const billsTags = createBillsTags(insertedBills, insertedTags);
-
-    const { data: insertedBillsTags, error: billsTagsError } = await supabase
-      .from("bills_tags")
-      .insert(billsTags)
-      .select();
-
-    if (billsTagsError) throw new Error(`Failed to insert bills-tags relations: ${billsTagsError.message}`);
-    if (!insertedBillsTags) throw new Error("No bills-tags relations were inserted");
-    console.log(`✅ Inserted ${insertedBillsTags.length} bills-tags relations`);
+      if (session.slug === INTERVIEW_TARGET.sessionSlug) {
+        const target = insertedBills.find((b) => b.bill_number === INTERVIEW_TARGET.billNumber && b.bill_type === "bill");
+        interviewTargetBillId = target?.id ?? null;
+      }
+      console.log(`✅ ${session.slug}: ${insertedBills.length} bills`);
+    }
 
     // Insert interview config (子ども医療費議案)
     console.log("💬 Inserting interview config...");
-    const interviewConfigData = createInterviewConfig(insertedBills);
+    const interviewConfigData = interviewTargetBillId
+      ? createInterviewConfig(interviewTargetBillId)
+      : null;
     let insertedQuestionsCount = 0;
     let insertedSessionsCount = 0;
     let insertedMessagesCount = 0;
@@ -317,71 +314,17 @@ async function seedDatabase() {
       console.log("⚠️ Skipped interview config (target bill not found)");
     }
 
-    // 船荷証券法案のインタビューデータ（トピック解析テスト用）
-    console.log("🚢 Inserting shipping bill interview data...");
-    const shippingConfig = createShippingBillInterviewConfig(insertedBills);
-    let shippingSessionsCount = 0;
-    let shippingReportsCount = 0;
-
-    if (shippingConfig) {
-      const { data: insertedShippingConfig, error: shippingConfigError } =
-        await supabase
-          .from("interview_configs")
-          .insert(shippingConfig)
-          .select("id")
-          .single();
-
-      if (shippingConfigError) throw new Error(`Failed to insert shipping bill config: ${shippingConfigError.message}`);
-
-      if (insertedShippingConfig) {
-        const shippingQuestions = createShippingBillQuestions(insertedShippingConfig.id);
-        const { error: sqError } = await supabase
-          .from("interview_questions")
-          .insert(shippingQuestions);
-        if (sqError) throw new Error(`Failed to insert shipping questions: ${sqError.message}`);
-
-        const shippingSessions = createShippingBillSessions(insertedShippingConfig.id);
-        const { data: insertedShippingSessions, error: ssError } = await supabase
-          .from("interview_sessions")
-          .insert(shippingSessions)
-          .select("id");
-        if (ssError) throw new Error(`Failed to insert shipping sessions: ${ssError.message}`);
-
-        if (insertedShippingSessions) {
-          shippingSessionsCount = insertedShippingSessions.length;
-          const shippingSessionIds = insertedShippingSessions.map((s) => s.id);
-
-          const shippingMessages = createShippingBillMessages(shippingSessionIds);
-          const { error: smError } = await supabase
-            .from("interview_messages")
-            .insert(shippingMessages);
-          if (smError) throw new Error(`Failed to insert shipping messages: ${smError.message}`);
-
-          const shippingReports = createShippingBillReports(shippingSessionIds);
-          const { data: insertedShippingReports, error: srError } = await supabase
-            .from("interview_report")
-            .insert(shippingReports)
-            .select("id");
-          if (srError) throw new Error(`Failed to insert shipping reports: ${srError.message}`);
-          if (insertedShippingReports) shippingReportsCount = insertedShippingReports.length;
-        }
-
-        console.log(`✅ Shipping bill: ${shippingSessionsCount} sessions, ${shippingReportsCount} reports`);
-      }
-    } else {
-      console.log("⚠️ Shipping bill not found in bills data — skipped");
-    }
-
     console.log("\n🎉 Database seeding completed successfully!");
     console.log("\n📊 Summary:");
-    console.log(`  Council Sessions: ${insertedCouncilSessions.length}`);
+    console.log(`  Council Sessions: ${councilSessionCount}`);
     console.log(`  Committees: ${insertedCommittees.length}`);
     console.log(`  Factions: ${insertedFactions.length}`);
     console.log(`  Tags: ${insertedTags.length}`);
-    console.log(`  Bills: ${insertedBills.length}`);
-    console.log(`  Bill Contents: ${insertedContents.length}`);
-    console.log(`  Faction Stances: ${insertedStances?.length ?? 0}`);
-    console.log(`  Bills-Tags Relations: ${insertedBillsTags.length}`);
+    console.log(`  Bills: ${billCount}`);
+    console.log(`  Bill Contents: ${contentCount}`);
+    console.log(`  Bill Committees: ${billCommitteeCount}`);
+    console.log(`  Faction Stances: ${stanceCount}`);
+    console.log(`  Bills-Tags Relations: ${billsTagsCount}`);
     console.log(`  Interview Config: ${interviewConfigData ? 1 : 0}`);
     console.log(`  Interview Questions: ${insertedQuestionsCount}`);
     console.log(`  Interview Sessions: ${insertedSessionsCount}`);

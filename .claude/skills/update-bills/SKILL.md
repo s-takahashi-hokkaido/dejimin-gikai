@@ -153,6 +153,15 @@ web の画面は `status` で結果のラベルを決める（`approved` →「�
 - 原案PDFの読みどころ: 条例案は「（理 由）」欄と新旧対照表、契約・財産は「記」以下の項目。予算・補正予算は数値表がテキスト抽出で崩れやすいので、金額は PDF 原本で照合する
 - 読み取れない場合は、公式の件名と結果だけで作り、手で補うようユーザーに伝える
 
+## ローカル seed の実データ
+
+令和8年第1回定例会以降の議案（議案・解説・付託委員会・会派賛否・タグ）は `packages/seed/main/sapporo-bills/` に会期ごとのファイル（`r8-1.ts` など）で持っている。`pnpm db:reset`（または `pnpm seed`）でローカル DB に入る。
+
+- 新しい会期を登録したら、同じ形式のファイルを足し、`sessions.ts` の `sapporoSessions` に加える。トップに出す会期は `isActive: true` を1つだけにする
+- 会期後に結果が出たら、`status` / `statusNote` / `committees` / `againstFactions` をそのファイルで更新する（`againstFactions` に無い会派は賛成として登録される）
+- 付託委員会名は `data.ts` の `committees`、会派名は `factions` の `name`、タグは `tags` の `label` と一致させる（一致しないと seed が止まる）
+- 解説の追加・修正も、CLAUDE.md「AI生成コンテンツのDB更新ルール」どおりユーザーの確認を取ってからファイルに書く
+
 ## 手順
 
 1. **会期の確認・作成**: `/council-sessions` に対象の会期があるか確認し、無ければ作成する
