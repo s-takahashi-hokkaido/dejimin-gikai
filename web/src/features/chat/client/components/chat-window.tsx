@@ -22,10 +22,12 @@ import {
 import { siteConfig } from "@/config/site.config";
 import type { BillWithContent } from "@/features/bills/shared/types";
 import type { BudgetChatContext } from "@/features/chat/server/services/handle-chat-request";
+import { toUserFacingErrorMessage } from "@/features/chat/shared/utils/user-facing-error-message";
 import { useIsDesktop } from "@/hooks/use-is-desktop";
 import { useViewportHeight } from "@/hooks/use-viewport-height";
 import { SystemMessage } from "./system-message";
 import { UserMessage } from "./user-message";
+
 interface ChatWindowProps {
   billContext?: BillWithContent;
   hasInterviewConfig?: boolean;
@@ -304,7 +306,14 @@ export function ChatWindow({
               />
             </button>
           </PromptInput>
-          <PromptInputError status={status} error={error} />
+          <PromptInputError
+            status={status}
+            error={
+              error
+                ? new Error(toUserFacingErrorMessage(error.message))
+                : undefined
+            }
+          />
           {messages.length > 0 && <PromptInputHint />}
         </div>
       </div>
