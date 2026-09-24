@@ -1,12 +1,12 @@
-import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import {
   adminClient,
-  createTestUser,
+  cleanupTestBill,
   cleanupTestUser,
   createTestInterviewData,
-  cleanupTestBill,
+  createTestUser,
   type TestUser,
 } from "@test-utils/utils";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { createGenerateMock } from "@/test-utils/mock-language-model";
 import { generateInitialQuestion } from "./generate-initial-question";
 
@@ -42,6 +42,10 @@ describe("generateInitialQuestion 統合テスト", () => {
   });
 
   afterEach(async () => {
+    await adminClient
+      .from("chat_usage_events")
+      .delete()
+      .eq("user_id", testUser.id);
     await cleanupTestBill(billId);
     await cleanupTestUser(testUser.id);
   });
@@ -50,6 +54,7 @@ describe("generateInitialQuestion 統合テスト", () => {
     const mockModel = createGenerateMock(llmResponse);
 
     const result = await generateInitialQuestion({
+      userId: testUser.id,
       sessionId,
       billId,
       interviewConfigId,
@@ -78,6 +83,7 @@ describe("generateInitialQuestion 統合テスト", () => {
     const mockModel = createGenerateMock("  "); // 空白のみ
 
     const result = await generateInitialQuestion({
+      userId: testUser.id,
       sessionId,
       billId,
       interviewConfigId,
@@ -96,12 +102,65 @@ describe("generateInitialQuestion 統合テスト", () => {
     expect(messages).toHaveLength(0);
   });
 
+  it("生成に使ったコストを chat_usage_events に記録する", async () => {
+    const mockModel = createGenerateMock(llmResponse);
+
+    await generateInitialQuestion({
+      userId: testUser.id,
+      sessionId,
+      billId,
+      interviewConfigId,
+      deps: { model: mockModel },
+    });
+
+    const { data: events } = await adminClient
+      .from("chat_usage_events")
+      .select("*")
+      .eq("user_id", testUser.id);
+
+    expect(events).toHaveLength(1);
+    expect(events?.[0].prompt_name).toBe("interview-initial-question");
+    expect(events?.[0].session_id).toBe(sessionId);
+    expect(events?.[0].metadata).toMatchObject({
+      feature: "interview",
+      billId,
+    });
+  });
+
+  it("利用者ごとの上限に達している場合は生成せずnullを返す", async () => {
+    // インタビューの1人あたり上限（既定 $0.5）を超え、全体上限（既定 $5）には届かない額
+    await adminClient.from("chat_usage_events").insert({
+      user_id: testUser.id,
+      model: "test-model",
+      cost_usd: 1,
+    });
+    const mockModel = createGenerateMock(llmResponse);
+
+    const result = await generateInitialQuestion({
+      userId: testUser.id,
+      sessionId,
+      billId,
+      interviewConfigId,
+      deps: { model: mockModel },
+    });
+
+    expect(result).toBeNull();
+
+    const { data: messages } = await adminClient
+      .from("interview_messages")
+      .select("*")
+      .eq("interview_session_id", sessionId);
+
+    expect(messages).toHaveLength(0);
+  });
+
   it("interview_configが存在しないbillIdの場合はnullを返す", async () => {
     // 存在しないbillId
     const nonExistentBillId = "00000000-0000-0000-0000-000000000000";
     const mockModel = createGenerateMock(llmResponse);
 
     const result = await generateInitialQuestion({
+      userId: testUser.id,
       sessionId,
       billId: nonExistentBillId,
       interviewConfigId,

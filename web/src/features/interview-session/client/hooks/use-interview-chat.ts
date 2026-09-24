@@ -3,6 +3,7 @@
 import { experimental_useObject as useObject } from "@ai-sdk/react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { PromptInputMessage } from "@/components/ai-elements/prompt-input";
+import { toUserFacingErrorMessage } from "@/features/chat/shared/utils/user-facing-error-message";
 import {
   type InterviewStage,
   interviewChatResponseSchema,
@@ -216,7 +217,10 @@ export function useInterviewChat({
     stage,
     messages,
     isLoading: isChatLoading,
-    error: error || retry.displayError,
+    // OpenAI の生エラーやブラウザの "Failed to fetch" をそのまま見せない
+    error: error
+      ? new Error(toUserFacingErrorMessage(error.message))
+      : retry.displayError,
     object,
     streamingReportData,
     currentQuickReplies,

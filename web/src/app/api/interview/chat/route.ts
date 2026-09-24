@@ -1,5 +1,9 @@
 import { getChatSupabaseUser } from "@/features/chat/server/utils/supabase-server";
 import { ChatError, ChatErrorCode } from "@/features/chat/shared/types/errors";
+import {
+  DAILY_COST_LIMIT_MESSAGE,
+  GENERIC_ERROR_MESSAGE,
+} from "@/features/chat/shared/utils/user-facing-error-message";
 import { handleInterviewChatRequest } from "@/features/interview-session/server/services/handle-interview-chat-request";
 
 export async function POST(req: Request) {
@@ -54,19 +58,15 @@ export async function POST(req: Request) {
       error instanceof ChatError &&
       error.code === ChatErrorCode.DAILY_COST_LIMIT_REACHED
     ) {
-      return new Response(
-        "本日の利用上限に達しました。明日0時以降に再度お試しください。",
-        {
-          status: 429,
-          headers: { "Content-Type": "text/plain; charset=utf-8" },
-        }
-      );
+      return new Response(DAILY_COST_LIMIT_MESSAGE, {
+        status: 429,
+        headers: { "Content-Type": "text/plain; charset=utf-8" },
+      });
     }
 
     return new Response(
-      error instanceof Error
-        ? error.message
-        : "エラーが発生しました。しばらく待ってから再度お試しください。",
+      // 内部のエラー文（英語・OpenAI の応答など）は利用者に見せない。詳細は上のログで追う
+      GENERIC_ERROR_MESSAGE,
       {
         status: 500,
         headers: { "Content-Type": "text/plain; charset=utf-8" },

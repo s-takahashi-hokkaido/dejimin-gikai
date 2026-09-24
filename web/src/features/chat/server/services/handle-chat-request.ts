@@ -15,6 +15,7 @@ import {
   SUGGEST_INTERVIEW_TOOL_TYPE,
 } from "@/features/chat/shared/constants";
 import { ChatError, ChatErrorCode } from "@/features/chat/shared/types/errors";
+import { GENERIC_ERROR_MESSAGE } from "@/features/chat/shared/utils/user-facing-error-message";
 import { findPublicInterviewConfigByBillId } from "@/features/interview-config/server/repositories/interview-config-repository";
 import { findLatestNonArchivedSession } from "@/features/interview-session/server/repositories/interview-session-repository";
 import { AI_MODELS } from "@/lib/ai/models";
@@ -181,7 +182,10 @@ export async function handleChatRequest({
       },
     });
 
-    return result.toUIMessageStreamResponse();
+    // 既定では OpenAI のエラー文（英語・請求情報を含む）がそのまま利用者に届くため、汎用の文面に差し替える
+    return result.toUIMessageStreamResponse({
+      onError: () => GENERIC_ERROR_MESSAGE,
+    });
   } catch (error) {
     console.error("LLM generation error:", { promptName, userText, error });
     throw new ChatError(
