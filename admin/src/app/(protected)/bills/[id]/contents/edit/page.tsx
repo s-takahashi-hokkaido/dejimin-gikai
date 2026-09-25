@@ -2,6 +2,7 @@ import { requirePageAccess } from "@/features/auth/server/lib/auth-server";
 import { BillContentsEditForm } from "@/features/bills-edit/client/components/bill-contents-edit-form";
 import { getBillById } from "@/features/bills-edit/server/loaders/get-bill-by-id";
 import { getBillContents } from "@/features/bills-edit/server/loaders/get-bill-contents";
+import { env } from "@/lib/env";
 
 interface BillContentsEditPageProps {
   params: Promise<{ id: string }>;
@@ -33,7 +34,7 @@ export default async function BillContentsEditPage({
       <BillContentsEditForm
         bill={bill}
         billContents={billContents}
-        canEnrich={admin.role === "admin"}
+        canEnrich={admin.role === "admin" && env.claudeCliEnabled}
       />
     </div>
   );

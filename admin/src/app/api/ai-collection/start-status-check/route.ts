@@ -1,5 +1,6 @@
 import { requireAdmin } from "@/features/auth/server/lib/auth-server";
 import { NextResponse } from "next/server";
+import { env } from "@/lib/env";
 import { getBillsInPeriod } from "@/features/ai-collection/server/loaders/get-bills-in-period";
 import { buildStatusCheckPrompt } from "@/features/ai-collection/server/utils/build-status-check-prompt";
 import {
@@ -22,6 +23,12 @@ import type {
 export async function POST(request: Request) {
   try {
     await requireAdmin();
+    if (!env.claudeCliEnabled) {
+      return NextResponse.json(
+        { error: "AI情報収集はローカル環境でのみ利用できます" },
+        { status: 403 }
+      );
+    }
 
     const body = (await request.json()) as {
       startDate?: string;

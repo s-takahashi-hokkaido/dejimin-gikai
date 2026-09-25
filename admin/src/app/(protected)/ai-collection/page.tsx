@@ -2,10 +2,11 @@ import { AiCollectionPage } from "@/features/ai-collection/client/components/ai-
 import { getExistingBillNumbers } from "@/features/ai-collection/server/loaders/get-existing-bill-names";
 import { getRuns } from "@/features/ai-collection/server/loaders/get-runs";
 import { requirePageAccess } from "@/features/auth/server/lib/auth-server";
+import { env } from "@/lib/env";
 
 export default async function AiCollectionRoute() {
   await requirePageAccess("/ai-collection");
-  if (process.env.VERCEL) {
+  if (!env.claudeCliEnabled) {
     return (
       <div className="container mx-auto py-8">
         <h1 className="mb-4 text-2xl font-bold">AI情報収集</h1>

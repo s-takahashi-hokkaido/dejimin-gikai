@@ -1,5 +1,6 @@
 import { requireAdmin } from "@/features/auth/server/lib/auth-server";
 import { NextResponse } from "next/server";
+import { env } from "@/lib/env";
 import { buildPrompt } from "@/features/ai-collection/server/utils/build-prompt";
 import {
   ClaudeUsageLimitError,
@@ -54,6 +55,12 @@ export async function POST(
 
   try {
     await requireAdmin();
+    if (!env.claudeCliEnabled) {
+      return NextResponse.json(
+        { error: "AI情報収集はローカル環境でのみ利用できます" },
+        { status: 403 }
+      );
+    }
 
     const run = await loadRun(runId);
 
