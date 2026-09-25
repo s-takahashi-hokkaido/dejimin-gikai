@@ -20,6 +20,65 @@ function extractYouTubeId(url: string): string | null {
   return null;
 }
 
+type ParagraphChild = Element["children"][number];
+
+/**
+ * 兄弟ノード側から見て、リンクが行の端（段落の端・<br>・改行）に接しているか。
+ * 直前/直後の空白のみのテキストは読み飛ばして判定する。
+ */
+function isLineBoundary(
+  children: ParagraphChild[],
+  start: number,
+  step: 1 | -1
+): boolean {
+  for (let i = start; i >= 0 && i < children.length; i += step) {
+    const sibling = children[i];
+    if (sibling.type === "text") {
+      if (sibling.value.trim() === "") continue;
+      // 隣接テキストが改行で終わる/始まるなら行の端
+      return step === -1
+        ? sibling.value.endsWith("\n")
+        : sibling.value.startsWith("\n");
+    }
+    return sibling.type === "element" && sibling.tagName === "br";
+  }
+  return true;
+}
+
+/**
+ * p要素の子から、埋め込み候補となるURL文字列を取り出す。
+ * - テキストノード: 行ごとに分割してトリムしたもの
+ * - 自動リンク（remark-gfmがURLをaに変換したもの）: リンクテキストがhrefと同一で、
+ *   かつ行に単独で置かれているaのhref
+ *   （[説明](url) のような明示的なリンクや、文中のURLは対象外）
+ */
+function collectCandidateUrls(node: Element): string[] {
+  const urls: string[] = [];
+
+  node.children.forEach((child, i) => {
+    if (child.type === "text") {
+      for (const line of child.value.split("\n")) {
+        urls.push(line.trim());
+      }
+    } else if (child.type === "element" && child.tagName === "a") {
+      const href = child.properties?.href;
+      const [linkText] = child.children;
+      if (
+        typeof href === "string" &&
+        child.children.length === 1 &&
+        linkText.type === "text" &&
+        linkText.value === href &&
+        isLineBoundary(node.children, i - 1, -1) &&
+        isLineBoundary(node.children, i + 1, 1)
+      ) {
+        urls.push(href);
+      }
+    }
+  });
+
+  return urls;
+}
+
 /**
  * YouTube URLをiframeに変換するrehypeプラグイン
  */
@@ -27,38 +86,29 @@ export function rehypeEmbedYouTube() {
   return (tree: Root) => {
     visit(tree, "element", (node: Element, index, parent) => {
       if (node.tagName === "p" && parent && typeof index === "number") {
-        // p要素の中のテキストノードをチェック
-        for (const child of node.children) {
-          if (child.type === "text") {
-            const text = child.value;
-            const lines = text.split("\n");
+        for (const url of collectCandidateUrls(node)) {
+          if (!url.startsWith("https://")) continue;
 
-            for (const line of lines) {
-              const trimmedLine = line.trim();
-              if (trimmedLine.startsWith("https://")) {
-                const youtubeId = extractYouTubeId(trimmedLine);
-                if (youtubeId) {
-                  // YouTube URLを見つけた場合、iframe要素に置き換え
-                  const iframe: Element = {
-                    type: "element",
-                    tagName: "iframe",
-                    properties: {
-                      src: `https://www.youtube.com/embed/${youtubeId}`,
-                      frameborder: "0",
-                      allow:
-                        "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture",
-                      allowfullscreen: true,
-                      className: ["youtube-embed"],
-                    },
-                    children: [],
-                  };
+          const youtubeId = extractYouTubeId(url);
+          if (youtubeId) {
+            // YouTube URLを見つけた場合、iframe要素に置き換え
+            const iframe: Element = {
+              type: "element",
+              tagName: "iframe",
+              properties: {
+                src: `https://www.youtube.com/embed/${youtubeId}`,
+                frameborder: "0",
+                allow:
+                  "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture",
+                allowfullscreen: true,
+                className: ["youtube-embed"],
+              },
+              children: [],
+            };
 
-                  // p要素をiframe要素に置き換え
-                  parent.children[index] = iframe;
-                  return;
-                }
-              }
-            }
+            // p要素をiframe要素に置き換え
+            parent.children[index] = iframe;
+            return;
           }
         }
       }
