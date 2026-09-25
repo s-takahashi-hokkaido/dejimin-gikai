@@ -48,6 +48,25 @@ describe("rehypeEmbedYouTube（remark-gfm併用）", () => {
     expect(output).toContain("動画はこちら");
   });
 
+  it("文中のYouTube URLは埋め込まず、前後の文章を消さない", async () => {
+    const input = `動画はこちら https://www.youtube.com/watch?v=dQw4w9WgXcQ をご覧ください。`;
+
+    const output = (await gfmProcessor.process(input)).toString();
+
+    expect(output).not.toContain("<iframe");
+    expect(output).toContain("動画はこちら");
+    expect(output).toContain("をご覧ください。");
+  });
+
+  it("改行で単独行になっている自動リンクは埋め込まれる", async () => {
+    const input = `動画はこちら
+https://www.youtube.com/watch?v=dQw4w9WgXcQ`;
+
+    const output = (await gfmProcessor.process(input)).toString();
+
+    expect(output).toContain('src="https://www.youtube.com/embed/dQw4w9WgXcQ"');
+  });
+
   it("YouTube以外の自動リンクはそのまま残る", async () => {
     const input = `https://example.com/page`;
 
