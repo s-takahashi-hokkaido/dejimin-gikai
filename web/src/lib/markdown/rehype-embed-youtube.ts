@@ -21,44 +21,66 @@ function extractYouTubeId(url: string): string | null {
 }
 
 /**
+ * p要素の子から、埋め込み候補となるURL文字列を取り出す。
+ * - テキストノード: 行ごとに分割してトリムしたもの
+ * - 自動リンク（remark-gfmがURLをaに変換したもの）: リンクテキストがhrefと同一のaのhref
+ *   （[説明](url) のような明示的なリンクは対象外）
+ */
+function collectCandidateUrls(node: Element): string[] {
+  const urls: string[] = [];
+
+  for (const child of node.children) {
+    if (child.type === "text") {
+      for (const line of child.value.split("\n")) {
+        urls.push(line.trim());
+      }
+    } else if (child.type === "element" && child.tagName === "a") {
+      const href = child.properties?.href;
+      const [linkText] = child.children;
+      if (
+        typeof href === "string" &&
+        child.children.length === 1 &&
+        linkText.type === "text" &&
+        linkText.value === href
+      ) {
+        urls.push(href);
+      }
+    }
+  }
+
+  return urls;
+}
+
+/**
  * YouTube URLをiframeに変換するrehypeプラグイン
  */
 export function rehypeEmbedYouTube() {
   return (tree: Root) => {
     visit(tree, "element", (node: Element, index, parent) => {
       if (node.tagName === "p" && parent && typeof index === "number") {
-        // p要素の中のテキストノードをチェック
-        for (const child of node.children) {
-          if (child.type === "text") {
-            const text = child.value;
-            const lines = text.split("\n");
+        for (const url of collectCandidateUrls(node)) {
+          if (!url.startsWith("https://")) continue;
 
-            for (const line of lines) {
-              const trimmedLine = line.trim();
-              if (trimmedLine.startsWith("https://")) {
-                const youtubeId = extractYouTubeId(trimmedLine);
-                if (youtubeId) {
-                  // YouTube URLを見つけた場合、iframe要素に置き換え
-                  const iframe: Element = {
-                    type: "element",
-                    tagName: "iframe",
-                    properties: {
-                      src: `https://www.youtube.com/embed/${youtubeId}`,
-                      frameborder: "0",
-                      allow:
-                        "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture",
-                      allowfullscreen: true,
-                      className: ["youtube-embed"],
-                    },
-                    children: [],
-                  };
+          const youtubeId = extractYouTubeId(url);
+          if (youtubeId) {
+            // YouTube URLを見つけた場合、iframe要素に置き換え
+            const iframe: Element = {
+              type: "element",
+              tagName: "iframe",
+              properties: {
+                src: `https://www.youtube.com/embed/${youtubeId}`,
+                frameborder: "0",
+                allow:
+                  "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture",
+                allowfullscreen: true,
+                className: ["youtube-embed"],
+              },
+              children: [],
+            };
 
-                  // p要素をiframe要素に置き換え
-                  parent.children[index] = iframe;
-                  return;
-                }
-              }
-            }
+            // p要素をiframe要素に置き換え
+            parent.children[index] = iframe;
+            return;
           }
         }
       }

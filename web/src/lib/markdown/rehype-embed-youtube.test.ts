@@ -1,4 +1,5 @@
 import rehypeStringify from "rehype-stringify";
+import remarkGfm from "remark-gfm";
 import remarkParse from "remark-parse";
 import remarkRehype from "remark-rehype";
 import { unified } from "unified";
@@ -19,6 +20,43 @@ const processor = unified()
   .use(remarkRehype)
   .use(rehypeEmbedYouTube)
   .use(rehypeStringify);
+
+// remark-gfm併用時（URLがaに自動リンク化される）のテストプロセッサー
+const gfmProcessor = unified()
+  .use(remarkParse)
+  .use(remarkGfm)
+  .use(remarkRehype)
+  .use(rehypeEmbedYouTube)
+  .use(rehypeStringify);
+
+describe("rehypeEmbedYouTube（remark-gfm併用）", () => {
+  it("自動リンク化されたYouTube URLもiframeに変換される", async () => {
+    const input = `https://www.youtube.com/watch?v=dQw4w9WgXcQ`;
+
+    const output = (await gfmProcessor.process(input)).toString();
+
+    expect(output).toContain('src="https://www.youtube.com/embed/dQw4w9WgXcQ"');
+    expect(output).not.toContain("<a ");
+  });
+
+  it("明示的なリンク [説明](URL) は埋め込まない", async () => {
+    const input = `[動画はこちら](https://www.youtube.com/watch?v=dQw4w9WgXcQ)`;
+
+    const output = (await gfmProcessor.process(input)).toString();
+
+    expect(output).not.toContain("<iframe");
+    expect(output).toContain("動画はこちら");
+  });
+
+  it("YouTube以外の自動リンクはそのまま残る", async () => {
+    const input = `https://example.com/page`;
+
+    const output = (await gfmProcessor.process(input)).toString();
+
+    expect(output).not.toContain("<iframe");
+    expect(output).toContain('<a href="https://example.com/page">');
+  });
+});
 
 describe("rehypeEmbedYouTube", () => {
   it("should convert YouTube URLs to iframe embeds", async () => {
