@@ -1,6 +1,7 @@
 "use server";
 
 import { spawn } from "node:child_process";
+import { assertClaudeCliEnabled } from "@/features/ai-collection/server/utils/execute-claude";
 import { createAuditedAdminClient } from "@/features/audit-logs/server/lib/create-audited-admin-client";
 import { requireAdmin } from "@/features/auth/server/lib/auth-server";
 import {
@@ -96,6 +97,7 @@ export async function runAutoFeature(
 ): Promise<AutoFeatureResult> {
   try {
     const admin = await requireAdmin();
+    assertClaudeCliEnabled();
 
     const supabase = createAuditedAdminClient(admin);
 

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { canAccessPage } from "@/features/auth/shared/utils/can-access-page";
 import type { AdminRole } from "@/features/auth/shared/utils/role";
+import { env } from "@/lib/env";
 import { AutoFeatureButton } from "../../../client/components/bill-list/auto-feature-button";
 import { ResizableBillTable } from "../../../client/components/bill-list/resizable-bill-table";
 import type { BillSortConfig } from "../../../shared/types";
@@ -43,7 +44,6 @@ export async function BillList({
   ]);
 
   const isAdmin = role === "admin";
-  const isLocal = !process.env.VERCEL;
   const selectedSession = sessionId
     ? sessions.find((s) => s.id === sessionId)
     : null;
@@ -53,7 +53,7 @@ export async function BillList({
       <div className="mb-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
         <div className="text-sm text-gray-600">{bills.length}件の議案</div>
         <div className="flex items-center gap-2">
-          {isAdmin && isLocal && selectedSession && (
+          {isAdmin && env.claudeCliEnabled && selectedSession && (
             <AutoFeatureButton
               councilSessionId={selectedSession.id}
               sessionName={selectedSession.name}

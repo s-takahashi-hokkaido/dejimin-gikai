@@ -3,8 +3,26 @@ import { spawn } from "node:child_process";
 import * as fs from "node:fs/promises";
 import * as os from "node:os";
 import * as path from "node:path";
+import { env } from "@/lib/env";
 
 const CLAUDE_PATH = process.env.CLAUDE_CLI_PATH ?? "claude";
+
+/** Claude CLI の機能が無効な環境で呼ばれたことを示すエラー */
+export class ClaudeCliDisabledError extends Error {
+  constructor() {
+    super(
+      "Claude CLI を使う機能はこの環境では無効です（ADMIN_ENABLE_CLAUDE_CLI=true のローカル環境でのみ利用できます）"
+    );
+    this.name = "ClaudeCliDisabledError";
+  }
+}
+
+/** Claude CLI の機能が無効なら ClaudeCliDisabledError を投げる */
+export function assertClaudeCliEnabled(): void {
+  if (!env.claudeCliEnabled) {
+    throw new ClaudeCliDisabledError();
+  }
+}
 
 /** Claude の使用制限に達したことを示すエラー */
 export class ClaudeUsageLimitError extends Error {
@@ -55,6 +73,11 @@ export function executeClaudeToFile(
   prompt: string,
   _outputFilePath: string
 ): Promise<void> {
+  try {
+    assertClaudeCliEnabled();
+  } catch (err) {
+    return Promise.reject(err);
+  }
   return new Promise((resolve, reject) => {
     // CLAUDECODE を unset: Claude CLI はネスト起動を検出してブロックするため
     const env = { ...process.env };
