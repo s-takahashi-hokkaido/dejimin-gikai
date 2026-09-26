@@ -46,8 +46,14 @@ ls -la /srv/backups/"$(date +%Y%m%d)"
 | ファイル | 中身 | なぜ必要か |
 |---|---|---|
 | `migrations.txt` | `supabase_migrations.schema_migrations` の版の一覧 | 復元時に**同じ版のスキーマ**を作るため。新しいスキーマに古いデータを流すと壊れる |
-| `data.sql` | `public` / `auth` / `storage` のデータのみの `pg_dump`（マイグレーション管理表と `storage.buckets` は除く） | スキーマはマイグレーションで作るため |
+| `data.sql` | `public` / `auth` / `storage` のデータのみの `pg_dump`（マイグレーション管理表・`storage.buckets`・`chat_logs` は除く） | スキーマはマイグレーションで作るため |
 | `storage.tar` | `volumes/storage`（画像ファイルの実体）を xattr ごと固めたもの | storage-api が Content-Type と Cache-Control を xattr（`user.supabase.*`）に持っている。落とすと復元した画像が `application/octet-stream` になる |
+
+> **`chat_logs`（AI チャットの会話本文）はバックアップに入れない。**
+> 入れると、DB から 90 日で消した会話ログがバックアップの保持期間（14日）だけ生き延び、
+> プライバシーポリシーの「AI チャットのやり取りは 90 日で自動的に削除します」と食い違う。
+> そのため復元しても会話ログは戻らない（分析用の一時データなので、戻せなくてよいと判断した）。
+> `chat_logs` を参照する外部キーは無いので、他のテーブルの復元には影響しない。
 
 > **`/srv/backups` の中身には、市民のインタビュー回答・利用者のメールアドレスとパスワードハッシュが入る。**
 > ディレクトリは 700、ファイルは 600（スクリプトの `umask 077` と `chmod 700`）。手元に持ち出す時も置き場所に気をつける。

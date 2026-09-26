@@ -4,7 +4,8 @@
 #
 # 取るのは検証結果 §4-5 で復元まで確かめた3点で、形式もそこと同じにしてある。
 #   migrations.txt … どのマイグレーションまで当たった DB のデータか（復元時に同じ版のスキーマを作るため）
-#   data.sql       … データのみの pg_dump（マイグレーション管理表と storage.buckets は除く）
+#   data.sql       … データのみの pg_dump（マイグレーション管理表と storage.buckets、
+#                    それに chat_logs は除く）
 #   storage.tar    … 画像ファイルの実体。xattr（user.supabase.*）ごと。落とすと復元した画像が
 #                    application/octet-stream で返る
 #
@@ -79,10 +80,14 @@ compose exec -T db psql -U postgres -v ON_ERROR_STOP=1 -tAc \
   >"${work_dir}/migrations.txt"
 log "migrations.txt: $(wc -l <"${work_dir}/migrations.txt") 件"
 
-# 2. データのみの dump。スキーマはマイグレーションで作り直すので入れない
+# 2. データのみの dump。スキーマはマイグレーションで作り直すので入れない。
+#    chat_logs（AI チャットの会話本文）は入れない。入れるとバックアップの保持期間のぶん
+#    （14日）だけ会話ログが生き延び、プライバシーポリシーの「90日で自動的に削除」と食い違う。
+#    chat_logs を参照する外部キーは無いので、復元しなくても他のテーブルは壊れない
 compose exec -T db pg_dump -U supabase_admin --data-only --no-owner \
   -n public -n auth -n storage \
   -T auth.schema_migrations -T storage.migrations -T storage.buckets \
+  -T public.chat_logs \
   >"${work_dir}/data.sql"
 log "data.sql: $(du -h "${work_dir}/data.sql" | cut -f1)"
 
