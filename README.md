@@ -20,6 +20,8 @@
 
 ## セットアップ
 
+Node.js は **22**（CI のビルドと VPS の実行環境に合わせています）、パッケージマネージャは pnpm 10 を使います。
+
 ```bash
 # Supabaseの起動
 npx supabase start
@@ -76,4 +78,7 @@ WHERE email = '<1で作成したユーザーのemail>';
 
 ## 本番デプロイ
 
-[公開デプロイ手順書](docs/fukuoka/20260330_1500_公開デプロイ手順書.md) を参照してください。
+- さくらVPS（現行の構成）: [infra/README.md](infra/README.md)（デプロイの仕組み・Secrets / Variables・VPS 側の配置）と
+  [さくらVPS立ち上げ手順](docs/20260924_1404_さくらVPS立ち上げ手順.md)
+- Vercel（Fork 元から引き継いだ構成。VPS への移行が終わったら消します）:
+  [公開デプロイ手順書](docs/fukuoka/20260330_1500_公開デプロイ手順書.md)

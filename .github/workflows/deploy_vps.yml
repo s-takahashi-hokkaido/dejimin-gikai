@@ -1,0 +1,169 @@
+name: Deploy VPS
+
+# さくらVPS へ web・admin を配る（手順書 docs/20260924_1404_さくらVPS立ち上げ手順.md 手順10）。
+#
+# 公開前は手動実行のみにしている。develop への push で自動デプロイにする場合は、
+# 下の push を有効にする（再起動の数秒間は 502 になるので、公開後に入れるかどうかを判断する）。
+#
+#   push:
+#     branches: [develop]
+on:
+  workflow_dispatch:
+
+# 2つ同時に流れると rsync と restart が衝突するので直列化する
+concurrency:
+  group: deploy-vps
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@41ff72655975bd51cab0327fa583b6e92b6d3061 # v4.2.0
+        with:
+          version: 10
+
+      # VPS の Node と揃える（手順書 手順5）。Node 20 は 2026-04 にサポートが終わっている
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: "22"
+          cache: "pnpm"
+
+      # 登録漏れで長いビルドの後に落ちないよう、先に確かめる。
+      # 一覧と登録手順は infra/README.md を参照
+      - name: Check required variables and secrets
+        env:
+          VPS_HOST: ${{ vars.VPS_HOST }}
+          VPS_USER: ${{ vars.VPS_USER }}
+          NEXT_PUBLIC_SUPABASE_URL: ${{ vars.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ vars.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+          NEXT_PUBLIC_WEB_URL: ${{ vars.NEXT_PUBLIC_WEB_URL }}
+          NEXT_PUBLIC_APP_URL: ${{ vars.NEXT_PUBLIC_APP_URL }}
+          VPS_SSH_PRIVATE_KEY: ${{ secrets.VPS_SSH_PRIVATE_KEY }}
+          VPS_SSH_KNOWN_HOSTS: ${{ secrets.VPS_SSH_KNOWN_HOSTS }}
+        run: |
+          missing=""
+          for name in VPS_HOST VPS_USER \
+            NEXT_PUBLIC_SUPABASE_URL NEXT_PUBLIC_SUPABASE_ANON_KEY \
+            NEXT_PUBLIC_WEB_URL NEXT_PUBLIC_APP_URL \
+            VPS_SSH_PRIVATE_KEY VPS_SSH_KNOWN_HOSTS; do
+            if [ -z "${!name}" ]; then
+              missing="${missing} ${name}"
+            fi
+          done
+          if [ -n "${missing}" ]; then
+            echo "GitHub に登録されていません:${missing}" >&2
+            echo "infra/README.md の「GitHub 側に登録するもの」を参照してください。" >&2
+            exit 1
+          fi
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      # NEXT_PUBLIC_* はビルド時に JS へ埋め込まれるので、本番の値をここで渡す（手順書 手順10）。
+      # anon キーは公開して構わない値なので Secrets ではなく Variables に置く。
+      # サービスロールキー・OpenAI のキーなどの秘密は VPS の env ファイルにだけ置き、
+      # ビルドでは使わない（ビルド時に DB へ接続する箇所が無いことを確認済み）。
+      - name: Build web
+        run: pnpm --filter web build
+        env:
+          # web が読むのはこの3つ（admin 用の NEXT_PUBLIC_APP_URL は読まない）が、
+          # 参照が増えた時に取りこぼさないよう4つとも渡す
+          NEXT_PUBLIC_SUPABASE_URL: ${{ vars.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ vars.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+          NEXT_PUBLIC_WEB_URL: ${{ vars.NEXT_PUBLIC_WEB_URL }}
+          NEXT_PUBLIC_APP_URL: ${{ vars.NEXT_PUBLIC_APP_URL }}
+
+      - name: Build admin
+        run: pnpm --filter admin build
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ vars.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ vars.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+          NEXT_PUBLIC_WEB_URL: ${{ vars.NEXT_PUBLIC_WEB_URL }}
+          NEXT_PUBLIC_APP_URL: ${{ vars.NEXT_PUBLIC_APP_URL }}
+
+      # standalone には .next/static と public が入らないので手でコピーする
+      # （検証結果 §4-6、検証手順 §3 手順4）。
+      # モノレポなので server.js は .next/standalone/<app>/server.js に出る
+      - name: Copy static assets into standalone output
+        run: |
+          cp -r web/.next/static web/.next/standalone/web/.next/static
+          cp -r web/public web/.next/standalone/web/public
+          cp -r admin/.next/static admin/.next/standalone/admin/.next/static
+          cp -r admin/public admin/.next/standalone/admin/public
+
+      - name: Set up SSH key
+        env:
+          VPS_SSH_PRIVATE_KEY: ${{ secrets.VPS_SSH_PRIVATE_KEY }}
+          VPS_SSH_KNOWN_HOSTS: ${{ secrets.VPS_SSH_KNOWN_HOSTS }}
+        run: |
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+          printf '%s\n' "$VPS_SSH_PRIVATE_KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          # ホスト鍵を固定する（StrictHostKeyChecking=no にしない）
+          printf '%s\n' "$VPS_SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/known_hosts
+
+      # 末尾の / は「ディレクトリの中身を送る」意味。外すと /srv/gikai/web/standalone/ になる。
+      # --delete で、消えたファイルが VPS に残らないようにする
+      # （runtime に作られる .next/cache も消えるが、ビルドが変わればキャッシュは無効なので問題ない）
+      - name: Deploy with rsync
+        env:
+          VPS_HOST: ${{ vars.VPS_HOST }}
+          VPS_USER: ${{ vars.VPS_USER }}
+          VPS_SSH_PORT: ${{ vars.VPS_SSH_PORT || '22' }}
+        run: |
+          ssh_cmd="ssh -i $HOME/.ssh/deploy_key -o IdentitiesOnly=yes -o BatchMode=yes -o ConnectTimeout=15 -p ${VPS_SSH_PORT}"
+          rsync -az --delete -e "${ssh_cmd}" \
+            web/.next/standalone/ "${VPS_USER}@${VPS_HOST}:/srv/gikai/web/"
+          rsync -az --delete -e "${ssh_cmd}" \
+            admin/.next/standalone/ "${VPS_USER}@${VPS_HOST}:/srv/gikai/admin/"
+
+      # sudoers（infra/sudoers/gikai-deploy）で、このコマンドだけを NOPASSWD で許している
+      - name: Restart services
+        env:
+          VPS_HOST: ${{ vars.VPS_HOST }}
+          VPS_USER: ${{ vars.VPS_USER }}
+          VPS_SSH_PORT: ${{ vars.VPS_SSH_PORT || '22' }}
+        run: |
+          ssh -i "$HOME/.ssh/deploy_key" -o IdentitiesOnly=yes -o BatchMode=yes \
+            -o ConnectTimeout=15 -p "${VPS_SSH_PORT}" "${VPS_USER}@${VPS_HOST}" \
+            'sudo /usr/bin/systemctl restart gikai-web gikai-admin'
+
+      # ポートは /srv/gikai/{web,admin}.env の PORT（web 3004 / admin 3003）に合わせている。
+      # Basic 認証はホストの nginx で掛かるので、ここでは応答があることだけを確かめる
+      - name: Verify services are up
+        env:
+          VPS_HOST: ${{ vars.VPS_HOST }}
+          VPS_USER: ${{ vars.VPS_USER }}
+          VPS_SSH_PORT: ${{ vars.VPS_SSH_PORT || '22' }}
+        run: |
+          ssh -i "$HOME/.ssh/deploy_key" -o IdentitiesOnly=yes -o BatchMode=yes \
+            -o ConnectTimeout=15 -p "${VPS_SSH_PORT}" "${VPS_USER}@${VPS_HOST}" '
+            set -e
+            sleep 5
+            systemctl is-active gikai-web gikai-admin
+            for port in 3004 3003; do
+              code=$(curl -s -o /dev/null -m 10 -w "%{http_code}" "http://127.0.0.1:${port}/" || true)
+              echo "127.0.0.1:${port} -> ${code}"
+              case "${code}" in
+                2*|3*|4*) ;;
+                *) echo "127.0.0.1:${port} から応答がありません" >&2; exit 1 ;;
+              esac
+            done
+          '
+
+      - name: Clean up SSH key
+        if: always()
+        run: rm -f ~/.ssh/deploy_key

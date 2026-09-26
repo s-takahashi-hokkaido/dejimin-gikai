@@ -20,10 +20,11 @@ jobs:
         with:
           version: 10
 
+      # VPS の実行環境と揃える（手順書 手順5）。Node 20 は 2026-04 にサポートが終わっている
       - name: Setup Node.js
         uses: actions/setup-node@v6
         with:
-          node-version: "20"
+          node-version: "22"
           cache: "pnpm"
 
       - name: Install dependencies
