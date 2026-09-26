@@ -1,5 +1,6 @@
 import { env } from "../env";
 import { logger } from "../logger";
+import { buildRevalidateUrl } from "./build-revalidate-url";
 
 /**
  * Web側で定義されているキャッシュタグと同じ値
@@ -19,7 +20,9 @@ export type WebCacheTag = (typeof WEB_CACHE_TAGS)[keyof typeof WEB_CACHE_TAGS];
  * If no tags are specified, all caches are invalidated.
  */
 export async function invalidateWebCache(tags?: WebCacheTag[]): Promise<void> {
-  if (!env.webUrl || !env.revalidateSecret) {
+  const revalidateUrl = buildRevalidateUrl(env.webInternalUrl, env.webUrl);
+
+  if (!revalidateUrl || !env.revalidateSecret) {
     console.warn(
       "Web URL or revalidate secret not configured, skipping cache invalidation"
     );
@@ -27,7 +30,7 @@ export async function invalidateWebCache(tags?: WebCacheTag[]): Promise<void> {
   }
 
   try {
-    const response = await fetch(`${env.webUrl}/api/revalidate`, {
+    const response = await fetch(revalidateUrl, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
