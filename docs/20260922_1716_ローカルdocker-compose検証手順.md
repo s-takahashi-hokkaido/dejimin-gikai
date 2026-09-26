@@ -158,6 +158,9 @@ server {
 `X-Forwarded-For` は利用者が送ってきた値に追記せず、`$remote_addr` で上書きする。
 利用者が偽の IP を名乗ってレート制限を逃れるのを防ぐため。
 
+> **その後の変更**: VPS ではホストの nginx の後ろに置くため、compose の nginx はホストの nginx（docker のゲートウェイ `10.203.0.1`）が付けた
+> `X-Real-IP` を利用者の IP として採用するように変えた（`set_real_ip_from`）。上書きはホストの nginx が担う（[さくらVPS立ち上げ手順](20260924_1404_さくらVPS立ち上げ手順.md) 手順7・手順9）。
+
 > **検証結果**: CORS は素通しでは通らなかった。auth は `GOTRUE_CORS_ALLOWED_HEADERS`、storage は nginx で対応した
 > （[検証結果](20260922_2100_ローカルdocker-compose検証結果.md) §4-1）。実際の設定は `infra/nginx/supabase.conf`。
 

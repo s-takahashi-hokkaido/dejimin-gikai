@@ -88,7 +88,7 @@ services:
       GOTRUE_SECURITY_REFRESH_TOKEN_ROTATION_ENABLED: "true"
       GOTRUE_SECURITY_REFRESH_TOKEN_REUSE_INTERVAL: 10
       GOTRUE_RATE_LIMIT_ANONYMOUS_USERS: ${RATE_LIMIT_ANONYMOUS_USERS:-30}
-      # レート制限を利用者の IP ごとに数えるためのヘッダー。nginx が $remote_addr で上書きして付ける
+      # レート制限を利用者の IP ごとに数えるためのヘッダー。nginx が $remote_addr（ホストの nginx が付けた利用者の IP）で上書きして付ける
       GOTRUE_RATE_LIMIT_HEADER: X-Real-IP
       # supabase-js は apikey ヘッダーを付けて送るが、GoTrue の既定の許可リストに無いためプリフライトで弾かれる。
       # 公式構成ではゲートウェイ（Kong / Envoy）が CORS を返していた
@@ -155,9 +155,23 @@ services:
       - rest
       - storage
     ports:
+      # 127.0.0.1 以外には出さない。ここに来た通信の X-Real-IP は信じるので（supabase.conf）、
+      # 外から直接届くと IP を偽ってレート制限を逃れられる。外からはホストの nginx を通す
       - "127.0.0.1:${GATEWAY_PORT:-8000}:8000"
     volumes:
       - ./nginx/supabase.conf:/etc/nginx/conf.d/default.conf:ro
+
+# サブネットを固定するのは、nginx が「ホストから来た X-Real-IP を信じる」相手を
+# ゲートウェイの IP（10.203.0.1）1つに絞るため（supabase.conf の set_real_ip_from）。
+# ホストの 127.0.0.1:8000 に来た通信は、コンテナからはこのゲートウェイから来たように見える。
+# 自動で割り当てさせると作り直すたびに変わりうる。docker が自動で使う範囲（172.17〜31 / 192.168）の外にしている。
+# 変える時は supabase.conf の 10.203.0.1 も合わせて直す
+networks:
+  default:
+    ipam:
+      config:
+        - subnet: 10.203.0.0/24
+          gateway: 10.203.0.1
 
 volumes:
   db-config:
