@@ -16,7 +16,9 @@ EnvironmentFile=/srv/gikai/admin.env
 ExecStart=/usr/bin/node server.js
 Restart=on-failure
 RestartSec=5
-# 2GB の VPS で1つのアプリがメモリを食い尽くさないように（実測 190MiB・検証結果 §4-7）
+# 2GB の VPS で1つのアプリがメモリを食い尽くさないように（実測 190MiB・検証結果 §4-7）。
+# MemoryMax は超えたら SIGKILL なので、その手前で回収が掛かる MemoryHigh も置く
+MemoryHigh=450M
 MemoryMax=600M
 NoNewPrivileges=true
 PrivateTmp=true

@@ -126,6 +126,14 @@ chmod 600 /srv/gikai/admin.env
 `NEXT_PUBLIC_*` はビルド時に JS へ埋め込まれるので、**env ファイルだけ直してもブラウザ側には反映されない。**
 値を変えたら GitHub の Variables も直して、デプロイをやり直す。
 
+> **`NEXT_PUBLIC_WEB_URL` / `NEXT_PUBLIC_APP_URL` は、サーバー間の呼び出しにも使われている。**
+> admin → web のキャッシュ無効化（`/api/revalidate`）と、admin が自分自身を呼ぶトピック分析がこれを見る。
+> ホストの nginx で Basic 認証を掛けている間、公開 URL 宛てのこの呼び出しは 401 になる。
+> `NEXT_PUBLIC_*` はビルド時に埋め込まれるため env ファイルでは逃がせないので、
+> 内部宛て（`http://127.0.0.1:3004` など）に送るためのサーバー専用の変数が別に必要になる。
+> 手順書 §6 #3 の項目で、web への revalidate は別 PR で対応する。
+> **トピック分析の自分呼びは同じ問題が残っているので、公開前に確かめること。**
+
 ### 2-3. systemd unit と sudoers
 
 ```bash
@@ -152,6 +160,17 @@ journalctl -u gikai-web -f
 
 unit を直した時は `sudo systemctl daemon-reload` を忘れないこと。
 
+`MemoryHigh=450M` / `MemoryMax=600M` は cgroup の制限で、`MemoryMax` を超えると SIGKILL される。
+落ちるようなら `journalctl -u gikai-web` に `oom` が出る。env ファイルに
+`NODE_OPTIONS=--max-old-space-size=400` を足すと、V8 側の上限も揃えられる。
+
+> **sudoers について。** Ubuntu のクラウドイメージは `/etc/sudoers.d/90-cloud-init-users` で
+> `ubuntu ALL=(ALL) NOPASSWD:ALL` を与えている。`gikai-deploy` を置いても**この広い許可は消えない**ので、
+> `ubuntu` の鍵を使う限り、デプロイ鍵で出来ることは実質 root のままである。
+> 本当に絞るなら、デプロイ専用のユーザーを作って公開鍵をそちらに置き、sudoers の1行目を
+> そのユーザー名にする（`/srv/gikai` の所有者と `User=` も合わせる）。
+> 公開前は `ubuntu` のままで進め、この点は宿題として残している。
+
 ---
 
 ## 3. GitHub 側に登録するもの（人が1度だけ行う）
@@ -172,6 +191,13 @@ IP で登録して名前で接続すると照合に失敗する。
 
 ```bash
 ssh-keyscan -t ed25519 gikai.ezocivic.tech
+```
+
+SSH のポートを 22 から変えている場合は、**ポート付きで取る**。
+ssh は非標準ポートの鍵を `[ホスト名]:ポート` という行で探すため、ポート無しの行では照合できない。
+
+```bash
+ssh-keyscan -p 2222 -t ed25519 gikai.ezocivic.tech   # → [gikai.ezocivic.tech]:2222 ssh-ed25519 ...
 ```
 
 ### 3-2. Variables（Settings → Secrets and variables → Actions → Variables）
@@ -223,11 +249,22 @@ gh run watch
 
 （GitHub の画面からは Actions → Deploy VPS → Run workflow）
 
-ワークフローは最初に Variables / Secrets の登録漏れを確かめ、足りないものを名前で出して止まる。
-最後に `systemctl is-active` と `127.0.0.1:3004` / `127.0.0.1:3003` の応答を確かめる。
+ワークフローは最初に、実行したブランチが `develop` / `main` かと、Variables / Secrets の登録漏れを
+確かめて止まる（`--ref` の指定違いで別のコードが本番に乗らないようにするため）。
+最後に、`<app>.env` の `PORT` を読んで応答が返るまで最大60秒待ち、2xx / 3xx が返ることを確かめる。
 
 公開前は手動実行のみ（`workflow_dispatch`）。`develop` への push で自動デプロイにする場合は、
 `deploy_vps.yml` の先頭にコメントで残してある `push:` を有効にする。
+
+### デプロイ中の見え方と、戻したい時
+
+`rsync --delete` は動いているプロセスの下でファイルを差し替える。Next.js はルートごとの
+チャンクを初回アクセス時に読むので、**転送中（web 130MB / admin 90MB ぶん）にまだ読んでいない
+ページへアクセスすると 500 になることがある。** 公開後もこの形で続けるなら、
+リリースごとに別ディレクトリへ送って symlink を差し替える形に変えるほうがよい。
+
+`--delete` なので**前の版は VPS に残らない。** 戻したい時は、戻したいコミットを `develop` に入れて
+デプロイをやり直す（ワークフローは `develop` / `main` からしか実行できない）。
 
 ### うまくいかない時
 
@@ -235,7 +272,7 @@ gh run watch
 |---|---|
 | rsync が `Permission denied` | `/srv/gikai/{web,admin}` の所有者が `ubuntu` か |
 | `sudo: a password is required` | `/etc/sudoers.d/gikai-deploy` の有無・権限（0440）・`VPS_USER` と1行目のユーザーが一致しているか |
-| `Host key verification failed` | `VPS_SSH_KNOWN_HOSTS` を `VPS_HOST` と同じ名前で取り直す |
+| `Host key verification failed` | `VPS_SSH_KNOWN_HOSTS` を `VPS_HOST` と同じ名前で取り直す。SSH のポートを変えている場合は `ssh-keyscan -p <port>` で取る（§3-1） |
 | 起動しない | `journalctl -u gikai-web -n 50`。env ファイルの読み取り権限、`WorkingDirectory` の `server.js` の有無 |
 | メモリで落ちる（`MemoryMax`） | `systemctl status gikai-web` の Memory。実測は web 230MiB / admin 190MiB（検証結果 §4-7） |
 | ブラウザ側の Supabase の URL が古い | `NEXT_PUBLIC_*` はビルド時に埋め込まれる。Variables を直してデプロイをやり直す |

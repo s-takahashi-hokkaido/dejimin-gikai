@@ -3,7 +3,7 @@ name: Deploy VPS
 # さくらVPS へ web・admin を配る（手順書 docs/20260924_1404_さくらVPS立ち上げ手順.md 手順10）。
 #
 # 公開前は手動実行のみにしている。develop への push で自動デプロイにする場合は、
-# 下の push を有効にする（再起動の数秒間は 502 になるので、公開後に入れるかどうかを判断する）。
+# 下の push を有効にする（rsync と再起動の間は 502 になるので、公開後に入れるかどうかを判断する）。
 #
 #   push:
 #     branches: [develop]
@@ -23,6 +23,20 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
 
+    # NEXT_PUBLIC_* はビルド時に JS へ埋め込まれるので、本番の値をここで渡す（手順書 手順10）。
+    # anon キーは公開して構わない値なので Secrets ではなく Variables に置く。
+    # サービスロールキー・OpenAI のキーなどの秘密は VPS の env ファイルにだけ置き、
+    # ビルドでは使わない（ビルド時に DB へ接続する箇所が無いことを確認済み）。
+    env:
+      VPS_HOST: ${{ vars.VPS_HOST }}
+      VPS_USER: ${{ vars.VPS_USER }}
+      VPS_SSH_PORT: ${{ vars.VPS_SSH_PORT || '22' }}
+      NEXT_PUBLIC_SUPABASE_URL: ${{ vars.NEXT_PUBLIC_SUPABASE_URL }}
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ vars.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+      NEXT_PUBLIC_WEB_URL: ${{ vars.NEXT_PUBLIC_WEB_URL }}
+      # web は読まないが、参照が増えた時に取りこぼさないよう両方のビルドに渡す
+      NEXT_PUBLIC_APP_URL: ${{ vars.NEXT_PUBLIC_APP_URL }}
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v5
@@ -32,26 +46,28 @@ jobs:
         with:
           version: 10
 
-      # VPS の Node と揃える（手順書 手順5）。Node 20 は 2026-04 にサポートが終わっている
+      # VPS の実行環境と揃える（手順書 手順5）。バージョンは .node-version が唯一の出どころ
       - name: Setup Node.js
         uses: actions/setup-node@v6
         with:
-          node-version: "22"
+          node-version-file: .node-version
           cache: "pnpm"
 
-      # 登録漏れで長いビルドの後に落ちないよう、先に確かめる。
-      # 一覧と登録手順は infra/README.md を参照
-      - name: Check required variables and secrets
+      # ブランチの指定違いで本番に別のコードが乗るのを防ぐ。
+      # 登録漏れも、長いビルドの後ではなくここで落とす（一覧は infra/README.md）
+      - name: Check deploy ref, variables and secrets
         env:
-          VPS_HOST: ${{ vars.VPS_HOST }}
-          VPS_USER: ${{ vars.VPS_USER }}
-          NEXT_PUBLIC_SUPABASE_URL: ${{ vars.NEXT_PUBLIC_SUPABASE_URL }}
-          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ vars.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
-          NEXT_PUBLIC_WEB_URL: ${{ vars.NEXT_PUBLIC_WEB_URL }}
-          NEXT_PUBLIC_APP_URL: ${{ vars.NEXT_PUBLIC_APP_URL }}
           VPS_SSH_PRIVATE_KEY: ${{ secrets.VPS_SSH_PRIVATE_KEY }}
           VPS_SSH_KNOWN_HOSTS: ${{ secrets.VPS_SSH_KNOWN_HOSTS }}
         run: |
+          case "${GITHUB_REF_NAME}" in
+            develop|main) ;;
+            *)
+              echo "デプロイできるのは develop / main だけです（指定: ${GITHUB_REF_NAME}）" >&2
+              exit 1
+              ;;
+          esac
+
           missing=""
           for name in VPS_HOST VPS_USER \
             NEXT_PUBLIC_SUPABASE_URL NEXT_PUBLIC_SUPABASE_ANON_KEY \
@@ -70,27 +86,11 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      # NEXT_PUBLIC_* はビルド時に JS へ埋め込まれるので、本番の値をここで渡す（手順書 手順10）。
-      # anon キーは公開して構わない値なので Secrets ではなく Variables に置く。
-      # サービスロールキー・OpenAI のキーなどの秘密は VPS の env ファイルにだけ置き、
-      # ビルドでは使わない（ビルド時に DB へ接続する箇所が無いことを確認済み）。
       - name: Build web
         run: pnpm --filter web build
-        env:
-          # web が読むのはこの3つ（admin 用の NEXT_PUBLIC_APP_URL は読まない）が、
-          # 参照が増えた時に取りこぼさないよう4つとも渡す
-          NEXT_PUBLIC_SUPABASE_URL: ${{ vars.NEXT_PUBLIC_SUPABASE_URL }}
-          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ vars.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
-          NEXT_PUBLIC_WEB_URL: ${{ vars.NEXT_PUBLIC_WEB_URL }}
-          NEXT_PUBLIC_APP_URL: ${{ vars.NEXT_PUBLIC_APP_URL }}
 
       - name: Build admin
         run: pnpm --filter admin build
-        env:
-          NEXT_PUBLIC_SUPABASE_URL: ${{ vars.NEXT_PUBLIC_SUPABASE_URL }}
-          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ vars.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
-          NEXT_PUBLIC_WEB_URL: ${{ vars.NEXT_PUBLIC_WEB_URL }}
-          NEXT_PUBLIC_APP_URL: ${{ vars.NEXT_PUBLIC_APP_URL }}
 
       # standalone には .next/static と public が入らないので手でコピーする
       # （検証結果 §4-6、検証手順 §3 手順4）。
@@ -114,53 +114,65 @@ jobs:
           # ホスト鍵を固定する（StrictHostKeyChecking=no にしない）
           printf '%s\n' "$VPS_SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
           chmod 600 ~/.ssh/known_hosts
+          # 以降の ssh / rsync で使い回す。1か所で直せるようにここで決める
+          echo "SSH_OPTS=-i $HOME/.ssh/deploy_key -o IdentitiesOnly=yes -o BatchMode=yes -o ConnectTimeout=15 -p ${VPS_SSH_PORT}" >> "$GITHUB_ENV"
 
       # 末尾の / は「ディレクトリの中身を送る」意味。外すと /srv/gikai/web/standalone/ になる。
       # --delete で、消えたファイルが VPS に残らないようにする
-      # （runtime に作られる .next/cache も消えるが、ビルドが変わればキャッシュは無効なので問題ない）
+      # （runtime に作られる .next/cache も消えるが、ビルドが変わればキャッシュは無効なので問題ない）。
+      # pnpm の node_modules は symlink だらけ。今は全て standalone の中を指す相対リンクだが、
+      # 外を指すものが出た時に壊れたリンクを送らないよう --copy-unsafe-links を付ける。
+      #
+      # 注意: 転送の間、古いプロセスは差し替え中のファイルを読むので、一時的に 500 が出ることがある。
+      # 失敗した時に戻す版も残らない（infra/README.md「デプロイ中の見え方」）
       - name: Deploy with rsync
-        env:
-          VPS_HOST: ${{ vars.VPS_HOST }}
-          VPS_USER: ${{ vars.VPS_USER }}
-          VPS_SSH_PORT: ${{ vars.VPS_SSH_PORT || '22' }}
         run: |
-          ssh_cmd="ssh -i $HOME/.ssh/deploy_key -o IdentitiesOnly=yes -o BatchMode=yes -o ConnectTimeout=15 -p ${VPS_SSH_PORT}"
-          rsync -az --delete -e "${ssh_cmd}" \
+          rsync -az --delete --copy-unsafe-links -e "ssh ${SSH_OPTS}" \
             web/.next/standalone/ "${VPS_USER}@${VPS_HOST}:/srv/gikai/web/"
-          rsync -az --delete -e "${ssh_cmd}" \
+          rsync -az --delete --copy-unsafe-links -e "ssh ${SSH_OPTS}" \
             admin/.next/standalone/ "${VPS_USER}@${VPS_HOST}:/srv/gikai/admin/"
 
       # sudoers（infra/sudoers/gikai-deploy）で、このコマンドだけを NOPASSWD で許している
       - name: Restart services
-        env:
-          VPS_HOST: ${{ vars.VPS_HOST }}
-          VPS_USER: ${{ vars.VPS_USER }}
-          VPS_SSH_PORT: ${{ vars.VPS_SSH_PORT || '22' }}
         run: |
-          ssh -i "$HOME/.ssh/deploy_key" -o IdentitiesOnly=yes -o BatchMode=yes \
-            -o ConnectTimeout=15 -p "${VPS_SSH_PORT}" "${VPS_USER}@${VPS_HOST}" \
+          ssh ${SSH_OPTS} "${VPS_USER}@${VPS_HOST}" \
             'sudo /usr/bin/systemctl restart gikai-web gikai-admin'
 
-      # ポートは /srv/gikai/{web,admin}.env の PORT（web 3004 / admin 3003）に合わせている。
-      # Basic 認証はホストの nginx で掛かるので、ここでは応答があることだけを確かめる
+      # Type=simple なので is-active は「listen した」ことを表さない。応答が返るまで待つ。
+      # ポートは /srv/gikai/<app>.env の PORT（= unit が読む値）から取り、ここには持たない。
+      # このチェックはホストの nginx を通らないので、Basic 認証の 401 は起こらない。
+      # 4xx はデプロイが壊れている印なので失敗させる
       - name: Verify services are up
-        env:
-          VPS_HOST: ${{ vars.VPS_HOST }}
-          VPS_USER: ${{ vars.VPS_USER }}
-          VPS_SSH_PORT: ${{ vars.VPS_SSH_PORT || '22' }}
         run: |
-          ssh -i "$HOME/.ssh/deploy_key" -o IdentitiesOnly=yes -o BatchMode=yes \
-            -o ConnectTimeout=15 -p "${VPS_SSH_PORT}" "${VPS_USER}@${VPS_HOST}" '
+          ssh ${SSH_OPTS} "${VPS_USER}@${VPS_HOST}" '
             set -e
-            sleep 5
-            systemctl is-active gikai-web gikai-admin
-            for port in 3004 3003; do
-              code=$(curl -s -o /dev/null -m 10 -w "%{http_code}" "http://127.0.0.1:${port}/" || true)
-              echo "127.0.0.1:${port} -> ${code}"
-              case "${code}" in
-                2*|3*|4*) ;;
-                *) echo "127.0.0.1:${port} から応答がありません" >&2; exit 1 ;;
-              esac
+            for app in web admin; do
+              port=$(sed -n "s/^PORT=//p" "/srv/gikai/${app}.env" | tail -n 1)
+              if [ -z "${port}" ]; then
+                echo "/srv/gikai/${app}.env に PORT がありません" >&2
+                exit 1
+              fi
+              if ! systemctl is-active --quiet "gikai-${app}"; then
+                echo "gikai-${app} が起動していません" >&2
+                systemctl status --no-pager -n 20 "gikai-${app}" || true
+                exit 1
+              fi
+              ok=""
+              i=0
+              while [ "${i}" -lt 30 ]; do
+                code=$(curl -s -o /dev/null -m 5 -w "%{http_code}" "http://127.0.0.1:${port}/" || true)
+                case "${code}" in
+                  2*|3*) ok=1; break ;;
+                esac
+                i=$((i + 1))
+                sleep 2
+              done
+              if [ -z "${ok}" ]; then
+                echo "gikai-${app} (127.0.0.1:${port}) が応答しません（最後の HTTP コード: ${code}）" >&2
+                systemctl status --no-pager -n 20 "gikai-${app}" || true
+                exit 1
+              fi
+              echo "gikai-${app} OK (127.0.0.1:${port} -> ${code})"
             done
           '
 
