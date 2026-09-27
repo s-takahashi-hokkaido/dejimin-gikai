@@ -8,7 +8,7 @@
  *
  * ## このスクリプトの約束
  * - **削除しない**。`delete` / `truncate` は一切実行しない。
- *   マスタに無い行（手で足した委員会など）も消さずに残す
+ *   マスタに無い行（手で足した委員会など）も消さず、件数とキーを報告するだけにする
  * - **冪等**。既存行はキー（tags は label、factions / committees は name）で突き合わせ、
  *   差分があるカラムだけ update する。2回流しても重複しない
  * - **投入するのは会派・委員会・タグだけ**。議案（bills）・定例会（council_sessions）・
@@ -36,12 +36,15 @@ import {
 import {
   describeSeedTarget,
   resolveSeedTarget,
+  SEED_MASTER_USAGE,
   type SeedTarget,
 } from "./utils/resolve-seed-target";
 
 type TagInsert = Database["public"]["Tables"]["tags"]["Insert"];
 type FactionInsert = Database["public"]["Tables"]["factions"]["Insert"];
 type CommitteeInsert = Database["public"]["Tables"]["committees"]["Insert"];
+
+type ConnectedTarget = Extract<SeedTarget, { mode: "dry-run" | "apply" }>;
 
 /** 1テーブル分の計画。書き込みはクロージャに閉じ込めて、テーブルごとの型をここから漏らさない */
 type PlannedSync = {
@@ -50,6 +53,8 @@ type PlannedSync = {
   insertKeys: string[];
   updates: { key: string; changedColumns: string[] }[];
   unchangedCount: number;
+  /** DB にあって投入データに無いキー。消さずに残す */
+  extraKeys: string[];
   apply: () => Promise<void>;
 };
 
@@ -69,6 +74,7 @@ async function planTable<T extends Record<string, unknown>>(
 ): Promise<PlannedSync> {
   const existing = await options.fetchExisting();
   const plan: MasterUpsertPlan<T> = planMasterUpsert({
+    table: options.table,
     desired: options.desired,
     existing,
     keyOf: (row) => row[options.keyColumn],
@@ -83,6 +89,7 @@ async function planTable<T extends Record<string, unknown>>(
       changedColumns,
     })),
     unchangedCount: plan.unchangedKeys.length,
+    extraKeys: plan.extraKeys,
     apply: async () => {
       if (plan.inserts.length > 0) await options.insert(plan.inserts);
       for (const update of plan.updates) {
@@ -112,6 +119,10 @@ function ensureNoError(
   }
 }
 
+// 既存行は `select("*")` で全カラム取る。カラム名を手で並べると data.ts に
+// カラムを足した時に「毎回 update される」状態になって冪等性が静かに壊れるため。
+// 比較は desired が持つカラムだけなので、余分なカラム（created_at 等）は無害。
+
 function planFactions(supabase: AdminClient) {
   return planTable<FactionInsert>({
     table: "factions",
@@ -119,9 +130,7 @@ function planFactions(supabase: AdminClient) {
     keyColumn: "name",
     fetchExisting: async () =>
       unwrap(
-        await supabase
-          .from("factions")
-          .select("id, name, display_name, sort_order, is_active"),
+        await supabase.from("factions").select("*"),
         "factions の読み出し",
       ),
     insert: async (rows) =>
@@ -144,11 +153,7 @@ function planCommittees(supabase: AdminClient) {
     keyColumn: "name",
     fetchExisting: async () =>
       unwrap(
-        await supabase
-          .from("committees")
-          .select(
-            "id, name, committee_type, description, sort_order, is_active",
-          ),
+        await supabase.from("committees").select("*"),
         "committees の読み出し",
       ),
     insert: async (rows) =>
@@ -170,17 +175,9 @@ function planTags(supabase: AdminClient) {
     desired: tags,
     keyColumn: "label",
     fetchExisting: async () =>
-      unwrap(
-        await supabase
-          .from("tags")
-          .select("id, label, description, featured_priority"),
-        "tags の読み出し",
-      ),
+      unwrap(await supabase.from("tags").select("*"), "tags の読み出し"),
     insert: async (rows) =>
-      ensureNoError(
-        await supabase.from("tags").insert(rows),
-        "tags の insert",
-      ),
+      ensureNoError(await supabase.from("tags").insert(rows), "tags の insert"),
     update: async (id, row) =>
       ensureNoError(
         await supabase.from("tags").update(row).eq("id", id),
@@ -189,8 +186,8 @@ function planTags(supabase: AdminClient) {
   });
 }
 
-function printPlan(plans: readonly PlannedSync[], target: SeedTarget): void {
-  console.log(target.mode === "apply" ? "投入内容:" : "投入予定（未実行）:");
+function printPlan(plans: readonly PlannedSync[]): void {
+  console.log("投入予定:");
   for (const plan of plans) {
     console.log(
       `  ${plan.table}: 全 ${plan.desiredCount} 件 / insert ${plan.insertKeys.length} / update ${plan.updates.length} / 変更なし ${plan.unchangedCount}`,
@@ -198,6 +195,11 @@ function printPlan(plans: readonly PlannedSync[], target: SeedTarget): void {
     for (const key of plan.insertKeys) console.log(`    + ${key}`);
     for (const update of plan.updates) {
       console.log(`    ~ ${update.key} (${update.changedColumns.join(", ")})`);
+    }
+    if (plan.extraKeys.length > 0) {
+      console.log(
+        `    ! DB にあって投入データに無い行 ${plan.extraKeys.length} 件（消さずに残します）: ${plan.extraKeys.join(", ")}`,
+      );
     }
   }
 }
@@ -211,23 +213,34 @@ async function main() {
     argv: process.argv.slice(2),
   });
 
+  if (target.mode === "help") {
+    console.log(SEED_MASTER_USAGE);
+    return;
+  }
+  const connected: ConnectedTarget = target;
+
   console.log(
     "マスタ（会派・委員会・タグ）を投入します。既存データは削除しません。",
   );
-  console.log(describeSeedTarget(target));
+  console.log(describeSeedTarget(connected));
 
-  const supabase = createAdminClient();
+  // 表示した接続先をそのまま使う（process.env を二度読みして食い違わせない）
+  const supabase = createAdminClient({
+    supabaseUrl: connected.supabaseUrl,
+    serviceRoleKey: connected.serviceRoleKey,
+  });
 
-  // 3テーブル分の計画を先に全部立てる（検証で弾かれた時に書き込み済みの行を残さない）
-  const plans = [
-    await planFactions(supabase),
-    await planCommittees(supabase),
-    await planTags(supabase),
-  ];
+  // 3テーブル分の計画を先に全部立てる（検証で弾かれた時に書き込み済みの行を残さない）。
+  // 読むだけなので並列でよい
+  const plans = await Promise.all([
+    planFactions(supabase),
+    planCommittees(supabase),
+    planTags(supabase),
+  ]);
 
-  printPlan(plans, target);
+  printPlan(plans);
 
-  if (target.mode === "dry-run") {
+  if (connected.mode === "dry-run") {
     console.log("");
     console.log(
       "DB には書き込んでいません。上の接続先が正しいことを確かめて、--yes を付けて再実行してください。",
@@ -235,7 +248,14 @@ async function main() {
     return;
   }
 
-  for (const plan of plans) await plan.apply();
+  console.log("");
+  console.log("投入します...");
+  for (const plan of plans) {
+    await plan.apply();
+    console.log(
+      `  ${plan.table}: 投入しました（insert ${plan.insertKeys.length} / update ${plan.updates.length}）`,
+    );
+  }
 
   console.log("");
   console.log("完了しました。");
