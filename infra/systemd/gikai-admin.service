@@ -1,0 +1,28 @@
+[Unit]
+# デジ民議会 admin（Next.js の standalone 成果物を node で起動する）
+# 配置と起動の手順は infra/README.md を参照
+Description=Dejimin Gikai admin (Next.js standalone)
+After=network.target
+
+[Service]
+Type=simple
+User=ubuntu
+Group=ubuntu
+# GitHub Actions が rsync で /srv/gikai/admin/ に置く .next/standalone の中身。
+# モノレポなので server.js は一段深い admin/ の下に出る（検証結果 §4-6）
+WorkingDirectory=/srv/gikai/admin/admin
+# SUPABASE_SERVICE_ROLE_KEY などの秘密はこのファイルにだけ置く（chmod 600）
+EnvironmentFile=/srv/gikai/admin.env
+ExecStart=/usr/bin/node server.js
+Restart=on-failure
+RestartSec=5
+# 2GB の VPS で1つのアプリがメモリを食い尽くさないように（実測 190MiB・検証結果 §4-7）。
+# MemoryMax は超えたら SIGKILL なので、その手前で回収が掛かる MemoryHigh も置く
+MemoryHigh=450M
+MemoryMax=600M
+NoNewPrivileges=true
+PrivateTmp=true
+SyslogIdentifier=gikai-admin
+
+[Install]
+WantedBy=multi-user.target
