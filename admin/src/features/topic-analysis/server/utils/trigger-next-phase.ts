@@ -1,17 +1,21 @@
 import "server-only";
+import { resolveAdminBaseUrl } from "@/lib/utils/resolve-admin-base-url";
 
 /**
  * 次フェーズのAPI routeを内部fetchで起動する
  *
  * REVALIDATE_SECRET を Bearer token として使用し、
- * NEXT_PUBLIC_APP_URL を自己呼び出しURLとして使用する
+ * 自己呼び出しURLは ADMIN_INTERNAL_URL（未設定なら NEXT_PUBLIC_APP_URL）を使用する
  */
 export async function triggerNextPhase(
   phase: 1 | 2 | 3,
   versionId: string,
   billId: string
 ): Promise<void> {
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3001";
+  const baseUrl = resolveAdminBaseUrl(
+    process.env.ADMIN_INTERNAL_URL,
+    process.env.NEXT_PUBLIC_APP_URL
+  );
   const secret = process.env.REVALIDATE_SECRET;
 
   if (!secret) {
