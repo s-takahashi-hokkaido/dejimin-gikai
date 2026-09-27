@@ -16,6 +16,14 @@ if (!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
 
 export const env = {
   webUrl: process.env.NEXT_PUBLIC_WEB_URL || "http://localhost:3000",
+  /**
+   * revalidate（Web側のキャッシュ無効化）をサーバー間で送るときの宛先。
+   * 公開前の VPS はホストの nginx が web の全パスに Basic 認証をかけるため、
+   * 公開URL経由だと 401 になる。`http://127.0.0.1:3004` のように nginx を通らない
+   * URL を入れると、そちらへ直接送る。未設定なら webUrl にフォールバックする。
+   * サーバー専用の変数。NEXT_PUBLIC_ を付けないこと（ブラウザに 127.0.0.1 を配らない）。
+   */
+  webInternalUrl: process.env.WEB_INTERNAL_URL,
   supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL,
   supabaseAnonKey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
   revalidateSecret: process.env.REVALIDATE_SECRET,
