@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { requireAdmin } from "@/features/auth/server/lib/auth-server";
+import { resolveAdminBaseUrl } from "@/lib/utils/resolve-admin-base-url";
 
 interface RunTopicAnalysisResult {
   success: boolean;
@@ -22,7 +23,10 @@ export async function runTopicAnalysisAction(
 
   try {
     // API Route 経由で実行（maxDuration を活用するため）
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3001";
+    const baseUrl = resolveAdminBaseUrl(
+      process.env.ADMIN_INTERNAL_URL,
+      process.env.NEXT_PUBLIC_APP_URL
+    );
     const response = await fetch(`${baseUrl}/api/topic-analysis/run`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
