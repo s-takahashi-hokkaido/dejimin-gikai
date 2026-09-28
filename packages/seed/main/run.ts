@@ -20,14 +20,8 @@ import {
 } from "./data";
 import { INTERVIEW_TARGET, sapporoSessions } from "./sapporo-bills/sessions";
 import { createAdminClient, clearAllData } from "../shared/helper";
-
-// 本会議で採決があったことを示す status（これ以外は会派賛否を登録しない）
-const VOTED_STATUSES: readonly string[] = [
-  "approved",
-  "rejected",
-  "adopted",
-  "partially_adopted",
-];
+// 採決のあった status の一覧は seed:bills と同じものを使う（二重管理を避ける）
+import { VOTED_STATUSES } from "../bills/utils/plan-bill-seed";
 
 async function seedDatabase() {
   const supabase = createAdminClient();
