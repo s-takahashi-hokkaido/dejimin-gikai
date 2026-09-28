@@ -164,12 +164,22 @@ unit を直した時は `sudo systemctl daemon-reload` を忘れないこと。
 落ちるようなら `journalctl -u gikai-web` に `oom` が出る。env ファイルに
 `NODE_OPTIONS=--max-old-space-size=400` を足すと、V8 側の上限も揃えられる。
 
-> **sudoers について。** Ubuntu のクラウドイメージは `/etc/sudoers.d/90-cloud-init-users` で
-> `ubuntu ALL=(ALL) NOPASSWD:ALL` を与えている。`gikai-deploy` を置いても**この広い許可は消えない**ので、
-> `ubuntu` の鍵を使う限り、デプロイ鍵で出来ることは実質 root のままである。
-> 本当に絞るなら、デプロイ専用のユーザーを作って公開鍵をそちらに置き、sudoers の1行目を
+> **sudoers について。** `gikai-deploy` は実際に効く。クラウドイメージでよくある
+> `/etc/sudoers.d/90-cloud-init-users`（`ubuntu ALL=(ALL) NOPASSWD:ALL`）は、
+> さくらのVPS の Ubuntu 24.04 標準OSインストールには**無い**
+> （`/etc/sudoers.d/` には `README` のみ。2026-09-27 に実機で確認）。
+> `ubuntu` の `sudo` は既定でパスワードを要求するので、このファイルを置くと
+> デプロイ鍵で通るのは `systemctl restart gikai-web gikai-admin` だけになる。
+>
+> 設置したら必ず確かめること:
+>
+> ```bash
+> ssh -t ezocivic-vps1 'sudo -n -l'   # この1行だけが NOPASSWD で出れば正しい
+> ```
+>
+> 別のイメージや別のVPSに移す時は、この前提が変わっていないか確認する。
+> さらに絞るなら、デプロイ専用のユーザーを作って公開鍵をそちらに置き、sudoers の1行目を
 > そのユーザー名にする（`/srv/gikai` の所有者と `User=` も合わせる）。
-> 公開前は `ubuntu` のままで進め、この点は宿題として残している。
 
 ---
 
