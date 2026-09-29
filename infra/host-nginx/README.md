@@ -57,11 +57,23 @@ done
 web にも Basic 認証はあるが、画面（HTML）にしか効かず `/api/chat` などは素通しになる
 （`web/src/middleware.ts` の `_isHtmlRequest`）ため、公開前は nginx で全パスを塞ぐ。
 
-パスワードファイルを作る（2 つの vhost で同じ `/etc/nginx/htpasswd-gikai` を使う）。
+パスワードファイルは vhost ごとに分けている。web と admin でパスワードを別々に変えられるようにするため。
+
+| vhost | パスワードファイル |
+|---|---|
+| `gikai.ezocivic.tech` | `/etc/nginx/htpasswd-gikai-web` |
+| `gikai-admin.ezocivic.tech` | `/etc/nginx/htpasswd-gikai` |
 
 ```bash
-sudo htpasswd -c /etc/nginx/htpasswd-gikai <ユーザー名>   # 2 人目以降は -c を付けない
+sudo htpasswd -c /etc/nginx/htpasswd-gikai-web <ユーザー名>   # web。2 人目以降は -c を付けない
+sudo htpasswd -c /etc/nginx/htpasswd-gikai     <ユーザー名>   # admin。同上
 ```
+
+パスワードを変える時は `-c` を付けずに `sudo htpasswd <ファイル> <ユーザー名>` を流す
+（`-c` はファイルを作り直すので、他のユーザーが消える）。reload は要らない。
+
+> 置いた後の `sites-available/` の vhost は certbot が TLS の行を書き足しているので、
+> このディレクトリからコピーし直すとそれが消える。参照先だけを変える時は、置いてあるファイルを `sed -i` で直す。
 
 `db` にはかけない。ブラウザの supabase-js は別オリジンの API に認証情報を付けないので、
 かけると画面から Supabase を呼べなくなる。`db` は RLS（ポリシー無し＝全拒否）で守られている。
@@ -70,7 +82,7 @@ sudo htpasswd -c /etc/nginx/htpasswd-gikai <ユーザー名>   # 2 人目以降�
 
 ```nginx
 auth_basic "EZO CIVIC (preview)";
-auth_basic_user_file /etc/nginx/htpasswd-gikai;
+auth_basic_user_file /etc/nginx/htpasswd-gikai-web;   # gikai-admin では /etc/nginx/htpasswd-gikai
 ```
 
 ```bash
