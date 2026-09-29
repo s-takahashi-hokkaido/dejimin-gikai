@@ -31,7 +31,20 @@ sudo apt install -y nginx certbot python3-certbot-nginx apache2-utils
 手順7 の `rsync -av --exclude volumes --exclude .env infra/ ezocivic-vps1:/srv/supabase/` を済ませていれば、
 VPS の `/srv/supabase/host-nginx/` に同じものがある。
 
+apt で入る `default` サイトは外し、どの vhost にも当たらない通信を切る受け皿に替える。
+残したまま certbot を流すと、証明書が `default`（Welcome ページ）の方に書き込まれる（手順書 手順9）。
+
 ```bash
+sudo rm /etc/nginx/sites-enabled/default
+sudo tee /etc/nginx/sites-available/00-default.conf > /dev/null <<'EOF'
+server {
+  listen 80 default_server;
+  server_name _;
+  return 444;
+}
+EOF
+sudo ln -sfn /etc/nginx/sites-available/00-default.conf /etc/nginx/sites-enabled/00-default.conf
+
 for f in gikai.ezocivic.tech.conf gikai-admin.ezocivic.tech.conf db.ezocivic.tech.conf; do
   sudo cp "/srv/supabase/host-nginx/$f" /etc/nginx/sites-available/
   sudo ln -sfn "/etc/nginx/sites-available/$f" "/etc/nginx/sites-enabled/$f"
@@ -75,6 +88,10 @@ sudo certbot --nginx -d gikai.ezocivic.tech -d gikai-admin.ezocivic.tech -d db.e
   -m <連絡用メールアドレス> --agree-tos --redirect
 sudo certbot renew --dry-run      # 自動更新（systemd timer）が通るか
 ```
+
+流した後、`grep -c "return 301" /etc/nginx/sites-available/*.ezocivic.tech.conf` が 3 つとも 1 であることを確かめる。
+2 のファイルは certbot が 80 番用の転送（`if ($host = ...) { return 301 ...; }`）を 443 番の server ブロックにも入れていて、
+https でも 301 が返り続ける。443 番側の if ブロック（3 行）を手で消して reload する。
 
 > certbot は `/etc/nginx/sites-available/` のファイルを**直接書き換える**ので、certbot を当てた後は
 > サーバー上のファイルとこのリポジトリの中身がずれる。ここを直して持っていく時は、上から `cp` で

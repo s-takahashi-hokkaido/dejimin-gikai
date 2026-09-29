@@ -98,6 +98,8 @@ SUPABASE_SERVICE_ROLE_KEY=<手順7 の値>
 NEXT_PUBLIC_SUPABASE_ANON_KEY=<手順7 の値>
 NEXT_PUBLIC_WEB_URL=https://gikai.ezocivic.tech
 NEXT_PUBLIC_APP_URL=https://gikai-admin.ezocivic.tech
+ADMIN_INTERNAL_URL=http://127.0.0.1:3003
+WEB_INTERNAL_URL=http://127.0.0.1:3004
 REVALIDATE_SECRET=<web と同じ値>
 OPENAI_API_KEY=<本番用のキー>
 EOF
@@ -114,6 +116,8 @@ chmod 600 /srv/gikai/admin.env
 | `NEXT_PUBLIC_WEB_URL` | ○ | ○ | ビルド時にも必要 |
 | `NEXT_PUBLIC_APP_URL` | ✕ | ○ | **web は読まない**（手順書 手順10 の表を修正） |
 | `ADMIN_URL` | ○ | ✕ | 未設定だと `http://localhost:3001` になる |
+| `ADMIN_INTERNAL_URL` | ✕ | ○ | `http://127.0.0.1:3003`。トピック分析が admin 自身を呼ぶ時の宛先（PR #56）。未設定だと `NEXT_PUBLIC_APP_URL` に送り、Basic 認証で 401 になる |
+| `WEB_INTERNAL_URL` | ✕ | ○ | `http://127.0.0.1:3004`。admin → web の `/api/revalidate` の宛先（PR #51）。未設定だと `NEXT_PUBLIC_WEB_URL` に送り、Basic 認証で 401 になる |
 | `REVALIDATE_SECRET` | ○ | ○ | 両方に同じ値 |
 | `OPENAI_API_KEY` | ○ | ○ | コードには現れない。AI SDK が `process.env` から直接読む |
 | `AI_GLOBAL_DAILY_COST_LIMIT_USD` / `CHAT_DAILY_COST_LIMIT_USD` / `INTERVIEW_DAILY_COST_LIMIT_USD` | ○ | ✕ | 未設定なら 5 / 0.5 / 0.5 |
@@ -131,8 +135,8 @@ chmod 600 /srv/gikai/admin.env
 > ホストの nginx で Basic 認証を掛けている間、公開 URL 宛てのこの呼び出しは 401 になる。
 > `NEXT_PUBLIC_*` はビルド時に埋め込まれるため env ファイルでは逃がせないので、
 > 内部宛て（`http://127.0.0.1:3004` など）に送るためのサーバー専用の変数が別に必要になる。
-> 手順書 §6 #3 の項目で、web への revalidate は別 PR で対応する。
-> **トピック分析の自分呼びは同じ問題が残っているので、公開前に確かめること。**
+> web への revalidate は `WEB_INTERNAL_URL`（PR #51）、トピック分析の自分呼びは `ADMIN_INTERNAL_URL`（PR #56）で対応済み。
+> **admin.env にこの2つが無いと、どちらも 401 になる。**
 
 ### 2-3. systemd unit と sudoers
 
