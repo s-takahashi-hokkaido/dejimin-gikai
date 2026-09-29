@@ -3,10 +3,19 @@ import type { Database } from "@dejimin-gikai/supabase";
 
 export type AdminClient = ReturnType<typeof createAdminClient>;
 
-export function createAdminClient() {
+/**
+ * Service Role Key で繋ぐ Supabase クライアント。
+ *
+ * 接続先を引数で渡せるようにしてある（`master/run.ts` が「表示した接続先」と
+ * 「実際に繋ぐ接続先」を1つの値に揃えるため）。省略時は環境変数から読む。
+ */
+export function createAdminClient(config?: {
+  supabaseUrl: string;
+  serviceRoleKey: string;
+}) {
   return createClient<Database>(
-    process.env.SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
+    config?.supabaseUrl ?? process.env.SUPABASE_URL!,
+    config?.serviceRoleKey ?? process.env.SUPABASE_SERVICE_ROLE_KEY!
   );
 }
 

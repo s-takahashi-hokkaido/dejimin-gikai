@@ -1,0 +1,19 @@
+# さくらVPS の定期処理。/etc/cron.d/gikai に置く（root 所有・644・ファイル名に拡張子を付けない）。
+# 手順: docs/20260924_1404_さくらVPS立ち上げ手順.md 手順11
+#
+#   sudo install -o root -g root -m 644 /srv/supabase/cron/gikai /etc/cron.d/gikai
+#
+# 時刻はサーバーのタイムゾーン（手順2 で Asia/Tokyo にしている）。
+# 出力は logger で syslog（journald）に流す。cron のメールは MTA が無いので受け取れない。
+#   journalctl -t gikai-backup -n 50
+#   journalctl -t gikai-chat-logs -n 50
+
+SHELL=/bin/bash
+PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+MAILTO=""
+
+# 毎日 3:00 バックアップ（migrations.txt / data.sql / storage.tar を /srv/backups/<日付>/ に。14日で消す）
+0 3 * * * ubuntu /srv/supabase/scripts/backup.sh 2>&1 | logger -t gikai-backup -p daemon.info
+
+# 毎日 3:30 保存期間（90日）を過ぎた AI チャットの会話ログを削除
+30 3 * * * ubuntu /srv/supabase/scripts/delete-expired-chat-logs.sh 2>&1 | logger -t gikai-chat-logs -p daemon.info

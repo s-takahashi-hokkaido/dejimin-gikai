@@ -1,0 +1,20 @@
+# デプロイ（GitHub Actions の Deploy VPS ワークフロー）が、web・admin の再起動だけを
+# パスワード無しで行えるようにする。
+#
+# 配置:
+#   sudo install -o root -g root -m 0440 infra/sudoers/gikai-deploy /etc/sudoers.d/gikai-deploy
+#   sudo visudo -cf /etc/sudoers.d/gikai-deploy   # 構文確認（必須。壊すと sudo が使えなくなる）
+#
+# 注意:
+# - sudoers はコマンド行を引数まで含めて突き合わせるので、この1行が許すのは
+#   `sudo /usr/bin/systemctl restart gikai-web gikai-admin` だけ。
+#   片方だけの再起動（`restart gikai-web`）も含まれないので、必要なら人が通常の sudo で行う。
+# - **この1行は実際に効く。** クラウドイメージでよくある `/etc/sudoers.d/90-cloud-init-users`
+#   （`ubuntu ALL=(ALL) NOPASSWD:ALL`）は、さくらのVPS の Ubuntu 24.04 標準OSインストールには
+#   **無い**（`/etc/sudoers.d/` には README のみ。2026-09-27 に実機で確認）。
+#   そのため ubuntu の sudo は既定でパスワードを要求し、このファイルを置くと
+#   デプロイ鍵で通るのは下の1行だけになる。
+#   設置後に `sudo -n -l` で、この1行だけが NOPASSWD になっていることを確かめること。
+#   他のイメージや別のVPSに移す時は、この前提が変わらないか確認する。
+# - ファイル名にドットや `~` を含めると sudo に読まれない。
+ubuntu ALL=(root) NOPASSWD: /usr/bin/systemctl restart gikai-web gikai-admin
