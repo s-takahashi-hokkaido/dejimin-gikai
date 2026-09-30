@@ -9,7 +9,7 @@
 #   storage.tar    … 画像ファイルの実体。xattr（user.supabase.*）ごと。落とすと復元した画像が
 #                    application/octet-stream で返る
 #
-# 手順:   docs/20260924_1404_さくらVPS立ち上げ手順.md 手順11
+# 手順:   docs/20260930_2104_さくらVPS構築手順.md 手順11
 # 復元:   docs/20260922_2100_ローカルdocker-compose検証結果.md §4-5（infra/scripts/README.md にも要約）
 #
 # 出力先は /srv/backups/<YYYYMMDD>/。**市民のインタビュー回答・利用者のメールアドレスと
