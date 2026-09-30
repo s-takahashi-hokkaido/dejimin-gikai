@@ -1,5 +1,5 @@
 # さくらVPS の定期処理。/etc/cron.d/gikai に置く（root 所有・644・ファイル名に拡張子を付けない）。
-# 手順: docs/20260924_1404_さくらVPS立ち上げ手順.md 手順11
+# 手順: docs/20260930_2104_さくらVPS構築手順.md 手順11
 #
 #   sudo install -o root -g root -m 644 /srv/supabase/cron/gikai /etc/cron.d/gikai
 #
