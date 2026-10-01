@@ -19,7 +19,7 @@ export function PressConferenceArchiveSection({ pressConferences }: Props) {
           市長記者会見
         </h2>
         <p className="text-xs text-mirai-text-secondary">
-          高島市長が記者の皆さんと直接やりとりした内容をわかりやすくお届けします
+          秋元市長が記者の皆さんと直接やりとりした内容をわかりやすくお届けします
         </p>
       </div>
 

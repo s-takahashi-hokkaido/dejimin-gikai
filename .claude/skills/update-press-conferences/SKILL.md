@@ -13,12 +13,12 @@ description: 市長記者会見データの更新手順（札幌市）。市の�
 
 web の記者会見画面には、福岡市長の名前がハードコードされている。**札幌市のデータを公開する前に、別の PR で直す**こと。
 
-- `web/src/features/press-conferences/client/components/turn-bubble.tsx`（市長の発言ラベルが「高島市長」）
+- `web/src/features/press-conferences/client/components/turn-bubble.tsx`（市長の発言ラベルが「秋元市長」）
 - `web/src/features/press-conferences/client/components/press-conference-list.tsx`
 - `web/src/features/press-conferences/client/components/press-conference-archive-section.tsx`
 - `web/src/features/press-conferences/client/components/press-conference-detail.tsx`
 
-`turns.speaker_name` は画面に表示されていない（ラベルは `speaker` から「高島市長」か「記者」を出し分けているだけ）。
+`turns.speaker_name` は画面に表示されていない（ラベルは `speaker` から「秋元市長」か「記者」を出し分けているだけ）。
 
 ## データソース
 
