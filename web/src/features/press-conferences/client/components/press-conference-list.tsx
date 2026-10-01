@@ -14,7 +14,7 @@ export function PressConferenceList({ pressConferences }: Props) {
       <div className="flex flex-col gap-1">
         <h1 className="text-xl font-bold text-mirai-text">市長記者会見</h1>
         <p className="text-sm text-mirai-text-secondary">
-          高島市長が記者の皆さんと直接やりとりした内容をわかりやすくお届けします。
+          秋元市長が記者の皆さんと直接やりとりした内容をわかりやすくお届けします。
         </p>
       </div>
 

@@ -32,7 +32,7 @@ export function PressConferenceDetail({ pressConference }: Props) {
           {pressConference.title}
         </h1>
         <p className="text-sm text-mirai-text-secondary leading-relaxed">
-          高島市長が記者の皆さんと直接やりとりした内容を、わかりやすくお届けします。
+          秋元市長が記者の皆さんと直接やりとりした内容を、わかりやすくお届けします。
         </p>
         {pressConference.youtubeUrl && (
           <a

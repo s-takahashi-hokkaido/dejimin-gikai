@@ -34,7 +34,7 @@ export function TurnBubble({ turn }: Props) {
         className={`flex flex-col gap-1 max-w-[85%] ${isMayor ? "items-end" : "items-start"}`}
       >
         <span className="text-xs font-medium text-mirai-text-muted px-1">
-          {isMayor ? "高島市長" : "記者"}
+          {isMayor ? "秋元市長" : "記者"}
         </span>
         <div
           className={`rounded-2xl px-4 py-3 text-sm leading-relaxed text-mirai-text shadow-sm ${
