@@ -190,11 +190,19 @@ docker compose up -d
 ( cd "$INFRA/.." && npx supabase migration up --include-all \
   --db-url "postgresql://postgres:$POSTGRES_PASSWORD@127.0.0.1:5433/postgres?sslmode=disable" )
 
-# 4. データを流し込む。session_replication_role の変更には superuser が要るので supabase_admin で実行する
+# 4. マイグレーションが入れた行を空にする（2026-10-01 追記。省くと手順5 が途中で止まる）
+#    prompts / prompt_versions は 20260923140000_move_langfuse_to_db.sql が入れる。
+#    data.sql にも同じ行があるので、消さずに流すと prompts の COPY で ON_ERROR_STOP に掛かり、
+#    そこから後の13テーブル（storage.objects を含む）が入らない。
+#    storage.buckets と違い prompts は管理画面から編集できるので、dump から除外はしない。
+docker compose exec -T db psql -U postgres -c \
+  "truncate table public.prompt_versions, public.prompts cascade;"
+
+# 5. データを流し込む。session_replication_role の変更には superuser が要るので supabase_admin で実行する
 ( echo "set session_replication_role = replica;"; cat "$BACKUP_DIR/data.sql" ) \
   | docker compose exec -T db psql -U supabase_admin -d postgres -v ON_ERROR_STOP=1 -q
 
-# 5. リポジトリを最新に戻していれば、残りのマイグレーションを流す
+# 6. リポジトリを最新に戻していれば、残りのマイグレーションを流す
 ```
 
 古い版のデータを新しいスキーマに直接流し込むと、列の変更で失敗したり、`session_replication_role = replica` のせいで
