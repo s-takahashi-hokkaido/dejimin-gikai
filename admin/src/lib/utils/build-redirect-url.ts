@@ -41,12 +41,19 @@ export function buildRedirectUrl(
   { host, forwardedProto, fallbackUrl }: BuildRedirectUrlOptions
 ): string {
   const fallback = new URL(fallbackUrl);
+  const fallbackRedirect = new URL(pathname, fallback.origin).toString();
   const trimmedHost = host?.trim();
 
   if (!trimmedHost || !HOST_PATTERN.test(trimmedHost)) {
-    return new URL(pathname, fallback.origin).toString();
+    return fallbackRedirect;
   }
 
   const protocol = resolveProtocol(forwardedProto, fallback.protocol);
-  return new URL(pathname, `${protocol}//${trimmedHost}`).toString();
+  try {
+    return new URL(pathname, `${protocol}//${trimmedHost}`).toString();
+  } catch {
+    // 形は合っていても URL にならない値（範囲外のポート・不正な IPv6）で
+    // middleware ごと 500 にしない
+    return fallbackRedirect;
+  }
 }

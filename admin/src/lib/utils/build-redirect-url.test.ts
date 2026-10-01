@@ -100,6 +100,8 @@ describe("buildRedirectUrl", () => {
     "user@evil.example.com",
     "evil.example.com\\",
     "evil.example.com:port",
+    "example.com:99999",
+    "[1:2]",
   ])("不正な Host ヘッダー（%s）は使わない", (host) => {
     expect(
       buildRedirectUrl("/login", {
