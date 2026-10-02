@@ -33,7 +33,7 @@ export function HeaderClient({ difficultyLevel }: HeaderClientProps) {
               {/* 長いサイト名がスマホで右のボタン群を押し出さないよう、区切りの位置でだけ折り返す */}
               <div className="text-sm sm:text-base font-bold leading-tight">
                 {siteConfig.siteNameParts.map((part) => (
-                  <span key={part} className="inline-block">
+                  <span key={part} className="inline-block whitespace-nowrap">
                     {part}
                   </span>
                 ))}
