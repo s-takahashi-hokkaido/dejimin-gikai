@@ -1,7 +1,7 @@
 [Unit]
-# デジ民議会 web（Next.js の standalone 成果物を node で起動する）
+# デジタル民主主義共創議会 web（Next.js の standalone 成果物を node で起動する）
 # 配置と起動の手順は infra/README.md を参照
-Description=Dejimin Gikai web (Next.js standalone)
+Description=Gikai web (Next.js standalone)
 After=network.target
 
 [Service]

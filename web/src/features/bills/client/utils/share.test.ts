@@ -34,7 +34,9 @@ describe("createShareMessage", () => {
         title: "わかりやすいタイトル",
       } as BillWithContent["bill_content"],
     };
-    expect(createShareMessage(bill)).toBe("わかりやすいタイトル #デジ民議会");
+    expect(createShareMessage(bill)).toBe(
+      "わかりやすいタイトル #デジタル民主主義共創議会"
+    );
   });
 
   it("falls back to bill.name when bill_content is undefined", () => {
@@ -42,7 +44,9 @@ describe("createShareMessage", () => {
       ...baseBill,
       bill_content: undefined,
     };
-    expect(createShareMessage(bill)).toBe("正式法案名称 #デジ民議会");
+    expect(createShareMessage(bill)).toBe(
+      "正式法案名称 #デジタル民主主義共創議会"
+    );
   });
 
   it("falls back to bill.name when bill_content.title is null", () => {
@@ -52,11 +56,13 @@ describe("createShareMessage", () => {
         title: null,
       } as unknown as BillWithContent["bill_content"],
     };
-    expect(createShareMessage(bill)).toBe("正式法案名称 #デジ民議会");
+    expect(createShareMessage(bill)).toBe(
+      "正式法案名称 #デジタル民主主義共創議会"
+    );
   });
 
-  it("includes hashtag #デジ民議会", () => {
+  it("includes hashtag #デジタル民主主義共創議会", () => {
     const message = createShareMessage(baseBill);
-    expect(message).toContain("#デジ民議会");
+    expect(message).toContain("#デジタル民主主義共創議会");
   });
 });

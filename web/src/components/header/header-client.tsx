@@ -30,15 +30,20 @@ export function HeaderClient({ difficultyLevel }: HeaderClientProps) {
               className="flex items-center space-x-2"
               aria-label="ホーム"
             >
-              <div className="text-sm sm:text-base font-bold whitespace-nowrap">
-                {siteConfig.siteName}
+              {/* 長いサイト名がスマホで右のボタン群を押し出さないよう、区切りの位置でだけ折り返す */}
+              <div className="text-sm sm:text-base font-bold leading-tight">
+                {siteConfig.siteNameParts.map((part) => (
+                  <span key={part} className="inline-block">
+                    {part}
+                  </span>
+                ))}
               </div>
             </Link>
           </div>
 
           {/* Navigation */}
           <nav
-            className="flex items-center space-x-2"
+            className="flex shrink-0 items-center space-x-2"
             aria-label="補助ナビゲーション"
           >
             {showDifficultySelector && (
