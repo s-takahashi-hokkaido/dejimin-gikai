@@ -78,7 +78,7 @@ sudo htpasswd -c /etc/nginx/htpasswd-gikai     <ユーザー名>   # admin。同
 `db` にはかけない。ブラウザの supabase-js は別オリジンの API に認証情報を付けないので、
 かけると画面から Supabase を呼べなくなる。`db` は RLS（ポリシー無し＝全拒否）で守られている。
 
-**公開する時（T1 の判断の後）** は、2 つの vhost の次の 2 行を消して reload する。
+**公開する時** は、2 つの vhost の次の 2 行を消して reload する。
 
 ```nginx
 auth_basic "EZO CIVIC (preview)";
