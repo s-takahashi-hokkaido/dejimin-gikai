@@ -163,6 +163,17 @@ export async function applyDrafts(
       }
 
       if (override.updateContents) {
+        // AI の下書きで解説を上書きするので、確認済みの印を外す
+        const { error: resetError } = await supabase
+          .from("bills")
+          .update({ is_review_completed: false })
+          .eq("id", billId);
+        if (resetError) {
+          warnings.push(
+            `議案「${draft.title}」の確認済みの解除に失敗: ${resetError.message}`
+          );
+        }
+
         for (const level of ["normal", "hard"] as const) {
           const { error: upsertError } = await supabase
             .from("bill_contents")

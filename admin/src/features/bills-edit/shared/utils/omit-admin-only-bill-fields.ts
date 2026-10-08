@@ -40,3 +40,13 @@ export function omitAdminOnlyBillFields<T extends Record<string, unknown>>(
   }
   return result;
 }
+
+/**
+ * 解説（bill_contents）を書き換えたときに、確認済みの印を外すか
+ *
+ * 確認済みは運営者が解説の中身を保証する印なので、運営者以外が書き換えた解説には
+ * 残さない。運営者自身の編集では外さない（運営者が確認者で、必要なら自分で外せる）。
+ */
+export function shouldResetReviewOnContentEdit(role: AdminRole): boolean {
+  return !canEditAdminOnlyBillFields(role);
+}
