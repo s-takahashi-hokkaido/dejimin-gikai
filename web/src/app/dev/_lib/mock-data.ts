@@ -45,6 +45,7 @@ const baseBill: BillWithContent = {
   source_url: null,
   published_at: "2026-02-15",
   submitted_date: null,
+  submitted_on: null,
   decided_date: null,
   publish_status: "published",
   status_note: null,

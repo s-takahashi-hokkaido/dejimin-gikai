@@ -13,6 +13,7 @@ export function prepareBillForDuplication(originalBill: Bill): BillInsert {
     // 生成列（GENERATED ALWAYS）は値を指定してINSERTできない
     status_order: ____,
     publish_status_order: _____,
+    submitted_on: ______,
     ...billWithoutId
   } = originalBill;
 

@@ -47,6 +47,8 @@ type SortableBill = {
   bill_number?: string | null;
   /** 議会への提出年月日。無ければ published_at を提出日として扱う。 */
   submitted_date?: string | null;
+  /** DB の生成列（submitted_date、無ければ published_at の日本時間の日付）。 */
+  submitted_on?: string | null;
   /** submitted_date が無い議案で「提出」日として出している日付。 */
   published_at: string | null;
   updated_at: string;

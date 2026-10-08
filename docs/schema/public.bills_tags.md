@@ -61,6 +61,7 @@ erDiagram
   date submitted_date
   date decided_date
   boolean is_review_completed
+  date submitted_on
 }
 "public.tags" {
   uuid id

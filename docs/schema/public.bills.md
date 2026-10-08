@@ -29,6 +29,7 @@
 | submitted_date | date |  | true |  |  |  | 議会への提出年月日（本会議提出日）。未設定なら published_at を提出日として表示する |
 | decided_date | date |  | true |  |  |  | 議決年月日。未議決なら null |
 | is_review_completed | boolean | false | false |  |  |  | 解説の内容確認が済んでいるか。false の議案は web に「確認中」のお知らせを出す |
+| submitted_on | date |  | true | GENERATED ALWAYS AS COALESCE(submitted_date, ((published_at AT TIME ZONE 'Asia/Tokyo'::text))::date) STORED |  |  | 並び替え用の提出日（生成列）。submitted_date、無ければ published_at の日本時間の日付 |
 
 ## Constraints
 
@@ -97,6 +98,7 @@ erDiagram
   date submitted_date
   date decided_date
   boolean is_review_completed
+  date submitted_on
 }
 "public.bill_contents" {
   uuid id

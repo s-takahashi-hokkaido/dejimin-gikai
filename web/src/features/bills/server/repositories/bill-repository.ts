@@ -43,7 +43,7 @@ export async function findPublishedBillsWithContents(
     )
     .eq("publish_status", "published")
     .eq("bill_contents.difficulty_level", difficultyLevel)
-    .order("published_at", { ascending: false });
+    .order("submitted_on", { ascending: false, nullsFirst: false });
 
   if (error) {
     throw new Error(`Failed to fetch bills: ${error.message}`);
@@ -80,7 +80,7 @@ export async function findPublishedBillsForSuggest(
     .eq("bill_contents.difficulty_level", difficultyLevel)
     // 提出日は定例会ごとに数十件が同じ値を持つので、番号と id で順序を固定する。
     // 候補は上位数件で打ち切るため、並びが揺れると出る候補そのものが変わる。
-    .order("published_at", { ascending: false, nullsFirst: false })
+    .order("submitted_on", { ascending: false, nullsFirst: false })
     .order("bill_number", { ascending: true })
     .order("id", { ascending: true });
 
@@ -287,7 +287,7 @@ export async function findPublishedBillsByDietSession(
     .eq("publish_status", "published")
     .eq("bill_contents.difficulty_level", difficultyLevel)
     .order("status_order", { ascending: true })
-    .order("published_at", { ascending: false });
+    .order("submitted_on", { ascending: false, nullsFirst: false });
 
   if (error) {
     throw new Error(
@@ -328,7 +328,7 @@ export async function findPreviousSessionBills(
     .eq("publish_status", "published")
     .eq("bill_contents.difficulty_level", difficultyLevel)
     .order("status_order", { ascending: true })
-    .order("published_at", { ascending: false })
+    .order("submitted_on", { ascending: false, nullsFirst: false })
     .limit(limit);
 
   if (error) {
@@ -482,7 +482,7 @@ export async function findFeaturedBillsWithContents(
     .eq("publish_status", "published")
     .eq("is_featured", true)
     .eq("bill_contents.difficulty_level", difficultyLevel)
-    .order("published_at", { ascending: false });
+    .order("submitted_on", { ascending: false, nullsFirst: false });
 
   if (councilSessionId) {
     query = query.eq("council_session_id", councilSessionId);
@@ -550,7 +550,7 @@ export async function findBillsWithPublicInterview(
     .eq("publish_status", "published")
     .eq("bill_contents.difficulty_level", difficultyLevel)
     .eq("interview_configs.status", "public")
-    .order("published_at", { ascending: false, nullsFirst: false })
+    .order("submitted_on", { ascending: false, nullsFirst: false })
     .order("bill_number", { ascending: true });
 
   // 空配列に潰さず投げる。呼び出し元は unstable_cache の外で受けるので、

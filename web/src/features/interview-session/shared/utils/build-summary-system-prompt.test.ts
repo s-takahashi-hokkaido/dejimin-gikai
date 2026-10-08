@@ -19,6 +19,7 @@ const makeBill = (
   publish_status: "published",
   published_at: null,
   submitted_date: null,
+  submitted_on: null,
   decided_date: null,
   share_thumbnail_url: null,
   status: "submitted",

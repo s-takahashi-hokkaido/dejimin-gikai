@@ -751,6 +751,13 @@
           "nullable": false,
           "default": "false",
           "comment": "解説の内容確認が済んでいるか。false の議案は web に「確認中」のお知らせを出す"
+        },
+        {
+          "name": "submitted_on",
+          "type": "date",
+          "nullable": true,
+          "extra_def": "GENERATED ALWAYS AS COALESCE(submitted_date, ((published_at AT TIME ZONE 'Asia/Tokyo'::text))::date) STORED",
+          "comment": "並び替え用の提出日（生成列）。submitted_date、無ければ published_at の日本時間の日付"
         }
       ],
       "indexes": [

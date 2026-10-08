@@ -72,7 +72,24 @@ describe("submittedDateSortKey", () => {
     );
   });
 
-  it("日付が無ければ null", () => {
+  it("DB の生成列 submitted_on があればそれを使う", () => {
+    expect(
+      submittedDateSortKey({
+        submitted_on: "2026-02-12",
+        published_at: "2026-06-01T00:00:00+09:00",
+      })
+    ).toBe("2026-02-12");
+  });
+
+  it("日本時間 0〜9 時の published_at も日本時間の日付にする", () => {
+    // 日本時間 2027-01-01 08:59 = UTC 2026-12-31 23:59
+    expect(
+      submittedDateSortKey({ published_at: "2027-01-01T08:59:00+09:00" })
+    ).toBe("2027-01-01");
+  });
+
+  it("日付が無い・読めないときは null", () => {
     expect(submittedDateSortKey({})).toBeNull();
+    expect(submittedDateSortKey({ published_at: "not-a-date" })).toBeNull();
   });
 });

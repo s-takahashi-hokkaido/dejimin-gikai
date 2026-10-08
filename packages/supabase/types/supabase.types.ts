@@ -268,6 +268,7 @@ export type Database = {
           status_note: string | null
           status_order: number | null
           submitted_date: string | null
+          submitted_on: string | null
           thumbnail_url: string | null
           updated_at: string
         }
@@ -291,6 +292,7 @@ export type Database = {
           status_note?: string | null
           status_order?: number | null
           submitted_date?: string | null
+          submitted_on?: string | null
           thumbnail_url?: string | null
           updated_at?: string
         }
@@ -314,6 +316,7 @@ export type Database = {
           status_note?: string | null
           status_order?: number | null
           submitted_date?: string | null
+          submitted_on?: string | null
           thumbnail_url?: string | null
           updated_at?: string
         }
