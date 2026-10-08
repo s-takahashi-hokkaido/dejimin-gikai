@@ -5,6 +5,7 @@ import { Container } from "@/components/layouts/container";
 import { siteConfig } from "@/config/site.config";
 import { getCouncilSessionBySlug } from "@/features/council-sessions/server/loaders/get-council-session-by-slug";
 import { SessionTopicsView } from "@/features/general-questions/server/components/session-topics-view";
+import { getGeneralQuestionOverviewBySession } from "@/features/general-questions/server/loaders/get-general-question-overview-by-session";
 import { getGeneralQuestionsBySession } from "@/features/general-questions/server/loaders/get-general-questions-by-session";
 
 type Props = {
@@ -33,7 +34,10 @@ export default async function SessionQuestionsPage({ params }: Props) {
     notFound();
   }
 
-  const questions = await getGeneralQuestionsBySession(session.id);
+  const [questions, overview] = await Promise.all([
+    getGeneralQuestionsBySession(session.id),
+    getGeneralQuestionOverviewBySession(session.id),
+  ]);
 
   return (
     <Container className="py-8">
@@ -54,7 +58,7 @@ export default async function SessionQuestionsPage({ params }: Props) {
           議員が問い、市が答えた。あなたの暮らしに関わる取り組みをテーマ別にまとめました。
         </p>
       </div>
-      <SessionTopicsView questions={questions} />
+      <SessionTopicsView questions={questions} overview={overview} />
     </Container>
   );
 }

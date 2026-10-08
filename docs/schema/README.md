@@ -40,6 +40,7 @@
 | [public.prompts](public.prompts.md) | 6 | AIチャットのシステムプロンプト | BASE TABLE |
 | [public.prompt_versions](public.prompt_versions.md) | 7 | プロンプトの版（追記のみ） | BASE TABLE |
 | [public.chat_logs](public.chat_logs.md) | 11 | AIチャットの会話ログ（保存期間90日。delete_expired_chat_logs で削除する） | BASE TABLE |
+| [public.general_question_overviews](public.general_question_overviews.md) | 5 | 定例会ごとの一般質問（代表質問）の3行まとめ。本文は AI の下書きをユーザーが確認してから登録する | BASE TABLE |
 
 ## Stored procedures and functions
 
@@ -123,6 +124,7 @@ erDiagram
 "public.prompt_versions" }o--o| "auth.users" : "FOREIGN KEY (created_by) REFERENCES auth.users(id) ON DELETE SET NULL"
 "public.prompt_versions" }o--|| "public.prompts" : "FOREIGN KEY (prompt_id) REFERENCES prompts(id) ON DELETE CASCADE"
 "public.chat_logs" }o--o| "public.prompt_versions" : "FOREIGN KEY (prompt_version_id) REFERENCES prompt_versions(id) ON DELETE SET NULL"
+"public.general_question_overviews" |o--|| "public.council_sessions" : "FOREIGN KEY (council_session_id) REFERENCES council_sessions(id) ON DELETE CASCADE"
 
 "auth.users" {
   uuid instance_id
@@ -535,6 +537,13 @@ erDiagram
   text message
   text model
   timestamp_with_time_zone created_at
+}
+"public.general_question_overviews" {
+  uuid council_session_id FK
+  text__ lines
+  jsonb theme_lines
+  timestamp_with_time_zone created_at
+  timestamp_with_time_zone updated_at
 }
 ```
 

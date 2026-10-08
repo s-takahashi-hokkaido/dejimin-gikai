@@ -8,7 +8,7 @@
 
 | Name | Type | Default | Nullable | Children | Parents | Comment |
 | ---- | ---- | ------- | -------- | -------- | ------- | ------- |
-| id | uuid | gen_random_uuid() | false | [public.bills](public.bills.md) [public.budget_overviews](public.budget_overviews.md) [public.general_questions](public.general_questions.md) |  | ID |
+| id | uuid | gen_random_uuid() | false | [public.bills](public.bills.md) [public.budget_overviews](public.budget_overviews.md) [public.general_questions](public.general_questions.md) [public.general_question_overviews](public.general_question_overviews.md) |  | ID |
 | name | text |  | false |  |  | 会期名 |
 | start_date | date |  | false |  |  | 開始日 |
 | end_date | date |  | true |  |  | 終了日 |
@@ -49,6 +49,7 @@ erDiagram
 "public.bills" }o--o| "public.council_sessions" : "FOREIGN KEY (council_session_id) REFERENCES council_sessions(id) ON DELETE SET NULL"
 "public.budget_overviews" }o--|| "public.council_sessions" : "FOREIGN KEY (council_session_id) REFERENCES council_sessions(id)"
 "public.general_questions" }o--|| "public.council_sessions" : "FOREIGN KEY (council_session_id) REFERENCES council_sessions(id) ON DELETE CASCADE"
+"public.general_question_overviews" |o--|| "public.council_sessions" : "FOREIGN KEY (council_session_id) REFERENCES council_sessions(id) ON DELETE CASCADE"
 
 "public.council_sessions" {
   uuid id
@@ -111,6 +112,13 @@ erDiagram
   text raw_text
   text source_url
   text publish_status
+  timestamp_with_time_zone created_at
+  timestamp_with_time_zone updated_at
+}
+"public.general_question_overviews" {
+  uuid council_session_id FK
+  text__ lines
+  jsonb theme_lines
   timestamp_with_time_zone created_at
   timestamp_with_time_zone updated_at
 }

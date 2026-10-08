@@ -4776,6 +4776,79 @@
           ]
         }
       ]
+    },
+    {
+      "name": "public.general_question_overviews",
+      "type": "BASE TABLE",
+      "comment": "定例会ごとの一般質問（代表質問）の3行まとめ。本文は AI の下書きをユーザーが確認してから登録する",
+      "columns": [
+        {
+          "name": "council_session_id",
+          "type": "uuid",
+          "nullable": false
+        },
+        {
+          "name": "lines",
+          "type": "text[]",
+          "nullable": false,
+          "default": "'{}'::text[]",
+          "comment": "定例会全体の「どんな話があった？」3行。未作成なら空配列"
+        },
+        {
+          "name": "theme_lines",
+          "type": "jsonb",
+          "nullable": false,
+          "default": "'{}'::jsonb",
+          "comment": "テーマ（カテゴリラベル）ごとの3行。{ \"子育て・教育\": [\"…\",\"…\",\"…\"] } の形"
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "nullable": false,
+          "default": "now()"
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "nullable": false,
+          "default": "now()"
+        }
+      ],
+      "indexes": [
+        {
+          "name": "general_question_overviews_pkey",
+          "def": "CREATE UNIQUE INDEX general_question_overviews_pkey ON public.general_question_overviews USING btree (council_session_id)",
+          "table": "public.general_question_overviews",
+          "columns": [
+            "council_session_id"
+          ]
+        }
+      ],
+      "constraints": [
+        {
+          "name": "general_question_overviews_council_session_id_fkey",
+          "type": "FOREIGN KEY",
+          "def": "FOREIGN KEY (council_session_id) REFERENCES council_sessions(id) ON DELETE CASCADE",
+          "table": "public.general_question_overviews",
+          "referenced_table": "public.council_sessions",
+          "columns": [
+            "council_session_id"
+          ],
+          "referenced_columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "general_question_overviews_pkey",
+          "type": "PRIMARY KEY",
+          "def": "PRIMARY KEY (council_session_id)",
+          "table": "public.general_question_overviews",
+          "referenced_table": "",
+          "columns": [
+            "council_session_id"
+          ]
+        }
+      ]
     }
   ],
   "relations": [
@@ -5235,6 +5308,19 @@
       ],
       "parent_cardinality": "zero_or_one",
       "def": "FOREIGN KEY (prompt_version_id) REFERENCES prompt_versions(id) ON DELETE SET NULL"
+    },
+    {
+      "table": "public.general_question_overviews",
+      "columns": [
+        "council_session_id"
+      ],
+      "cardinality": "zero_or_one",
+      "parent_table": "public.council_sessions",
+      "parent_columns": [
+        "id"
+      ],
+      "parent_cardinality": "exactly_one",
+      "def": "FOREIGN KEY (council_session_id) REFERENCES council_sessions(id) ON DELETE CASCADE"
     }
   ],
   "functions": [

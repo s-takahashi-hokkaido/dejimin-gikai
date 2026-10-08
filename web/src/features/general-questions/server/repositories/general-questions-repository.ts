@@ -1,6 +1,10 @@
 import "server-only";
 import { createAdminClient } from "@dejimin-gikai/supabase";
-import type { GeneralQuestion } from "../../shared/types";
+import type {
+  GeneralQuestion,
+  SessionQuestionOverview,
+} from "../../shared/types";
+import { parseSessionOverview } from "../../shared/utils/parse-session-overview";
 
 export async function findPublishedGeneralQuestionsBySession(
   sessionId: string
@@ -74,4 +78,27 @@ export async function findPublishedGeneralQuestionById(
     ...data,
     topics: Array.isArray(data.topics) ? data.topics : [],
   } as GeneralQuestion;
+}
+
+/**
+ * 定例会ごとの3行まとめ（全体の3行＋テーマ別の3行）を取得する。
+ * 未作成なら lines=null / themeLines={} を返す。
+ */
+export async function findGeneralQuestionOverviewBySession(
+  sessionId: string
+): Promise<SessionQuestionOverview> {
+  const supabase = createAdminClient();
+  const { data, error } = await supabase
+    .from("general_question_overviews")
+    .select("lines, theme_lines")
+    .eq("council_session_id", sessionId)
+    .maybeSingle();
+
+  if (error) {
+    throw new Error(
+      `Failed to fetch general question overview: ${error.message}`
+    );
+  }
+
+  return parseSessionOverview(data);
 }

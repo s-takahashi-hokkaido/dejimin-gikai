@@ -811,6 +811,38 @@ export type Database = {
         }
         Relationships: []
       }
+      general_question_overviews: {
+        Row: {
+          council_session_id: string
+          created_at: string
+          lines: string[]
+          theme_lines: Json
+          updated_at: string
+        }
+        Insert: {
+          council_session_id: string
+          created_at?: string
+          lines?: string[]
+          theme_lines?: Json
+          updated_at?: string
+        }
+        Update: {
+          council_session_id?: string
+          created_at?: string
+          lines?: string[]
+          theme_lines?: Json
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "general_question_overviews_council_session_id_fkey"
+            columns: ["council_session_id"]
+            isOneToOne: true
+            referencedRelation: "council_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       general_questions: {
         Row: {
           council_session_id: string

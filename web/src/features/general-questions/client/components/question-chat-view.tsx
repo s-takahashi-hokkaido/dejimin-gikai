@@ -1,7 +1,24 @@
 "use client";
 
 import { MessageCircle, User } from "lucide-react";
+import { useEffect } from "react";
 import type { GeneralQuestionTopic } from "../../shared/types";
+
+/**
+ * URL に #topic-N が付いている場合、その区切り位置へスクロールする。
+ * Next.js のクライアント遷移ではハッシュへ自動スクロールしないことがあるため、
+ * マウント時（トピック描画済み）に明示的にスクロールして確実に区切り位置から表示する。
+ */
+function useScrollToHashTopic() {
+  useEffect(() => {
+    const hash = window.location.hash;
+    if (!hash.startsWith("#topic-")) return;
+    const el = document.getElementById(hash.slice(1));
+    if (el) {
+      el.scrollIntoView({ behavior: "auto", block: "start" });
+    }
+  }, []);
+}
 
 function ChatBubbleQuestion({ text }: { text: string }) {
   return (
@@ -48,10 +65,16 @@ interface QuestionChatViewProps {
 }
 
 export function QuestionChatView({ topics }: QuestionChatViewProps) {
+  useScrollToHashTopic();
+
   return (
     <div className="flex flex-col gap-8">
       {topics.map((topic, i) => (
-        <div key={`${topic.title}-${i}`} className="flex flex-col gap-3">
+        <div
+          key={`${topic.title}-${i}`}
+          id={`topic-${i}`}
+          className="flex flex-col gap-3 scroll-mt-28"
+        >
           <p className="text-center text-xs font-medium text-mirai-text-secondary bg-mirai-surface-muted rounded-full px-3 py-1 mx-auto">
             {topic.title}
           </p>
