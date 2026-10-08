@@ -6,6 +6,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { getInterviewChatLink } from "@/features/interview-config/shared/utils/interview-links";
 import { archiveInterviewSession } from "../../server/actions/archive-interview-session";
+import { RestartConfirmDialog } from "./restart-confirm-dialog";
 
 interface RestartInterviewButtonProps {
   sessionId: string;
@@ -19,14 +20,12 @@ export function RestartInterviewButton({
   previewToken,
 }: RestartInterviewButtonProps) {
   const router = useRouter();
+  const [showConfirm, setShowConfirm] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleClick = async () => {
-    const confirmed = window.confirm(
-      "現在の回答内容は破棄されます。最初からやり直しますか？"
-    );
-    if (!confirmed) return;
-
+  // window.confirm はスマホで見た目が浮き、Safari の bfcache 復元時に
+  // 正しく動かないことがあるため、自前の確認ダイアログを使う
+  const handleConfirm = async () => {
     setIsLoading(true);
     try {
       const result = await archiveInterviewSession(sessionId);
@@ -35,22 +34,34 @@ export function RestartInterviewButton({
         // 遷移完了までローディングを維持するため、成功時は setIsLoading(false) を呼ばない
         const chatLink = getInterviewChatLink(billId, previewToken);
         router.push(chatLink);
-      } else {
-        console.error("Failed to archive session:", result.error);
-        alert(result.error || "やり直しに失敗しました");
-        setIsLoading(false);
+        return;
       }
+      console.error("Failed to archive session:", result.error);
+      alert(result.error || "やり直しに失敗しました");
     } catch (error) {
       console.error("Failed to archive session:", error);
       alert("やり直しに失敗しました");
-      setIsLoading(false);
     }
+    setIsLoading(false);
+    setShowConfirm(false);
   };
 
   return (
-    <Button variant="outline" onClick={handleClick} disabled={isLoading}>
-      <RotateCcw className="size-4" />
-      <span>{isLoading ? "処理中..." : "もう一度最初から回答する"}</span>
-    </Button>
+    <>
+      <Button
+        variant="outline"
+        onClick={() => setShowConfirm(true)}
+        disabled={isLoading}
+      >
+        <RotateCcw className="size-4" />
+        <span>もう一度最初から回答する</span>
+      </Button>
+      <RestartConfirmDialog
+        open={showConfirm}
+        onOpenChange={setShowConfirm}
+        onConfirm={handleConfirm}
+        isLoading={isLoading}
+      />
+    </>
   );
 }
