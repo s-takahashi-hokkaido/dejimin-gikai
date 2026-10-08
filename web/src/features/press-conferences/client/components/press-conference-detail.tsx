@@ -1,6 +1,7 @@
 "use client";
 
 import { ExternalLink, Mic, PlayCircle } from "lucide-react";
+import { formatDateWithWeekday } from "@/lib/utils/date";
 import type { PressConference } from "../../shared/types";
 import { QaItem } from "./qa-item";
 
@@ -16,10 +17,7 @@ export function PressConferenceDetail({ pressConference }: Props) {
     (item) => item.itemType === "qa"
   );
 
-  const formattedDate = new Date(pressConference.heldAt).toLocaleDateString(
-    "ja-JP",
-    { year: "numeric", month: "long", day: "numeric", weekday: "short" }
-  );
+  const formattedDate = formatDateWithWeekday(pressConference.heldAt);
 
   return (
     <div className="flex flex-col gap-8">

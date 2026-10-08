@@ -2,6 +2,7 @@
 
 import { ArrowRight, CalendarDays, Megaphone } from "lucide-react";
 import Link from "next/link";
+import { formatDate } from "@/lib/utils/date";
 import type { PressConference } from "../../shared/types";
 
 type Props = {
@@ -26,10 +27,7 @@ export function PressConferenceList({ pressConferences }: Props) {
           const qaCount = pc.items.filter(
             (item) => item.itemType === "qa"
           ).length;
-          const formattedDate = new Date(pc.heldAt).toLocaleDateString(
-            "ja-JP",
-            { year: "numeric", month: "long", day: "numeric" }
-          );
+          const formattedDate = formatDate(pc.heldAt);
 
           return (
             <Link
