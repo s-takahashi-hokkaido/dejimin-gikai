@@ -1512,6 +1512,13 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      count_public_reports_by_bill_ids: {
+        Args: { p_bill_ids: string[] }
+        Returns: {
+          bill_id: string
+          report_count: number
+        }[]
+      }
       count_reactions_by_report_ids: {
         Args: { report_ids: string[] }
         Returns: {

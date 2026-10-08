@@ -2,6 +2,10 @@
 
 import { revalidatePath, revalidateTag } from "next/cache";
 import { requireAdmin } from "@/features/auth/server/lib/auth-server";
+import {
+  invalidateWebCache,
+  WEB_CACHE_TAGS,
+} from "@/lib/utils/cache-invalidation";
 import { updateReportVisibility } from "../repositories/interview-report-repository";
 
 interface UpdateReportVisibilityParams {
@@ -37,6 +41,9 @@ export async function updateReportVisibilityAction(
     revalidatePath(`/bills/${billId}/reports/${sessionId}`);
     revalidatePath(`/bills/${billId}/reports`);
     revalidateTag("public-interview-reports");
+    // admin の revalidateTag は admin 内のキャッシュにしか効かない。
+    // web の議案一覧が持つ回答数・公開レポートのキャッシュは HTTP 経由で無効化する。
+    await invalidateWebCache([WEB_CACHE_TAGS.PUBLIC_INTERVIEW_REPORTS]);
 
     return { success: true };
   } catch (error) {

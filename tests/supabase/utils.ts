@@ -132,6 +132,7 @@ export async function createTestBill(
     council_session_id: string;
     is_featured: boolean;
     published_at: string;
+    bill_number: string;
   }> = {}
 ) {
   const defaults = {

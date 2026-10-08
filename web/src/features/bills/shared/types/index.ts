@@ -70,6 +70,10 @@ export type BillWithContent = Bill & {
   faction_stances?: FactionStance[];
   tags: BillTag[];
   featured_tag?: FeaturedTag;
+  /** AIインタビューを受付中か（公開中の interview_configs があるか）。 */
+  hasPublicInterview?: boolean;
+  /** 公開レポート件数。一覧の回答数バッジと「声が集まっている順」に使う。 */
+  publicReportCount?: number;
 };
 
 // タグごとにグループ化された議案
