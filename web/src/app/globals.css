@@ -332,3 +332,23 @@ button {
     display: none; /* Chrome/Safari */
   }
 }
+
+/* 文字サイズ拡大モード: <main> 内の本文テキストのみ対象（ヘッダー・ナビ等は除外）。
+   見出し（text-lg 以上・22px など）はそのままにし、本文の小さい文字だけを約 1.19 倍にする */
+html.large-text main .text-xs,
+html.large-text main .text-\[12px\] {
+  font-size: calc(0.75rem * 1.1875); /* 12px → ~14px */
+}
+html.large-text main .text-\[13px\] {
+  font-size: calc(0.8125rem * 1.1875); /* 13px → ~15.5px */
+}
+html.large-text main .text-sm,
+html.large-text main .text-\[14px\] {
+  font-size: calc(0.875rem * 1.1875); /* 14px → ~17px */
+}
+html.large-text main .text-\[15px\] {
+  font-size: calc(0.9375rem * 1.1875); /* 15px → ~18px */
+}
+html.large-text main .text-base {
+  font-size: calc(1rem * 1.1875); /* 16px → ~19px */
+}

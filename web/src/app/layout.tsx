@@ -77,7 +77,9 @@ export default function RootLayout({
   children: ReactNode;
 }>) {
   return (
-    <html lang="ja">
+    // 文字サイズの設定は描画前のスクリプトで <html> の class に反映するため、
+    // その差分をハイドレーションの不一致として扱わない
+    <html lang="ja" suppressHydrationWarning>
       <body
         className={`${notoSansJP.variable} ${lexendGiga.variable} font-sans antialiased bg-mirai-surface-light`}
       >
