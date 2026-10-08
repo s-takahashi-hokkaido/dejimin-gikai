@@ -5,12 +5,14 @@ import type { AdminRole } from "@/features/auth/shared/utils/role";
  *
  * 公開日・注目の議案・サムネイルは、公開サイトでの見せ方（どの議案を目立たせるか）を決める。
  * 公開/非公開と同じく、議員に渡すと自会派に有利な議案を目立たせる余地が生まれるため運営者に限る。
+ * 解説の確認済みフラグは、運営者が解説の中身を保証する印なので同じく運営者に限る。
  */
 export const ADMIN_ONLY_BILL_FIELDS = [
   "published_at",
   "is_featured",
   "thumbnail_url",
   "share_thumbnail_url",
+  "is_review_completed",
 ] as const;
 
 /** そのロールが運営者専用の項目を変更できるか */
@@ -37,4 +39,14 @@ export function omitAdminOnlyBillFields<T extends Record<string, unknown>>(
     delete result[field];
   }
   return result;
+}
+
+/**
+ * 解説（bill_contents）を書き換えたときに、確認済みの印を外すか
+ *
+ * 確認済みは運営者が解説の中身を保証する印なので、運営者以外が書き換えた解説には
+ * 残さない。運営者自身の編集では外さない（運営者が確認者で、必要なら自分で外せる）。
+ */
+export function shouldResetReviewOnContentEdit(role: AdminRole): boolean {
+  return !canEditAdminOnlyBillFields(role);
 }

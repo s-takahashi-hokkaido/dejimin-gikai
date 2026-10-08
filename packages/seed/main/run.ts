@@ -97,8 +97,12 @@ async function seedDatabase() {
             status: bill.status,
             status_note: bill.statusNote,
             published_at: bill.publishedAt,
+            submitted_date: bill.submittedDate ?? null,
+            decided_date: bill.decidedDate ?? null,
             publish_status: "published" as const,
             is_featured: bill.isFeatured,
+            // seed の解説はユーザーの確認を取ってからファイルに書いている（update-bills スキル）
+            is_review_completed: true,
           }))
         )
         .select("id, bill_number, bill_type");

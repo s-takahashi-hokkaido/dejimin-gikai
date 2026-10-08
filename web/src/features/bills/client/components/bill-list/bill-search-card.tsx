@@ -5,6 +5,8 @@ import { Card } from "@/components/ui/card";
 import { siteConfig } from "@/config/site.config";
 import { formatDateJST } from "@/lib/utils/date";
 import type { BillWithContent } from "../../../shared/types";
+import { resolveSubmittedDate } from "../../../shared/utils/bill-dates";
+import { ReviewCompleteBadge } from "../bill-detail/review-status";
 import { BillPill } from "./bill-pill";
 import { BillStatusBadge } from "./bill-status-badge";
 import { BillTag } from "./bill-tag";
@@ -26,6 +28,7 @@ import { BillTag } from "./bill-tag";
 export function BillSearchCard({ bill }: { bill: BillWithContent }) {
   const title = bill.bill_content?.title || bill.name;
   const summary = bill.bill_content?.summary;
+  const submittedDate = resolveSubmittedDate(bill);
   // AIインタビューを使わない設定では、受付中の印も回答数も出さない
   const interviewEnabled = siteConfig.features.aiInterview;
   const showInterviewPill = interviewEnabled && bill.hasPublicInterview;
@@ -45,7 +48,15 @@ export function BillSearchCard({ bill }: { bill: BillWithContent }) {
             )}
 
             {/* タイトルは省略しない。何の議案かが読めないと選べない。 */}
-            <h3 className="text-base font-bold leading-relaxed">{title}</h3>
+            <h3 className="text-base font-bold leading-relaxed">
+              {title}
+              {bill.is_review_completed && (
+                <>
+                  {" "}
+                  <ReviewCompleteBadge />
+                </>
+              )}
+            </h3>
 
             <div className="flex flex-wrap items-center gap-3">
               <BillStatusBadge
@@ -53,9 +64,9 @@ export function BillSearchCard({ bill }: { bill: BillWithContent }) {
                 billType={bill.bill_type}
                 className="w-fit"
               />
-              {bill.published_at && (
+              {submittedDate && (
                 <span className="text-xs font-medium text-mirai-text-muted">
-                  {formatDateJST(bill.published_at)} 提出
+                  {formatDateJST(submittedDate)} 提出
                 </span>
               )}
             </div>

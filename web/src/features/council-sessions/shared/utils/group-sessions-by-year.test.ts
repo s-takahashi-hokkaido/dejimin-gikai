@@ -1,7 +1,9 @@
 import { describe, expect, it } from "vitest";
 import type { CouncilSession } from "../types";
 import {
+  formatSessionDescription,
   formatSessionPeriod,
+  getSessionStartYear,
   groupSessionsByYear,
 } from "./group-sessions-by-year";
 
@@ -60,5 +62,32 @@ describe("formatSessionPeriod", () => {
   it("end_dateがない場合 'YYYY.M' を返す", () => {
     const session = makeSession({ start_date: "2025-09-01", end_date: null });
     expect(formatSessionPeriod(session)).toBe("2025.9");
+  });
+});
+
+describe("getSessionStartYear", () => {
+  it("start_date の年を返す", () => {
+    expect(getSessionStartYear(makeSession({ start_date: "2026-02-15" }))).toBe(
+      2026
+    );
+  });
+});
+
+describe("formatSessionDescription", () => {
+  it("開始月〜終了月と会期名をつなぐ", () => {
+    const session = makeSession({
+      start_date: "2026-02-15",
+      end_date: "2026-03-25",
+    });
+    expect(formatSessionDescription(session)).toBe(
+      "2026.2月〜3月に実施された第1回定例会"
+    );
+  });
+
+  it("end_date がないときは開始月を終了月にする", () => {
+    const session = makeSession({ start_date: "2026-05-20" });
+    expect(formatSessionDescription(session)).toBe(
+      "2026.5月〜5月に実施された第1回定例会"
+    );
   });
 });

@@ -117,6 +117,21 @@ describe("BillCard", () => {
     );
   });
 
+  it("submitted_date があれば published_at より優先して提出日に出す", () => {
+    const { container } = render(
+      <BillCard
+        bill={createMockBill({
+          submitted_date: "2026-02-12",
+          published_at: "2026-03-01T00:00:00+09:00",
+        })}
+      />
+    );
+
+    const time = container.querySelector("time");
+    expect(time).toHaveTextContent("2026/02/12 提出");
+    expect(time).toHaveAttribute("dateTime", "2026-02-12");
+  });
+
   it("提出日が無ければ日付を出さない", () => {
     const { container } = render(
       <BillCard bill={createMockBill({ published_at: null })} />

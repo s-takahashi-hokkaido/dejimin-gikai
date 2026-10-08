@@ -55,6 +55,7 @@ erDiagram
   text title
   text summary
   timestamp_with_time_zone created_at
+  text material_url
 }
 ```
 

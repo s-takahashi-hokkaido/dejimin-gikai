@@ -15,8 +15,12 @@ const baseBill: Bill = {
   updated_at: "2025-01-02T00:00:00Z",
   council_session_id: "session-001",
   is_featured: true,
+  is_review_completed: true,
   publish_status: "published",
   published_at: null,
+  submitted_date: null,
+  submitted_on: null,
+  decided_date: null,
   share_thumbnail_url: null,
   status: "preparing",
   status_note: null,
@@ -28,6 +32,11 @@ const baseBill: Bill = {
 };
 
 describe("prepareBillForDuplication", () => {
+  it("is_review_completedをfalseにリセットする", () => {
+    const result = prepareBillForDuplication(baseBill);
+    expect(result.is_review_completed).toBe(false);
+  });
+
   it("id, created_at, updated_atを除去する", () => {
     const result = prepareBillForDuplication(baseBill);
     expect(result).not.toHaveProperty("id");
@@ -35,8 +44,9 @@ describe("prepareBillForDuplication", () => {
     expect(result).not.toHaveProperty("updated_at");
   });
 
-  it("生成列（status_order, publish_status_order）を除去する", () => {
+  it("生成列（status_order, publish_status_order, submitted_on）を除去する", () => {
     const result = prepareBillForDuplication(baseBill);
+    expect(result).not.toHaveProperty("submitted_on");
     expect(result).not.toHaveProperty("status_order");
     expect(result).not.toHaveProperty("publish_status_order");
   });

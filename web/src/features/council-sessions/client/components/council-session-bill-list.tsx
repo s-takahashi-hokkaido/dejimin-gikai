@@ -2,6 +2,10 @@ import { ExternalLink } from "lucide-react";
 import Image from "next/image";
 import type { BillWithContent } from "@/features/bills/shared/types";
 import type { CouncilSession } from "../../shared/types";
+import {
+  formatSessionDescription,
+  getSessionStartYear,
+} from "../../shared/utils/group-sessions-by-year";
 import { BillListWithStatusFilter } from "./bill-list-with-status-filter";
 
 type Props = {
@@ -10,9 +14,8 @@ type Props = {
 };
 
 export function CouncilSessionBillList({ session, bills }: Props) {
-  const startDate = new Date(session.start_date);
-  const endDate = new Date(session.end_date ?? session.start_date);
-  const sessionDescription = `${startDate.getFullYear()}.${startDate.getMonth() + 1}月〜${endDate.getMonth() + 1}月に実施された${session.name}`;
+  const startYear = getSessionStartYear(session);
+  const sessionDescription = formatSessionDescription(session);
 
   return (
     <div className="flex flex-col gap-8">
@@ -35,7 +38,7 @@ export function CouncilSessionBillList({ session, bills }: Props) {
       {/* セクションヘッダー */}
       <div className="flex flex-col gap-0.5">
         <h2 className="text-[22px] font-bold text-black leading-[1.48] flex items-center gap-4">
-          {startDate.getFullYear()}年 {session.name}の提出議案
+          {startYear}年 {session.name}の提出議案
           <span>{bills.length}件</span>
         </h2>
         <p className="text-xs font-medium text-mirai-text">
@@ -55,7 +58,7 @@ export function CouncilSessionBillList({ session, bills }: Props) {
       {/* 市議会リンク */}
       {session.council_url && (
         <div className="flex items-center gap-1 text-[13px] font-medium text-mirai-text">
-          {startDate.getFullYear()}年{session.name}に上程された全ての議案は
+          {startYear}年{session.name}に上程された全ての議案は
           <a
             href={session.council_url}
             target="_blank"

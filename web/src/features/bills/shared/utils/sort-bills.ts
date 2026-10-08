@@ -1,4 +1,5 @@
 import { BILL_STATUS_ORDER, type BillStatusEnum } from "../types";
+import { submittedDateSortKey } from "./bill-dates";
 
 export const BILL_SORT_KEYS = [
   "voices",
@@ -44,7 +45,11 @@ type SortableBill = {
   id: string;
   /** 議案番号（例: 「議案第1号」）。同点の並びを決めるのに使う。 */
   bill_number?: string | null;
-  /** カードで「提出」日として出している日付。 */
+  /** 議会への提出年月日。無ければ published_at を提出日として扱う。 */
+  submitted_date?: string | null;
+  /** DB の生成列（submitted_date、無ければ published_at の日本時間の日付）。 */
+  submitted_on?: string | null;
+  /** submitted_date が無い議案で「提出」日として出している日付。 */
   published_at: string | null;
   updated_at: string;
   status: BillStatusEnum;
@@ -56,7 +61,7 @@ type Compare = (a: SortableBill, b: SortableBill) => number;
 /**
  * 一覧の並び替え。
  *
- * 提出日（published_at）は null がありうる。日付が無い議案を上位に紛れ込ませると
+ * 提出日（submitted_date、無ければ published_at）は null がありうる。日付が無い議案を上位に紛れ込ませると
  * 「新しい順」の意味が壊れるので、昇順・降順のどちらでも最後尾に落とす。
  *
  * 同点は「提出日の新しい順 → 議案番号の順 → id」で必ず決める。定例会ごとに
@@ -70,15 +75,19 @@ export function sortBills<T extends SortableBill>(
   return [...bills].sort(PRIMARY_COMPARES[key]);
 }
 
-const byPublishedDate =
+const bySubmittedDate =
   (direction: "asc" | "desc"): Compare =>
   (a, b) => {
+    // 提出日は日単位（日本時間）で比べる。date 型の submitted_date と
+    // timestamptz の published_at が混ざっても、同じ日なら同点にする。
+    const aKey = submittedDateSortKey(a);
+    const bKey = submittedDateSortKey(b);
     // 日付なしは常に最後尾。方向を反転させても沈めたままにする。
-    if (!a.published_at && !b.published_at) return 0;
-    if (!a.published_at) return 1;
-    if (!b.published_at) return -1;
+    if (!aKey && !bKey) return 0;
+    if (!aKey) return 1;
+    if (!bKey) return -1;
 
-    const diff = Date.parse(a.published_at) - Date.parse(b.published_at);
+    const diff = aKey < bKey ? -1 : aKey > bKey ? 1 : 0;
     return direction === "asc" ? diff : -diff;
   };
 
@@ -110,21 +119,21 @@ const PRIMARY_COMPARES: Record<BillSortKey, Compare> = {
   // 回答が無い議案は 0 として最後尾に沈む。
   voices: chain(
     (a, b) => (b.publicReportCount ?? 0) - (a.publicReportCount ?? 0),
-    byPublishedDate("desc"),
+    bySubmittedDate("desc"),
     byBillNumber,
     byId
   ),
-  new: chain(byPublishedDate("desc"), byBillNumber, byId),
-  old: chain(byPublishedDate("asc"), byBillNumber, byId),
+  new: chain(bySubmittedDate("desc"), byBillNumber, byId),
+  old: chain(bySubmittedDate("asc"), byBillNumber, byId),
   updated: chain(
     (a, b) => Date.parse(b.updated_at) - Date.parse(a.updated_at),
-    byPublishedDate("desc"),
+    bySubmittedDate("desc"),
     byBillNumber,
     byId
   ),
   status: chain(
     (a, b) => BILL_STATUS_ORDER[a.status] - BILL_STATUS_ORDER[b.status],
-    byPublishedDate("desc"),
+    bySubmittedDate("desc"),
     byBillNumber,
     byId
   ),

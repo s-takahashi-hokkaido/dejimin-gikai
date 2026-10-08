@@ -6,11 +6,14 @@ import type { BudgetOverviewWithThemes } from "../../shared/types";
 type BudgetOverviewDetailProps = {
   overview: BudgetOverviewWithThemes;
   sessionSlug: string;
+  /** 「令和8年度」のような年度ラベル。分からないときは出さない */
+  fiscalYearLabel: string | null;
 };
 
 export function BudgetOverviewDetail({
   overview,
   sessionSlug,
+  fiscalYearLabel,
 }: BudgetOverviewDetailProps) {
   return (
     <div>
@@ -29,7 +32,7 @@ export function BudgetOverviewDetail({
           {overview.department_name}
         </h1>
         <h2 className="text-base text-mirai-text-secondary mt-1">
-          令和8年度 重点施策
+          {fiscalYearLabel ? `${fiscalYearLabel} ` : ""}重点施策
         </h2>
 
         {overview.direction && (

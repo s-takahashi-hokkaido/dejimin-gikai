@@ -253,9 +253,11 @@ export type Database = {
           bill_type: string
           council_session_id: string | null
           created_at: string
+          decided_date: string | null
           discussion_overview_points: string[]
           id: string
           is_featured: boolean
+          is_review_completed: boolean
           name: string
           publish_status: Database["public"]["Enums"]["bill_publish_status"]
           publish_status_order: number | null
@@ -265,6 +267,8 @@ export type Database = {
           status: Database["public"]["Enums"]["bill_status_enum"]
           status_note: string | null
           status_order: number | null
+          submitted_date: string | null
+          submitted_on: string | null
           thumbnail_url: string | null
           updated_at: string
         }
@@ -273,9 +277,11 @@ export type Database = {
           bill_type?: string
           council_session_id?: string | null
           created_at?: string
+          decided_date?: string | null
           discussion_overview_points?: string[]
           id?: string
           is_featured?: boolean
+          is_review_completed?: boolean
           name: string
           publish_status?: Database["public"]["Enums"]["bill_publish_status"]
           publish_status_order?: number | null
@@ -285,6 +291,8 @@ export type Database = {
           status: Database["public"]["Enums"]["bill_status_enum"]
           status_note?: string | null
           status_order?: number | null
+          submitted_date?: string | null
+          submitted_on?: string | null
           thumbnail_url?: string | null
           updated_at?: string
         }
@@ -293,9 +301,11 @@ export type Database = {
           bill_type?: string
           council_session_id?: string | null
           created_at?: string
+          decided_date?: string | null
           discussion_overview_points?: string[]
           id?: string
           is_featured?: boolean
+          is_review_completed?: boolean
           name?: string
           publish_status?: Database["public"]["Enums"]["bill_publish_status"]
           publish_status_order?: number | null
@@ -305,6 +315,8 @@ export type Database = {
           status?: Database["public"]["Enums"]["bill_status_enum"]
           status_note?: string | null
           status_order?: number | null
+          submitted_date?: string | null
+          submitted_on?: string | null
           thumbnail_url?: string | null
           updated_at?: string
         }
@@ -802,6 +814,38 @@ export type Database = {
         }
         Relationships: []
       }
+      general_question_overviews: {
+        Row: {
+          council_session_id: string
+          created_at: string
+          lines: string[]
+          theme_lines: Json
+          updated_at: string
+        }
+        Insert: {
+          council_session_id: string
+          created_at?: string
+          lines?: string[]
+          theme_lines?: Json
+          updated_at?: string
+        }
+        Update: {
+          council_session_id?: string
+          created_at?: string
+          lines?: string[]
+          theme_lines?: Json
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "general_question_overviews_council_session_id_fkey"
+            columns: ["council_session_id"]
+            isOneToOne: true
+            referencedRelation: "council_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       general_questions: {
         Row: {
           council_session_id: string
@@ -1096,6 +1140,7 @@ export type Database = {
           created_at: string | null
           id: string
           item_type: string
+          material_url: string | null
           order_index: number
           press_conference_id: string
           summary: string | null
@@ -1105,6 +1150,7 @@ export type Database = {
           created_at?: string | null
           id?: string
           item_type: string
+          material_url?: string | null
           order_index: number
           press_conference_id: string
           summary?: string | null
@@ -1114,6 +1160,7 @@ export type Database = {
           created_at?: string | null
           id?: string
           item_type?: string
+          material_url?: string | null
           order_index?: number
           press_conference_id?: string
           summary?: string | null

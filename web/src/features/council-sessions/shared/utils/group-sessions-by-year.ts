@@ -1,3 +1,4 @@
+import { getJstDateParts } from "@/lib/utils/date";
 import type { CouncilSession } from "../types";
 
 export type SessionsByYear = {
@@ -14,7 +15,7 @@ export function groupSessionsByYear(
   const map = new Map<number, CouncilSession[]>();
 
   for (const session of sessions) {
-    const year = new Date(session.start_date).getFullYear();
+    const year = getSessionStartYear(session);
     const existing = map.get(year);
     if (existing) {
       existing.push(session);
@@ -32,20 +33,45 @@ export function groupSessionsByYear(
  * 定例会の期間を "YYYY.M〜M" 形式でフォーマットする
  */
 export function formatSessionPeriod(session: CouncilSession): string {
-  const start = new Date(session.start_date);
-  const startYear = start.getFullYear();
-  const startMonth = start.getMonth() + 1;
+  const { year: startYear, month: startMonth } = getSessionStart(session);
 
   if (!session.end_date) {
     return `${startYear}.${startMonth}`;
   }
 
-  const end = new Date(session.end_date);
-  const endMonth = end.getMonth() + 1;
+  const endMonth = getJstDateParts(session.end_date)?.month ?? startMonth;
 
   if (startMonth === endMonth) {
     return `${startYear}.${startMonth}`;
   }
 
   return `${startYear}.${startMonth}〜${endMonth}`;
+}
+
+/**
+ * 定例会の開始年（日本時間）
+ */
+export function getSessionStartYear(session: CouncilSession): number {
+  return getSessionStart(session).year;
+}
+
+/**
+ * 定例会の説明文 "YYYY.M月〜M月に実施された{会期名}" を作る
+ * end_date がない場合は開始月を終了月として扱う
+ */
+export function formatSessionDescription(session: CouncilSession): string {
+  const { year, month: startMonth } = getSessionStart(session);
+  const endMonth = session.end_date
+    ? (getJstDateParts(session.end_date)?.month ?? startMonth)
+    : startMonth;
+  return `${year}.${startMonth}月〜${endMonth}月に実施された${session.name}`;
+}
+
+function getSessionStart(session: CouncilSession): {
+  year: number;
+  month: number;
+} {
+  const parts = getJstDateParts(session.start_date);
+  // start_date は NOT NULL の date 型なので通常は不正値にならない
+  return parts ?? { year: Number.NaN, month: Number.NaN };
 }

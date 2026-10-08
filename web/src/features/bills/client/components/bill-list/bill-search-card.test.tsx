@@ -39,6 +39,8 @@ describe("BillSearchCard", () => {
         bill={createMockBill({
           name: "札幌市市税条例の一部を改正する条例案",
           bill_content: undefined,
+          // 確認済みの印は見出しの名前に加わるので、ここでは外す
+          is_review_completed: false,
         })}
       />
     );
@@ -171,5 +173,35 @@ describe("BillSearchCard", () => {
       <BillSearchCard bill={createMockBill({ publicReportCount: 12 })} />
     );
     expect(screen.getByText(/12人がAIインタビューに回答/)).toBeInTheDocument();
+  });
+
+  it("解説の確認が済んだ議案は見出しに確認済みの印を付ける", () => {
+    const { rerender } = render(
+      <BillSearchCard
+        bill={createMockBill({
+          name: "札幌市市税条例の一部を改正する条例案",
+          bill_content: undefined,
+          is_review_completed: true,
+        })}
+      />
+    );
+    expect(
+      screen.getByRole("heading", {
+        name: "札幌市市税条例の一部を改正する条例案 解説は確認済み",
+      })
+    ).toBeInTheDocument();
+
+    rerender(
+      <BillSearchCard
+        bill={createMockBill({
+          name: "札幌市市税条例の一部を改正する条例案",
+          bill_content: undefined,
+          is_review_completed: false,
+        })}
+      />
+    );
+    expect(
+      screen.queryByRole("img", { name: "解説は確認済み" })
+    ).not.toBeInTheDocument();
   });
 });

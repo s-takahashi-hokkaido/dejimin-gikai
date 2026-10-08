@@ -19,10 +19,11 @@ import type { BillWithContent } from "@/features/bills/shared/types";
 import { chatBillName } from "@/features/bills/shared/utils/chat-bill-name";
 import { pickHomeSections } from "@/features/bills/shared/utils/pick-home-sections";
 import { countTagChipItems } from "@/features/bills/shared/utils/tag-chip-items";
+import { getLatestBudgetSession } from "@/features/budget-overview/server/loaders/get-latest-budget-session";
 import { getSessionsWithBudget } from "@/features/budget-overview/server/loaders/get-sessions-with-budget";
+import { getFiscalYearLabel } from "@/features/budget-overview/shared/utils/fiscal-year-label";
 import { HomeChatClient } from "@/features/chat/client/components/home-chat-client";
 import { CurrentCouncilSession } from "@/features/council-sessions/client/components/current-council-session";
-import { getActiveCouncilSession } from "@/features/council-sessions/server/loaders/get-active-council-session";
 import { getAllPastSessions } from "@/features/council-sessions/server/loaders/get-all-past-sessions";
 import { getCurrentCouncilSession } from "@/features/council-sessions/server/loaders/get-current-council-session";
 import { getLatestSessionWithQuestions } from "@/features/general-questions/server/loaders/get-latest-session-with-questions";
@@ -40,7 +41,7 @@ export default async function Home() {
   const [
     { billsByTag, featuredBills, interviewOpenBills },
     currentSession,
-    activeSession,
+    latestBudgetSession,
     currentDifficulty,
     pastSessions,
     budgetSessions,
@@ -52,7 +53,7 @@ export default async function Home() {
   ] = await Promise.all([
     loadHomeData(),
     getCurrentCouncilSession(getJapanTime()),
-    getActiveCouncilSession(),
+    getLatestBudgetSession(),
     getDifficultyLevel(),
     getAllPastSessions(),
     getSessionsWithBudget(),
@@ -117,10 +118,13 @@ export default async function Home() {
         </Container>
       )}
 
-      {/* 予算概要バナー */}
-      {activeSession?.slug && (
+      {/* 予算概要バナー（予算のある最新の会期へ。開会中の会期には予算が無いことが多い） */}
+      {latestBudgetSession?.slug && (
         <Container className="pt-6">
-          <BudgetOverviewBanner sessionSlug={activeSession.slug} />
+          <BudgetOverviewBanner
+            sessionSlug={latestBudgetSession.slug}
+            fiscalYearLabel={getFiscalYearLabel(latestBudgetSession.name)}
+          />
         </Container>
       )}
 

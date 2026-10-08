@@ -1,5 +1,6 @@
 import "server-only";
 import { createAdminClient } from "@dejimin-gikai/supabase";
+import { buildIlikeOrFilter } from "../../shared/utils/build-ilike-or-filter";
 import type {
   BillSearchResult,
   QuestionSearchResult,
@@ -27,7 +28,7 @@ export async function searchBills(query: string): Promise<BillSearchResult[]> {
     `
     )
     .eq("difficulty_level", "normal")
-    .or(`title.ilike.%${query}%,summary.ilike.%${query}%`)
+    .or(buildIlikeOrFilter(["title", "summary"], query))
     .limit(50);
 
   if (error) throw new Error(`Failed to search bills: ${error.message}`);
@@ -73,7 +74,7 @@ export async function searchGeneralQuestions(
     `
     )
     .eq("publish_status", "published")
-    .or(`summary.ilike.%${query}%,questioner_name.ilike.%${query}%`)
+    .or(buildIlikeOrFilter(["summary", "questioner_name"], query))
     .limit(50);
 
   if (error) throw new Error(`Failed to search questions: ${error.message}`);
@@ -110,7 +111,7 @@ export async function searchBudgets(
     `
     )
     .eq("publish_status", "published")
-    .or(`department_name.ilike.%${query}%,direction.ilike.%${query}%`)
+    .or(buildIlikeOrFilter(["department_name", "direction"], query))
     .limit(50);
 
   if (error) throw new Error(`Failed to search budgets: ${error.message}`);

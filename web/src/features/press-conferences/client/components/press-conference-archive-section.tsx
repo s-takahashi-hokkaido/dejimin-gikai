@@ -3,6 +3,7 @@
 import { ChevronRight } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { formatDate } from "@/lib/utils/date";
 import type { PressConference } from "../../shared/types";
 
 type Props = {
@@ -25,10 +26,7 @@ export function PressConferenceArchiveSection({ pressConferences }: Props) {
 
       <ul className="flex flex-col divide-y divide-mirai-border">
         {pressConferences.map((pc) => {
-          const formattedDate = new Date(pc.heldAt).toLocaleDateString(
-            "ja-JP",
-            { year: "numeric", month: "long", day: "numeric" }
-          );
+          const formattedDate = formatDate(pc.heldAt);
           return (
             <li key={pc.id}>
               <Link

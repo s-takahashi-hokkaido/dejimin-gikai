@@ -26,6 +26,10 @@
 | source_url | text |  | true |  |  |  | 出典URL（議案のPDF等） |
 | bill_type | text | 'bill'::text | false |  |  |  | 議案種別(bill:通常議案 / bill_settlement:決算認定 / bill_personnel:人事同意 / bill_ratification:専決処分承認 / consultation:諮問 / opinion:意見書案 / petition:請願 / appeal:陳情 / report:報告 / resolution:決議 / member_bill:議員提出議案) |
 | discussion_overview_points | text[] | '{}'::text[] | false |  |  |  | 議論概要ポイント |
+| submitted_date | date |  | true |  |  |  | 議会への提出年月日（本会議提出日）。未設定なら published_at を提出日として表示する |
+| decided_date | date |  | true |  |  |  | 議決年月日。未議決なら null |
+| is_review_completed | boolean | false | false |  |  |  | 解説の内容確認が済んでいるか。false の議案は web に「確認中」のお知らせを出す |
+| submitted_on | date |  | true | GENERATED ALWAYS AS COALESCE(submitted_date, ((published_at AT TIME ZONE 'Asia/Tokyo'::text))::date) STORED |  |  | 並び替え用の提出日（生成列）。submitted_date、無ければ published_at の日本時間の日付 |
 
 ## Constraints
 
@@ -91,6 +95,10 @@ erDiagram
   text source_url
   text bill_type
   text__ discussion_overview_points
+  date submitted_date
+  date decided_date
+  boolean is_review_completed
+  date submitted_on
 }
 "public.bill_contents" {
   uuid id

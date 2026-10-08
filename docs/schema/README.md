@@ -7,7 +7,7 @@
 | [auth.users](auth.users.md) | 35 | Auth: Stores user login data within a secure schema. | BASE TABLE |
 | [public.bill_contents](public.bill_contents.md) | 8 | 議案の難易度別コンテンツを管理するテーブル | BASE TABLE |
 | [public.bill_discussions](public.bill_discussions.md) | 14 | 議案討論記録 | BASE TABLE |
-| [public.bills](public.bills.md) | 18 | 議案の基本情報を格納するテーブル。コンテンツはbill_contentsテーブルで管理。 | BASE TABLE |
+| [public.bills](public.bills.md) | 22 | 議案の基本情報を格納するテーブル。コンテンツはbill_contentsテーブルで管理。 | BASE TABLE |
 | [public.bills_tags](public.bills_tags.md) | 3 | Junction table for bills and tags relationship | BASE TABLE |
 | [public.budget_initiatives](public.budget_initiatives.md) | 9 | 予算施策(テーマごとの個別施策) | BASE TABLE |
 | [public.budget_overviews](public.budget_overviews.md) | 12 | 予算概要(部局ごと×定例会ごと) | BASE TABLE |
@@ -25,7 +25,7 @@
 | [public.interview_questions](public.interview_questions.md) | 8 | 事前定義されたインタビュー質問を管理するテーブル | BASE TABLE |
 | [public.interview_report](public.interview_report.md) | 14 | インタビュー結果のレポートを保存するテーブル（AIが自動生成） | BASE TABLE |
 | [public.interview_sessions](public.interview_sessions.md) | 9 | インタビューセッションを管理するテーブル | BASE TABLE |
-| [public.press_conference_items](public.press_conference_items.md) | 7 | 記者会見項目 | BASE TABLE |
+| [public.press_conference_items](public.press_conference_items.md) | 8 | 記者会見項目 | BASE TABLE |
 | [public.press_conference_turns](public.press_conference_turns.md) | 7 | 記者会見の発言ターン | BASE TABLE |
 | [public.press_conferences](public.press_conferences.md) | 8 | 記者会見 | BASE TABLE |
 | [public.preview_tokens](public.preview_tokens.md) | 6 | Preview tokens for bill access management | BASE TABLE |
@@ -40,6 +40,7 @@
 | [public.prompts](public.prompts.md) | 6 | AIチャットのシステムプロンプト | BASE TABLE |
 | [public.prompt_versions](public.prompt_versions.md) | 7 | プロンプトの版（追記のみ） | BASE TABLE |
 | [public.chat_logs](public.chat_logs.md) | 11 | AIチャットの会話ログ（保存期間90日。delete_expired_chat_logs で削除する） | BASE TABLE |
+| [public.general_question_overviews](public.general_question_overviews.md) | 5 | 定例会ごとの一般質問（代表質問）の3行まとめ。本文は AI の下書きをユーザーが確認してから登録する | BASE TABLE |
 
 ## Stored procedures and functions
 
@@ -123,6 +124,7 @@ erDiagram
 "public.prompt_versions" }o--o| "auth.users" : "FOREIGN KEY (created_by) REFERENCES auth.users(id) ON DELETE SET NULL"
 "public.prompt_versions" }o--|| "public.prompts" : "FOREIGN KEY (prompt_id) REFERENCES prompts(id) ON DELETE CASCADE"
 "public.chat_logs" }o--o| "public.prompt_versions" : "FOREIGN KEY (prompt_version_id) REFERENCES prompt_versions(id) ON DELETE SET NULL"
+"public.general_question_overviews" |o--|| "public.council_sessions" : "FOREIGN KEY (council_session_id) REFERENCES council_sessions(id) ON DELETE CASCADE"
 
 "auth.users" {
   uuid instance_id
@@ -206,6 +208,10 @@ erDiagram
   text source_url
   text bill_type
   text__ discussion_overview_points
+  date submitted_date
+  date decided_date
+  boolean is_review_completed
+  date submitted_on
 }
 "public.bills_tags" {
   uuid bill_id FK
@@ -401,6 +407,7 @@ erDiagram
   text title
   text summary
   timestamp_with_time_zone created_at
+  text material_url
 }
 "public.press_conference_turns" {
   uuid id
@@ -531,6 +538,13 @@ erDiagram
   text message
   text model
   timestamp_with_time_zone created_at
+}
+"public.general_question_overviews" {
+  uuid council_session_id FK
+  text__ lines
+  jsonb theme_lines
+  timestamp_with_time_zone created_at
+  timestamp_with_time_zone updated_at
 }
 ```
 
