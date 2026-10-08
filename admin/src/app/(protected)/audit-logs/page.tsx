@@ -22,7 +22,7 @@ export default async function AuditLogsPage({
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-gray-900">変更履歴</h1>
         <p className="text-gray-600 mt-1">
-          議案マスタ・議案コンテンツ・会派見解を、誰がいつどう変えたかを確認できます
+          議案マスタ・議案コンテンツ・会派見解・アカウントを、誰がいつどう変えたかを確認できます
         </p>
       </div>
 

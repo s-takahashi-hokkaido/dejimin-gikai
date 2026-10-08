@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   describeAuditAction,
   formatAuditActor,
+  formatAuditFieldValue,
   formatAuditValue,
   formatDifficultyLevel,
   getAuditFieldLabel,
@@ -14,6 +15,7 @@ describe("describeAuditAction", () => {
     ["bills.update", "議案マスタ", "更新"],
     ["bill_contents.insert", "議案コンテンツ", "作成"],
     ["faction_stances.delete", "会派見解", "削除"],
+    ["admin_profiles.update", "アカウント", "更新"],
   ])("%s", (action, tableLabel, operationLabel) => {
     expect(describeAuditAction(action)).toEqual({ tableLabel, operationLabel });
   });
@@ -80,6 +82,25 @@ describe("formatAuditValue", () => {
 
   it("オブジェクトは JSON で出す", () => {
     expect(formatAuditValue({ a: 1 })).toBe('{\n  "a": 1\n}');
+  });
+});
+
+describe("formatAuditFieldValue", () => {
+  it("アカウントのロールは表示名にする", () => {
+    expect(formatAuditFieldValue("role", "legislator", ROLE_LABELS)).toBe(
+      "議員"
+    );
+  });
+
+  it("未知のロールはそのまま出す", () => {
+    expect(formatAuditFieldValue("role", "editor", ROLE_LABELS)).toBe("editor");
+  });
+
+  it("ロール以外の列は formatAuditValue と同じ", () => {
+    expect(formatAuditFieldValue("display_name", "議員A", ROLE_LABELS)).toBe(
+      "議員A"
+    );
+    expect(formatAuditFieldValue("role", null, ROLE_LABELS)).toBe("（なし）");
   });
 });
 

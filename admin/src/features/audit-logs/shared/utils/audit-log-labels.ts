@@ -5,6 +5,7 @@ export const AUDIT_TABLE_LABELS: Record<AuditTargetTable, string> = {
   bill_contents: "議案コンテンツ",
   faction_stances: "会派見解",
   bill_committees: "付託委員会",
+  admin_profiles: "アカウント",
 };
 
 const OPERATION_LABELS: Record<string, string> = {
@@ -39,10 +40,14 @@ const FIELD_LABELS: Record<string, string> = {
   title: "タイトル",
   summary: "要約",
   content: "本文",
-  // faction_stances
+  // faction_stances（faction_id は admin_profiles の所属会派も兼ねる）
   faction_id: "会派",
   type: "賛否",
   comment: "コメント",
+  // admin_profiles
+  user_id: "ユーザーID",
+  role: "ロール",
+  display_name: "表示名",
 };
 
 const DIFFICULTY_LABELS: Record<string, string> = {
@@ -104,4 +109,16 @@ export function formatAuditValue(value: AuditJson | undefined): string {
     return value.length === 0 ? "（空）" : value.join("\n");
   }
   return JSON.stringify(value, null, 2);
+}
+
+/** 列の値を表示用の文字列にする。アカウントのロールは表示名にする */
+export function formatAuditFieldValue(
+  field: string,
+  value: AuditJson | undefined,
+  roleLabels: Record<string, string>
+): string {
+  if (field === "role" && typeof value === "string") {
+    return roleLabels[value] ?? value;
+  }
+  return formatAuditValue(value);
 }

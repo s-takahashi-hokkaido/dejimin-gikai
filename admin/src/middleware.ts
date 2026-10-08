@@ -1,6 +1,7 @@
 import { createUnauthorizedResponse } from "@dejimin-gikai/shared/auth/basic-auth";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
+import { isPublicAuthPath } from "@/features/auth/shared/utils/auth-paths";
 import {
   getAdminBasicAuthConfig,
   isHtmlNavigation,
@@ -26,8 +27,9 @@ export async function middleware(request: NextRequest) {
 
   const { supabaseResponse, user } = await updateSession(request);
 
-  // ログイン画面は常にアクセス可能
-  if (request.nextUrl.pathname === "/login") {
+  // ログイン画面・パスワード再設定の画面は常にアクセス可能
+  // （招待・再設定メールのリンクはログインしていない状態で開く）
+  if (isPublicAuthPath(request.nextUrl.pathname)) {
     return supabaseResponse;
   }
 

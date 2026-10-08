@@ -39,9 +39,10 @@ export function collectReferencedIds(logs: AuditLog[]): {
 }
 
 /**
- * 議案名・会派名・委員会名を付けて一覧の行にする
+ * 議案名・会派名・委員会名・アカウント名を付けて一覧の行にする
  *
  * 議案が削除済みで引けない場合、議案マスタの履歴なら記録した行の議案名を使う。
+ * アカウントの履歴は、ロールだけ変えた時も誰の変更か分かるよう、記録した行の表示名を付ける。
  */
 export function toAuditLogListItems(
   logs: AuditLog[],
@@ -63,6 +64,10 @@ export function toAuditLogListItems(
       committeeName: committeeId
         ? (committeeNames.get(committeeId) ?? null)
         : null,
+      accountName:
+        log.target_table === "admin_profiles"
+          ? readLogField(log, "display_name")
+          : null,
     };
   });
 }

@@ -1,8 +1,11 @@
-import { Home, User } from "lucide-react";
+import { Home, KeyRound, User } from "lucide-react";
+import Link from "next/link";
 import type { ReactNode } from "react";
+import { Button } from "@/components/ui/button";
 import { siteConfig } from "@/config/site.config";
 import { LogoutButton } from "@/features/auth/client/components/logout-button";
 import { requireRoleOrRedirect } from "@/features/auth/server/lib/auth-server";
+import { UPDATE_PASSWORD_PATH } from "@/features/auth/shared/utils/auth-paths";
 import { ALL_ROLES, ROLE_LABELS } from "@/features/auth/shared/utils/role";
 import { NavigationLinks } from "./layout/navigation-links";
 
@@ -41,6 +44,17 @@ export default async function MainLayout({
                   </span>
                 </span>
               </div>
+              <Button
+                asChild
+                variant="ghost"
+                size="sm"
+                className="text-gray-600 hover:text-gray-900"
+              >
+                <Link href={UPDATE_PASSWORD_PATH}>
+                  <KeyRound className="h-4 w-4 md:mr-2" />
+                  <span className="hidden md:inline">パスワード変更</span>
+                </Link>
+              </Button>
               <LogoutButton />
             </div>
           </div>

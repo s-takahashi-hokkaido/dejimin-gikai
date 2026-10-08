@@ -74,17 +74,21 @@ services:
       GOTRUE_JWT_SECRET: ${JWT_SECRET:?}
       GOTRUE_JWT_ISSUER: ${SUPABASE_PUBLIC_URL}/auth/v1
       # 以下は supabase/config.toml の [auth] の主要な値を移したもの（config.toml は CLI しか読まない）。
-      # [auth.rate_limit] は anonymous_users 以外は GoTrue の既定値のまま。メール送信の上限は SMTP を足す時に決める
-      # 匿名ログインに必要なので signup は閉じられない（DISABLE_SIGNUP=true にすると匿名ログインも 422 になる）
+      # [auth.rate_limit] は anonymous_users 以外は GoTrue の既定値のまま。
+      # メール送信の上限（GOTRUE_RATE_LIMIT_EMAIL_SENT）は既定の 1時間あたり30通（サイト全体）
+      # 匿名ログインに必要なので signup は閉じられない（DISABLE_SIGNUP=true にすると匿名ログインも 422 になる）。
+      # メールアドレスでのサインアップは before_user_created フック（下）で拒否する
       GOTRUE_DISABLE_SIGNUP: "false"
       GOTRUE_EXTERNAL_EMAIL_ENABLED: "true"
       # config.toml（ローカル開発用）とは変えている。true だとメールアドレスでのサインアップで即座にセッションが出て、
-      # ユーザー単位の AI コスト上限を何度でも取り直せる。アプリのユーザーは管理画面から
-      # auth.admin.createUser（email_confirm: true）で作るので、false でも困らない
+      # ユーザー単位の AI コスト上限を何度でも取り直せる。管理画面のアカウントは管理画面から
+      # auth.admin.createUser で作って招待メールを送るので、false でも困らない
       GOTRUE_MAILER_AUTOCONFIRM: "false"
       GOTRUE_EXTERNAL_PHONE_ENABLED: "false"
       GOTRUE_EXTERNAL_ANONYMOUS_USERS_ENABLED: "true"
-      GOTRUE_PASSWORD_MIN_LENGTH: 6
+      # 管理画面のパスワードの最低文字数。admin の PASSWORD_MIN_LENGTH・supabase/config.toml の
+      # minimum_password_length と揃える。既存のパスワードはそのまま使える（設定・変更する時だけ効く）
+      GOTRUE_PASSWORD_MIN_LENGTH: 12
       GOTRUE_SECURITY_REFRESH_TOKEN_ROTATION_ENABLED: "true"
       GOTRUE_SECURITY_REFRESH_TOKEN_REUSE_INTERVAL: 10
       GOTRUE_RATE_LIMIT_ANONYMOUS_USERS: ${RATE_LIMIT_ANONYMOUS_USERS:-30}
@@ -97,6 +101,28 @@ services:
       GOTRUE_MAILER_URLPATHS_CONFIRMATION: /auth/v1/verify
       GOTRUE_MAILER_URLPATHS_RECOVERY: /auth/v1/verify
       GOTRUE_MAILER_URLPATHS_EMAIL_CHANGE: /auth/v1/verify
+      # --- メール（管理画面の招待・パスワード再設定。権限設計 C-4）---
+      # SMTP_HOST が空のあいだは送らない（GoTrue はメールを捨ててログに出すだけ）。
+      # 送信元は noreply@ezocivic.tech（方針ドキュメント §4）。手順: 構築手順 手順13
+      GOTRUE_SMTP_HOST: ${SMTP_HOST:-}
+      GOTRUE_SMTP_PORT: ${SMTP_PORT:-587}
+      GOTRUE_SMTP_USER: ${SMTP_USER:-}
+      GOTRUE_SMTP_PASS: ${SMTP_PASS:-}
+      GOTRUE_SMTP_ADMIN_EMAIL: ${SMTP_ADMIN_EMAIL:-noreply@ezocivic.tech}
+      GOTRUE_SMTP_SENDER_NAME: ${SMTP_SENDER_NAME:-EZO CIVIC}
+      # 招待・再設定のリンクの有効期限（秒）。GoTrue の既定と同じ24時間を明示しておく（メール本文の案内と揃える）
+      GOTRUE_MAILER_OTP_EXP: 86400
+      # 本文は email-templates/ のファイルを compose の nginx が中から配る（supabase.conf の 8088 番）。
+      # 取りに行けないと GoTrue は英語の既定テンプレート（/auth/v1/verify を GET で踏ませるリンク）で送ってしまう。
+      # supabase/config.toml の [auth.email.template.*] と同じテンプレート・件名
+      GOTRUE_MAILER_TEMPLATES_INVITE: http://nginx:8088/invite.html
+      GOTRUE_MAILER_TEMPLATES_RECOVERY: http://nginx:8088/recovery.html
+      GOTRUE_MAILER_SUBJECTS_INVITE: "【デジタル民主主義共創議会】管理画面への招待"
+      GOTRUE_MAILER_SUBJECTS_RECOVERY: "【デジタル民主主義共創議会】管理画面のパスワード再設定"
+      # メールアドレスでのサインアップを拒否し、匿名ログインだけを通す（関数はマイグレーション 20261010000000）。
+      # 関数が無いまま有効にすると匿名ログインも失敗するので、マイグレーションを当ててから compose を更新する
+      GOTRUE_HOOK_BEFORE_USER_CREATED_ENABLED: "true"
+      GOTRUE_HOOK_BEFORE_USER_CREATED_URI: pg-functions://postgres/public/hook_before_user_created
 
   rest:
     image: public.ecr.aws/supabase/postgrest:v16.2
@@ -160,6 +186,8 @@ services:
       - "127.0.0.1:${GATEWAY_PORT:-8000}:8000"
     volumes:
       - ./nginx/supabase.conf:/etc/nginx/conf.d/default.conf:ro
+      # GoTrue が取りに来るメールのテンプレート（8088 番はホストに出していない）
+      - ./email-templates:/usr/share/nginx/email-templates:ro
 
 # サブネットを固定するのは、nginx が「ホストから来た X-Real-IP を信じる」相手を
 # ゲートウェイの IP（10.203.0.1）1つに絞るため（supabase.conf の set_real_ip_from）。

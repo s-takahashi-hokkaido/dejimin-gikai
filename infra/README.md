@@ -8,6 +8,7 @@
 |---|---|---|
 | `compose.yml` / `.env.example` | セルフホスト Supabase（db / auth / rest / storage / nginx） | `/srv/gikai/infra/`（リポジトリを clone して使う） |
 | `nginx/supabase.conf` | 上記 compose のゲートウェイ nginx の設定 | compose がマウントする |
+| `email-templates/` | 管理画面の招待・パスワード再設定メールの本文。GoTrue が compose の nginx（中だけの 8088 番）から取る。ローカルの Supabase CLI も `supabase/config.toml` から同じファイルを使う | compose がマウントする |
 | `db/roles.sql` / `db/jwt.sql` | db コンテナの初期化スクリプト | compose がマウントする |
 | `systemd/gikai-web.service` | web（Next.js standalone）の systemd unit | `/etc/systemd/system/gikai-web.service` |
 | `systemd/gikai-admin.service` | admin（Next.js standalone）の systemd unit | `/etc/systemd/system/gikai-admin.service` |

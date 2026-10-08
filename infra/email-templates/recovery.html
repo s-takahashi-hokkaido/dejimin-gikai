@@ -1,0 +1,19 @@
+<!--
+  管理画面のパスワード再設定メール（GoTrue の Go テンプレート）
+  ローカル: supabase/config.toml の [auth.email.template.recovery] / 本番: infra/compose.yml の GOTRUE_MAILER_TEMPLATES_RECOVERY
+
+  リンクを admin の /update-password に向ける理由は invite.html と同じ。
+-->
+<h2>パスワードの再設定</h2>
+<p>
+  デジタル民主主義共創議会の管理画面で、このメールアドレス（{{ .Email }}）のパスワード再設定の申請がありました。<br>
+  下のリンクから新しいパスワードを設定してください。
+</p>
+<p><a href="{{ .RedirectTo }}?token_hash={{ .TokenHash }}&type=recovery">新しいパスワードを設定する</a></p>
+<p>
+  リンクの有効期限は24時間で、使えるのは1回だけです。<br>
+  リンクを開いたときにブラウザのユーザー名・パスワードの入力画面が表示された場合は、別途お知らせしている共通のユーザー名・パスワードを入力してください。
+</p>
+<p>お心当たりのない場合は、このメールを破棄してください。パスワードは変わりません。</p>
+<hr>
+<p>運営: EZO CIVIC<br>このメールは送信専用のアドレスから送っています。</p>

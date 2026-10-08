@@ -1602,13 +1602,19 @@ export type Database = {
         Args: { p_retention_days?: number }
         Returns: number
       }
-      get_admin_users: {
+      get_admin_accounts: {
         Args: never
         Returns: {
           created_at: string
+          display_name: string
           email: string
-          id: string
+          email_confirmed_at: string
+          faction_id: string
+          faction_name: string
+          invited_at: string
           last_sign_in_at: string
+          role: string
+          user_id: string
         }[]
       }
       get_ai_usage_cost_usd: {
@@ -1622,6 +1628,7 @@ export type Database = {
           message_count: number
         }[]
       }
+      hook_before_user_created: { Args: { event: Json }; Returns: Json }
       is_admin: { Args: never; Returns: boolean }
       replace_bill_committees: {
         Args: { p_bill_id: string; p_committee_ids: string[] }

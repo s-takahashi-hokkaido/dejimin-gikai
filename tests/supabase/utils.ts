@@ -40,19 +40,40 @@ export type TestUser = {
   password: string;
 };
 
-/** admin 権限を持つテストユーザーを作成 */
+/** admin 権限を持つテストユーザーを作成（利用資格の正は admin_profiles） */
 export async function createTestAdminUser(
   email = `test-admin-${Date.now()}@example.com`,
   password = "test-password-123"
 ): Promise<TestUser> {
-  const { data, error } = await adminClient.auth.admin.createUser({
-    email,
-    password,
-    email_confirm: true,
-    app_metadata: { roles: ["admin"] },
+  return createTestAccount({ role: "admin", email, password });
+}
+
+/** 管理画面のアカウント（Auth ユーザーと admin_profiles の行）を作成 */
+export async function createTestAccount({
+  role,
+  factionId = null,
+  email = `test-${role}-${Date.now()}@example.com`,
+  password = "test-password-123",
+  displayName = email,
+}: {
+  role: "admin" | "legislator" | "candidate";
+  factionId?: string | null;
+  email?: string;
+  password?: string;
+  displayName?: string;
+}): Promise<TestUser> {
+  const user = await createTestUser(email, password);
+  const { error } = await adminClient.from("admin_profiles").insert({
+    user_id: user.id,
+    role,
+    faction_id: factionId,
+    display_name: displayName,
   });
-  if (error) throw new Error(`admin ユーザー作成失敗: ${error.message}`);
-  return { id: data.user.id, email, password };
+  if (error) {
+    await cleanupTestUser(user.id);
+    throw new Error(`admin_profiles 作成失敗: ${error.message}`);
+  }
+  return user;
 }
 
 /** 一般テストユーザーを作成 */
@@ -110,6 +131,26 @@ export async function cleanupTestCouncilSession(
   sessionId: string
 ): Promise<void> {
   await adminClient.from("council_sessions").delete().eq("id", sessionId);
+}
+
+/** テスト用 faction を作成 */
+export async function createTestFaction() {
+  const suffix = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+  const { data, error } = await adminClient
+    .from("factions")
+    .insert({
+      name: `テスト会派-${suffix}`,
+      display_name: `テスト会派（正式名称）-${suffix}`,
+    })
+    .select()
+    .single();
+  if (error) throw new Error(`faction 作成失敗: ${error.message}`);
+  return data;
+}
+
+/** テスト用 faction を削除 */
+export async function cleanupTestFaction(factionId: string): Promise<void> {
+  await adminClient.from("factions").delete().eq("id", factionId);
 }
 
 /** @deprecated createTestCouncilSession を使用してください */
