@@ -263,7 +263,7 @@ export function ChatWindow({
             variant="ghost"
             size="icon"
             disabled={!input || isResponding}
-            className="flex-shrink-0 w-10 h-10 disabled:opacity-50"
+            className="flex-shrink-0 w-10 h-10 p-0 hover:bg-transparent disabled:opacity-50"
           >
             <Image
               src="/icons/send-button-icon.svg"

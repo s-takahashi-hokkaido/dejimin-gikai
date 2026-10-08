@@ -191,9 +191,11 @@ function ThemeAccordionItem({
         </span>
         {showPreview && (
           <span className="flex flex-col gap-1 pl-11 text-left">
-            {themeLines.slice(0, 3).map((line) => (
+            {themeLines.slice(0, 3).map((line, i) => (
               <span
-                key={line}
+                // AI 生成の行は重複しうるので、本文ではなく位置をキーにする
+                // biome-ignore lint/suspicious/noArrayIndexKey: 並び替え・挿入の無い固定の3行
+                key={i}
                 className="text-xs leading-relaxed text-mirai-text-secondary font-normal whitespace-normal"
               >
                 {line}
@@ -268,7 +270,8 @@ export function SessionQuestionsOverview({
           </div>
           <ol className="flex flex-col gap-2">
             {overview.lines.slice(0, 3).map((line, i) => (
-              <li key={line} className="flex gap-2 text-sm text-mirai-text">
+              // biome-ignore lint/suspicious/noArrayIndexKey: AI 生成の行は重複しうるので位置をキーにする（並び替え・挿入の無い固定の3行）
+              <li key={i} className="flex gap-2 text-sm text-mirai-text">
                 <span
                   aria-hidden="true"
                   className="shrink-0 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-primary-foreground text-xs font-bold"
