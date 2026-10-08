@@ -11,6 +11,7 @@ import { getBudgetOverviews } from "@/features/budget-overview/server/loaders/ge
 import { hasPublishedOverviewsBySession } from "@/features/budget-overview/server/repositories/budget-repository";
 import { BudgetOverviewList } from "@/features/budget-overview/server/components/budget-overview-list";
 import { BudgetChatClient } from "@/features/budget-overview/client/components/budget-chat-client";
+import { getFiscalYearLabel } from "@/features/budget-overview/shared/utils/fiscal-year-label";
 import { siteConfig } from "@/config/site.config";
 
 interface BudgetListPageProps {
@@ -36,8 +37,8 @@ export async function generateMetadata({
 }
 
 function toFiscalYearLabel(sessionName: string): string {
-  const match = sessionName.match(/令和(\d+)年/);
-  return match ? `令和${match[1]}年度予算` : sessionName;
+  const label = getFiscalYearLabel(sessionName);
+  return label ? `${label}予算` : sessionName;
 }
 
 export default async function BudgetListPage({ params }: BudgetListPageProps) {

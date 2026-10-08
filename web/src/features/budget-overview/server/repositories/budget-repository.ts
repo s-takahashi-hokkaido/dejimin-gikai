@@ -40,6 +40,34 @@ export async function findAllSessionsWithBudget(): Promise<CouncilSession[]> {
 }
 
 /**
+ * 公開済み予算概要がある最新の会期を取得（開会中の会期も含む）
+ *
+ * トップの予算バナーの飛び先に使う。開会中の会期にリンクすると、
+ * 予算を審議しない定例会の間は中身の無いページに飛んでしまう。
+ */
+export async function findLatestSessionWithBudget(): Promise<CouncilSession | null> {
+  const supabase = createAdminClient();
+
+  const { data, error } = await supabase
+    .from("council_sessions")
+    .select("*, budget_overviews!inner(id)")
+    .eq("budget_overviews.publish_status", "published")
+    .order("start_date", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (error) {
+    throw new Error(
+      `Failed to fetch latest session with budget: ${error.message}`
+    );
+  }
+  if (!data) return null;
+
+  const { budget_overviews: _overviews, ...session } = data;
+  return session;
+}
+
+/**
  * 会期IDに紐づく公開済み予算概要一覧を取得
  */
 export async function findPublishedOverviewsBySession(

@@ -7,6 +7,7 @@ import { getBudgetOverviewDetail } from "@/features/budget-overview/server/loade
 import { BudgetOverviewDetail } from "@/features/budget-overview/server/components/budget-overview-detail";
 import { BudgetThemeAccordion } from "@/features/budget-overview/client/components/budget-theme-accordion";
 import { BudgetChatClient } from "@/features/budget-overview/client/components/budget-chat-client";
+import { getFiscalYearLabel } from "@/features/budget-overview/shared/utils/fiscal-year-label";
 import { siteConfig } from "@/config/site.config";
 
 interface BudgetDetailPageProps {
@@ -55,7 +56,11 @@ export default async function BudgetDetailPage({
 
   return (
     <Container className="py-10 pb-28">
-      <BudgetOverviewDetail overview={overview} sessionSlug={session_slug} />
+      <BudgetOverviewDetail
+        overview={overview}
+        sessionSlug={session_slug}
+        fiscalYearLabel={getFiscalYearLabel(session.name)}
+      />
 
       <div>
         <h2 className="text-lg font-bold text-mirai-text mb-4">
