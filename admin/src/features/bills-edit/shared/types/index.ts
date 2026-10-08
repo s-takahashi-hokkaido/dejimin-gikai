@@ -25,6 +25,17 @@ export const BILL_TYPES = [
 ] as const;
 export type BillType = (typeof BILL_TYPES)[number];
 
+/** `<input type="date">` 由来の値（YYYY-MM-DD または未入力の空文字）を受けるスキーマ */
+const dateOnlySchema = (label: string) =>
+  z
+    .string()
+    .regex(
+      /^(\d{4}-\d{2}-\d{2})?$/,
+      `${label}はYYYY-MM-DD形式で入力してください`
+    )
+    .nullable()
+    .optional();
+
 // 共通のバリデーションスキーマ
 const billBaseSchema = z.object({
   bill_number: z.string().max(50, "議案番号は50文字以内で入力してください"),
@@ -58,6 +69,9 @@ const billBaseSchema = z.object({
     .max(500, "ステータス備考は500文字以内で入力してください")
     .nullable(),
   published_at: z.string().optional(),
+  // date カラム向け。未入力時は空文字が送られてくるため許容し、Server Action 側で null に正規化する
+  submitted_date: dateOnlySchema("提出年月日"),
+  decided_date: dateOnlySchema("議決年月日"),
   thumbnail_url: z.string().nullable().optional(),
   share_thumbnail_url: z.string().nullable().optional(),
   is_featured: z.boolean(),

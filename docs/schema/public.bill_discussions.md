@@ -81,6 +81,8 @@ erDiagram
   text source_url
   text bill_type
   text__ discussion_overview_points
+  date submitted_date
+  date decided_date
 }
 ```
 

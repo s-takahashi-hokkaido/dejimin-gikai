@@ -8,6 +8,7 @@ import {
 } from "@/lib/utils/cache-invalidation";
 import { getErrorMessage } from "@/lib/utils/get-error-message";
 import { type BillCreateInput, billCreateSchema } from "../../shared/types";
+import { normalizeDateInput } from "../../shared/utils/normalize-date-input";
 import {
   createBillRecord,
   replaceBillCommittees,
@@ -28,6 +29,8 @@ export async function createBill(input: BillCreateInput) {
       published_at: billData.published_at
         ? new Date(billData.published_at).toISOString()
         : null,
+      submitted_date: normalizeDateInput(billData.submitted_date),
+      decided_date: normalizeDateInput(billData.decided_date),
     };
 
     // Supabaseに挿入

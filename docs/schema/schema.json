@@ -732,6 +732,18 @@
           "nullable": false,
           "default": "'{}'::text[]",
           "comment": "議論概要ポイント"
+        },
+        {
+          "name": "submitted_date",
+          "type": "date",
+          "nullable": true,
+          "comment": "議会への提出年月日（本会議提出日）。未設定なら published_at を提出日として表示する"
+        },
+        {
+          "name": "decided_date",
+          "type": "date",
+          "nullable": true,
+          "comment": "議決年月日。未議決なら null"
         }
       ],
       "indexes": [

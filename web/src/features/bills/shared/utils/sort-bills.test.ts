@@ -11,6 +11,7 @@ function bill(
   id: string,
   overrides: {
     bill_number?: string | null;
+    submitted_date?: string | null;
     published_at?: string | null;
     updated_at?: string;
     status?: BillStatusEnum;
@@ -113,6 +114,41 @@ describe("sortBills", () => {
 
     expect(ids(sortBills(bills, "new"))).toEqual(["dated", "none"]);
     expect(ids(sortBills(bills, "old"))).toEqual(["dated", "none"]);
+  });
+
+  it("submitted_date があれば published_at より優先して提出日に使う", () => {
+    const result = sortBills(
+      [
+        // 公開は新しいが、議会への提出は古い
+        bill("submitted-old", {
+          submitted_date: "2026-01-10",
+          published_at: "2026-06-01T00:00:00+09:00",
+        }),
+        bill("published-only", { published_at: "2026-03-01T00:00:00+09:00" }),
+      ],
+      "new"
+    );
+
+    expect(ids(result)).toEqual(["published-only", "submitted-old"]);
+  });
+
+  it("同じ日なら submitted_date と published_at が混ざっても議案番号順になる", () => {
+    const result = sortBills(
+      [
+        bill("b", {
+          bill_number: "議案第2号",
+          submitted_date: "2026-02-12",
+        }),
+        bill("a", {
+          bill_number: "議案第1号",
+          // 日本時間では同じ 2/12（UTC では 2/11 15 時）
+          published_at: "2026-02-12T00:00:00+09:00",
+        }),
+      ],
+      "new"
+    );
+
+    expect(ids(result)).toEqual(["a", "b"]);
   });
 
   it("updated は更新の新しい順", () => {

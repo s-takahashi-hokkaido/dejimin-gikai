@@ -2,6 +2,7 @@ import Image from "next/image";
 import { Card } from "@/components/ui/card";
 import { formatDateJST } from "@/lib/utils/date";
 import type { BillWithContent } from "../../../shared/types";
+import { resolveSubmittedDate } from "../../../shared/utils/bill-dates";
 import { BillStatusBadge } from "./bill-status-badge";
 
 interface CompactBillCardProps {
@@ -16,6 +17,7 @@ interface CompactBillCardProps {
 export function CompactBillCard({ bill, className }: CompactBillCardProps) {
   const displayTitle = bill.bill_content?.title || bill.name;
   const statusLabel = "提出";
+  const submittedDate = resolveSubmittedDate(bill);
 
   return (
     <Card
@@ -33,9 +35,9 @@ export function CompactBillCard({ bill, className }: CompactBillCardProps) {
               billType={bill.bill_type}
               className="w-fit"
             />
-            {bill.published_at && (
+            {submittedDate && (
               <span className="text-xs text-muted-foreground">
-                {formatDateJST(bill.published_at)} {statusLabel}
+                {formatDateJST(submittedDate)} {statusLabel}
               </span>
             )}
           </div>

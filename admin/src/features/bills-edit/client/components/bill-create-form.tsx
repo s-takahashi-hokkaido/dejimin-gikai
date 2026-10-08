@@ -39,6 +39,8 @@ export function BillCreateForm({
       status: "preparing",
       status_note: null,
       published_at: new Date().toISOString().slice(0, 16),
+      submitted_date: "",
+      decided_date: "",
       thumbnail_url: null,
       share_thumbnail_url: null,
       is_featured: false,

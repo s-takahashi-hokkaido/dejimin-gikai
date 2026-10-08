@@ -17,6 +17,8 @@ const baseBill: Bill = {
   is_featured: true,
   publish_status: "published",
   published_at: null,
+  submitted_date: null,
+  decided_date: null,
   share_thumbnail_url: null,
   status: "preparing",
   status_note: null,

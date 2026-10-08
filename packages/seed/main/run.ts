@@ -97,6 +97,8 @@ async function seedDatabase() {
             status: bill.status,
             status_note: bill.statusNote,
             published_at: bill.publishedAt,
+            submitted_date: bill.submittedDate ?? null,
+            decided_date: bill.decidedDate ?? null,
             publish_status: "published" as const,
             is_featured: bill.isFeatured,
           }))

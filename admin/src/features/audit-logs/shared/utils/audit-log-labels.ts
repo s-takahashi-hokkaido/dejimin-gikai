@@ -20,6 +20,8 @@ const FIELD_LABELS: Record<string, string> = {
   status: "ステータス",
   status_note: "ステータス備考",
   published_at: "公開日時",
+  submitted_date: "提出年月日",
+  decided_date: "議決年月日",
   thumbnail_url: "サムネイル画像URL",
   publish_status: "公開状態",
   is_featured: "注目",

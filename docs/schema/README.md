@@ -7,7 +7,7 @@
 | [auth.users](auth.users.md) | 35 | Auth: Stores user login data within a secure schema. | BASE TABLE |
 | [public.bill_contents](public.bill_contents.md) | 8 | 議案の難易度別コンテンツを管理するテーブル | BASE TABLE |
 | [public.bill_discussions](public.bill_discussions.md) | 14 | 議案討論記録 | BASE TABLE |
-| [public.bills](public.bills.md) | 18 | 議案の基本情報を格納するテーブル。コンテンツはbill_contentsテーブルで管理。 | BASE TABLE |
+| [public.bills](public.bills.md) | 20 | 議案の基本情報を格納するテーブル。コンテンツはbill_contentsテーブルで管理。 | BASE TABLE |
 | [public.bills_tags](public.bills_tags.md) | 3 | Junction table for bills and tags relationship | BASE TABLE |
 | [public.budget_initiatives](public.budget_initiatives.md) | 9 | 予算施策(テーマごとの個別施策) | BASE TABLE |
 | [public.budget_overviews](public.budget_overviews.md) | 12 | 予算概要(部局ごと×定例会ごと) | BASE TABLE |
@@ -206,6 +206,8 @@ erDiagram
   text source_url
   text bill_type
   text__ discussion_overview_points
+  date submitted_date
+  date decided_date
 }
 "public.bills_tags" {
   uuid bill_id FK

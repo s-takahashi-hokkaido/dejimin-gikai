@@ -208,6 +208,40 @@ export function BillFormFields({
         )}
       />
 
+      <FormField
+        control={control}
+        name="submitted_date"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>提出年月日</FormLabel>
+            <FormControl>
+              <Input type="date" {...field} value={field.value ?? ""} />
+            </FormControl>
+            <FormDescription>
+              本会議に議案が提出された日。札幌市議会の「議案等一覧」の提出日を入力してください（空欄なら公開日時を提出日として表示します）
+            </FormDescription>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+
+      <FormField
+        control={control}
+        name="decided_date"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>議決年月日</FormLabel>
+            <FormControl>
+              <Input type="date" {...field} value={field.value ?? ""} />
+            </FormControl>
+            <FormDescription>
+              本会議で議決された日。「議案等一覧」または審議結果PDFの議決日を入力してください（未議決なら空欄）
+            </FormDescription>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+
       {canEditAdminOnlyFields && (
         <>
           <FormField
@@ -220,7 +254,7 @@ export function BillFormFields({
                   <Input type="datetime-local" {...field} />
                 </FormControl>
                 <FormDescription>
-                  議案が公開される日時を設定してください
+                  このサイトに議案を公開する日時です（議会への提出年月日とは別のものです）
                 </FormDescription>
                 <FormMessage />
               </FormItem>

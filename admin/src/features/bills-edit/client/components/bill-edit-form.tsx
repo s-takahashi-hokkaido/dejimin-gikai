@@ -53,6 +53,8 @@ export function BillEditForm({
       published_at: bill.published_at
         ? new Date(bill.published_at).toISOString().slice(0, 16)
         : "",
+      submitted_date: bill.submitted_date ?? "",
+      decided_date: bill.decided_date ?? "",
       thumbnail_url: bill.thumbnail_url,
       share_thumbnail_url: bill.share_thumbnail_url,
       is_featured: bill.is_featured,

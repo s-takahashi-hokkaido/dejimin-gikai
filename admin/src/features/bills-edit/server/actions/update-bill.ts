@@ -8,6 +8,7 @@ import {
 } from "@/lib/utils/cache-invalidation";
 import { getErrorMessage } from "@/lib/utils/get-error-message";
 import { type BillUpdateInput, billUpdateSchema } from "../../shared/types";
+import { normalizeDateInput } from "../../shared/utils/normalize-date-input";
 import { omitAdminOnlyBillFields } from "../../shared/utils/omit-admin-only-bill-fields";
 import {
   replaceBillCommittees,
@@ -30,6 +31,8 @@ export async function updateBill(id: string, input: BillUpdateInput) {
         published_at: billData.published_at
           ? new Date(billData.published_at).toISOString()
           : null,
+        submitted_date: normalizeDateInput(billData.submitted_date),
+        decided_date: normalizeDateInput(billData.decided_date),
         updated_at: new Date().toISOString(),
       }),
       admin
