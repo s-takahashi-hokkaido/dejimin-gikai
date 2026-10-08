@@ -1,15 +1,17 @@
 /**
  * ページレイアウトに関するユーティリティ
  *
- * TOPページと議案詳細ページは「メインページ」として扱い、
+ * TOP・議案一覧・議案詳細などは「メインページ」として扱い、
  * - DifficultySelectorを表示
  * - チャットサイドバー用のオフセットレイアウトを使用
  */
 
-/** メインページ（TOP、議案詳細、予算概要）かどうかを判定 */
+/** メインページ（TOP、議案一覧、議案詳細、予算概要）かどうかを判定 */
 export function isMainPage(pathname: string): boolean {
   // トップページ
   if (pathname === "/") return true;
+  // 議案一覧ページ
+  if (pathname === "/bills") return true;
   // 議案詳細ページ（/bills/[id]）- サブパスは除外
   if (/\/bills\/[^/]+$/.test(pathname)) return true;
   // 予算概要ページ（/budget/...）

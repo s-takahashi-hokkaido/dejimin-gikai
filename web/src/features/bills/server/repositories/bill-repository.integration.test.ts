@@ -1,5 +1,6 @@
 import { describe, it, expect, afterEach } from "vitest";
 import {
+  adminClient,
   createTestBill,
   cleanupTestBill,
   createTestBillContent,
@@ -11,6 +12,9 @@ import {
   cleanupTestDietSession,
 } from "@test-utils/utils";
 import {
+  findBillIdsWithPublicInterview,
+  findBillsWithPublicInterview,
+  findPublishedBillsForSuggest,
   findPublishedBillsWithContents,
   findPublishedBillById,
   findBillById,
@@ -96,6 +100,93 @@ describe("bill-repository 統合テスト", () => {
 
       const found = result.find((b) => b.id === bill.id);
       expect(found).toBeUndefined();
+    });
+
+    // 全議案の id を .in() に並べて別に引くと、議案が増えたときに URL が上限を超える。
+    it("タグを埋め込みで同時に取得できる", async () => {
+      const bill = await createTestBill({
+        publish_status: "published",
+        published_at: new Date().toISOString(),
+      });
+      billIds.push(bill.id);
+      await createTestBillContent(bill.id, { difficulty_level: "normal" });
+      const tag = await createTestTag({ label: `embedded-tag-${Date.now()}` });
+      tagIds.push(tag.id);
+      await createTestBillTag(bill.id, tag.id);
+
+      const result = await findPublishedBillsWithContents("normal");
+
+      const found = result.find((b) => b.id === bill.id);
+      expect(found?.bills_tags.map((link) => link.tags?.label)).toEqual([
+        tag.label,
+      ]);
+    });
+
+    it("タグが無い議案は空配列になる", async () => {
+      const bill = await createTestBill({
+        publish_status: "published",
+        published_at: new Date().toISOString(),
+      });
+      billIds.push(bill.id);
+      await createTestBillContent(bill.id, { difficulty_level: "normal" });
+
+      const result = await findPublishedBillsWithContents("normal");
+
+      const found = result.find((b) => b.id === bill.id);
+      expect(found?.bills_tags).toEqual([]);
+    });
+  });
+
+  // ============================================================
+  // findPublishedBillsForSuggest
+  // ============================================================
+
+  describe("findPublishedBillsForSuggest", () => {
+    it("公開済み議案の名称・番号・タイトル・タグ名を取得できる", async () => {
+      const bill = await createTestBill({
+        publish_status: "published",
+        bill_number: "議案第99号",
+      });
+      billIds.push(bill.id);
+      await createTestBillContent(bill.id, {
+        difficulty_level: "normal",
+        title: "やさしいタイトル",
+      });
+      const tag = await createTestTag({ label: `suggest-tag-${Date.now()}` });
+      tagIds.push(tag.id);
+      await createTestBillTag(bill.id, tag.id);
+
+      const result = await findPublishedBillsForSuggest("normal");
+
+      const found = result.find((row) => row.id === bill.id);
+      expect(found).toBeDefined();
+      expect(found?.name).toBe(bill.name);
+      expect(found?.bill_number).toBe("議案第99号");
+      expect(found?.bill_contents[0]?.title).toBe("やさしいタイトル");
+      expect(found?.bills_tags.map((link) => link.tags?.label)).toContain(
+        tag.label
+      );
+    });
+
+    it("下書きの議案は含まれない", async () => {
+      const bill = await createTestBill({ publish_status: "draft" });
+      billIds.push(bill.id);
+      await createTestBillContent(bill.id, { difficulty_level: "normal" });
+
+      const result = await findPublishedBillsForSuggest("normal");
+
+      expect(result.find((row) => row.id === bill.id)).toBeUndefined();
+    });
+
+    // 候補は上位数件で打ち切るため、難易度違いが混ざると候補の中身が変わる。
+    it("指定した難易度のコンテンツが無い議案は含まれない", async () => {
+      const bill = await createTestBill({ publish_status: "published" });
+      billIds.push(bill.id);
+      await createTestBillContent(bill.id, { difficulty_level: "hard" });
+
+      const result = await findPublishedBillsForSuggest("normal");
+
+      expect(result.find((row) => row.id === bill.id)).toBeUndefined();
     });
   });
 
@@ -429,7 +520,8 @@ describe("bill-repository 統合テスト", () => {
 
       const result = await findFeaturedTags();
 
-      const found = result.find((t) => t.id === tag.id);
+      expect(result).not.toBeNull();
+      const found = result?.find((t) => t.id === tag.id);
       expect(found).toBeDefined();
       expect(found?.featured_priority).toBe(1);
     });
@@ -442,8 +534,31 @@ describe("bill-repository 統合テスト", () => {
 
       const result = await findFeaturedTags();
 
-      const found = result.find((t) => t.id === tag.id);
+      expect(result).not.toBeNull();
+      const found = result?.find((t) => t.id === tag.id);
       expect(found).toBeUndefined();
+    });
+
+    // 同一優先度で順序が不定だと、カテゴリタブの並びがデプロイごとに変わる。
+    it("同じ優先度のタグはlabel昇順で返る", async () => {
+      const suffix = Date.now();
+      const second = await createTestTag({
+        label: `zz-same-priority-${suffix}`,
+        featured_priority: 9,
+      });
+      tagIds.push(second.id);
+      const first = await createTestTag({
+        label: `aa-same-priority-${suffix}`,
+        featured_priority: 9,
+      });
+      tagIds.push(first.id);
+
+      const result = await findFeaturedTags();
+
+      expect(result).not.toBeNull();
+      const ids = (result ?? []).map((t) => t.id);
+
+      expect(ids.indexOf(first.id)).toBeLessThan(ids.indexOf(second.id));
     });
   });
 
@@ -575,6 +690,210 @@ describe("bill-repository 統合テスト", () => {
 
       const found = result.find((b) => b.id === bill.id);
       expect(found).toBeDefined();
+    });
+  });
+
+  // ============================================================
+  // AI Interview
+  // ============================================================
+
+  async function createInterviewConfig(
+    billId: string,
+    status: "public" | "closed"
+  ) {
+    const { error } = await adminClient.from("interview_configs").insert({
+      bill_id: billId,
+      status,
+      name: `テスト設定 ${Date.now()}-${Math.random()}`,
+    });
+    if (error) {
+      throw new Error(`interview_config 作成失敗: ${error.message}`);
+    }
+  }
+
+  /** 受付中の公開済み議案を1件用意する。 */
+  async function createInterviewOpenBill(
+    billOverrides: Parameters<typeof createTestBill>[0] = {},
+    contentOverrides: Parameters<typeof createTestBillContent>[1] = {}
+  ) {
+    const bill = await createTestBill({
+      publish_status: "published",
+      ...billOverrides,
+    });
+    billIds.push(bill.id);
+    await createTestBillContent(bill.id, {
+      difficulty_level: "normal",
+      ...contentOverrides,
+    });
+    await createInterviewConfig(bill.id, "public");
+    return bill;
+  }
+
+  describe("findBillsWithPublicInterview", () => {
+    it("status=publicの設定を持つ公開済み議案を取得できる", async () => {
+      const bill = await createInterviewOpenBill({}, { title: "受付中の議案" });
+
+      const result = await findBillsWithPublicInterview("normal");
+
+      const found = result.find((b) => b.id === bill.id);
+      expect(found).toBeDefined();
+      expect(found?.bill_contents[0].title).toBe("受付中の議案");
+    });
+
+    it("status=closedの設定しか無い議案は含まれない", async () => {
+      const bill = await createTestBill({ publish_status: "published" });
+      billIds.push(bill.id);
+      await createTestBillContent(bill.id, { difficulty_level: "normal" });
+      await createInterviewConfig(bill.id, "closed");
+
+      const result = await findBillsWithPublicInterview("normal");
+
+      expect(result.find((b) => b.id === bill.id)).toBeUndefined();
+    });
+
+    it("設定が無い議案は含まれない", async () => {
+      const bill = await createTestBill({ publish_status: "published" });
+      billIds.push(bill.id);
+      await createTestBillContent(bill.id, { difficulty_level: "normal" });
+
+      const result = await findBillsWithPublicInterview("normal");
+
+      expect(result.find((b) => b.id === bill.id)).toBeUndefined();
+    });
+
+    it("未公開の議案は受付中でも含まれない", async () => {
+      const bill = await createInterviewOpenBill({ publish_status: "draft" });
+
+      const result = await findBillsWithPublicInterview("normal");
+
+      expect(result.find((b) => b.id === bill.id)).toBeUndefined();
+    });
+
+    // public は1議案1件までなので、inner join でも行が増えない。
+    it("closedの設定が併存しても議案の行が重複しない", async () => {
+      const bill = await createInterviewOpenBill();
+      await createInterviewConfig(bill.id, "closed");
+      await createInterviewConfig(bill.id, "closed");
+
+      const result = await findBillsWithPublicInterview("normal");
+
+      expect(result.filter((b) => b.id === bill.id)).toHaveLength(1);
+      const found = result.find((b) => b.id === bill.id);
+      expect(found?.interview_configs).toHaveLength(1);
+    });
+
+    it("指定した難易度のbill_contentsだけが付く", async () => {
+      const bill = await createInterviewOpenBill({}, { title: "やさしい版" });
+      await createTestBillContent(bill.id, {
+        difficulty_level: "hard",
+        title: "むずかしい版",
+      });
+
+      const result = await findBillsWithPublicInterview("hard");
+
+      const found = result.find((b) => b.id === bill.id);
+      expect(found?.bill_contents).toHaveLength(1);
+      expect(found?.bill_contents[0].title).toBe("むずかしい版");
+    });
+
+    it("該当難易度のbill_contentsが無ければ含まれない", async () => {
+      const bill = await createInterviewOpenBill();
+
+      const result = await findBillsWithPublicInterview("hard");
+
+      expect(result.find((b) => b.id === bill.id)).toBeUndefined();
+    });
+
+    // 定例会で絞らないのが仕様。閉会中でも受付中なら案内する。
+    it("非アクティブな定例会の議案も含まれる", async () => {
+      const session = await createTestDietSession({ is_active: false });
+      councilSessionIds.push(session.id);
+      const bill = await createInterviewOpenBill({
+        council_session_id: session.id,
+      });
+
+      const result = await findBillsWithPublicInterview("normal");
+
+      expect(result.find((b) => b.id === bill.id)).toBeDefined();
+    });
+
+    // カードはタイトルと要約しか使わないので、数KBの本文はキャッシュに載せない。
+    it("解説本文（content）は取得しない", async () => {
+      const bill = await createInterviewOpenBill();
+
+      const result = await findBillsWithPublicInterview("normal");
+
+      const content = result.find((b) => b.id === bill.id)?.bill_contents[0];
+      expect(content).not.toHaveProperty("content");
+      expect(content?.title).toBeTruthy();
+      expect(content?.summary).toBeTruthy();
+    });
+
+    it("タグを同時に取得できる", async () => {
+      const tag = await createTestTag();
+      tagIds.push(tag.id);
+      const bill = await createInterviewOpenBill();
+      await createTestBillTag(bill.id, tag.id);
+
+      const result = await findBillsWithPublicInterview("normal");
+
+      const found = result.find((b) => b.id === bill.id);
+      expect(found?.bills_tags.map((link) => link.tags?.label)).toEqual([
+        tag.label,
+      ]);
+    });
+
+    it("提出日の降順で返り、nullは末尾に並ぶ", async () => {
+      const older = await createInterviewOpenBill({
+        published_at: "2025-01-10T00:00:00Z",
+      });
+      const newer = await createInterviewOpenBill({
+        published_at: "2025-03-20T00:00:00Z",
+      });
+      const undated = await createInterviewOpenBill();
+
+      const result = await findBillsWithPublicInterview("normal");
+
+      const ordered = result
+        .map((b) => b.id)
+        .filter((id) => [older.id, newer.id, undated.id].includes(id));
+      expect(ordered).toEqual([newer.id, older.id, undated.id]);
+    });
+
+    it("提出日が同じなら議案番号の順に並ぶ", async () => {
+      const publishedAt = "2025-02-11T00:00:00Z";
+      const second = await createInterviewOpenBill({
+        published_at: publishedAt,
+        bill_number: "議案第2号",
+      });
+      const first = await createInterviewOpenBill({
+        published_at: publishedAt,
+        bill_number: "議案第1号",
+      });
+
+      const result = await findBillsWithPublicInterview("normal");
+
+      const ordered = result
+        .map((b) => b.id)
+        .filter((id) => [first.id, second.id].includes(id));
+      expect(ordered).toEqual([first.id, second.id]);
+    });
+  });
+
+  describe("findBillIdsWithPublicInterview", () => {
+    it("status=publicの設定を持つ議案のidを返す", async () => {
+      const open = await createInterviewOpenBill();
+      const closed = await createTestBill({ publish_status: "published" });
+      billIds.push(closed.id);
+      await createInterviewConfig(closed.id, "closed");
+      const none = await createTestBill({ publish_status: "published" });
+      billIds.push(none.id);
+
+      const result = await findBillIdsWithPublicInterview();
+
+      expect(result.has(open.id)).toBe(true);
+      expect(result.has(closed.id)).toBe(false);
+      expect(result.has(none.id)).toBe(false);
     });
   });
 

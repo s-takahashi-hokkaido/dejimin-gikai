@@ -12,6 +12,7 @@ import { RubyToggle } from "@/lib/rubyful";
 
 const NAV_LINKS = [
   { href: "/", label: "トップページ" },
+  { href: "/bills", label: "議案を検索する" },
   { href: "/sessions", label: "過去の定例会" },
   { href: "/budget", label: "過去の予算" },
   { href: "/press-conferences", label: "市長記者会見" },

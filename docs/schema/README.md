@@ -56,6 +56,7 @@
 | public.replace_bill_committees | void | p_bill_id uuid, p_committee_ids uuid[] | FUNCTION |
 | public.create_prompt_version | prompt_versions | p_prompt_id uuid, p_content text, p_note text DEFAULT NULL::text, p_created_by uuid DEFAULT NULL::uuid, p_base_version_id uuid DEFAULT NULL::uuid | FUNCTION |
 | public.delete_expired_chat_logs | int4 | p_retention_days integer DEFAULT 90 | FUNCTION |
+| public.count_public_reports_by_bill_ids | record | p_bill_ids uuid[] | FUNCTION |
 
 ## Enums
 
