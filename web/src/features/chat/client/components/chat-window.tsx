@@ -19,7 +19,6 @@ import {
   PromptInputTextarea,
 } from "@/components/ai-elements/prompt-input";
 import { Button } from "@/components/ui/button";
-import { siteConfig } from "@/config/site.config";
 import type { BillWithContent } from "@/features/bills/shared/types";
 import type { BudgetChatContext } from "@/features/chat/server/services/handle-chat-request";
 import { toUserFacingErrorMessage } from "@/features/chat/shared/utils/user-facing-error-message";
