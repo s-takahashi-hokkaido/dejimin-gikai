@@ -2968,6 +2968,12 @@
           "type": "timestamp with time zone",
           "nullable": true,
           "default": "now()"
+        },
+        {
+          "name": "material_url",
+          "type": "text",
+          "nullable": true,
+          "comment": "配付資料（PDF 等）の URL。主に announcement で使う。無い場合は null"
         }
       ],
       "indexes": [

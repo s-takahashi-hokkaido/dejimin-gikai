@@ -1,6 +1,6 @@
 "use client";
 
-import { ExternalLink, Mic, PlayCircle } from "lucide-react";
+import { ExternalLink, FileText, Mic, PlayCircle } from "lucide-react";
 import { formatDateWithWeekday } from "@/lib/utils/date";
 import type { PressConference } from "../../shared/types";
 import { QaItem } from "./qa-item";
@@ -76,6 +76,22 @@ export function PressConferenceDetail({ pressConference }: Props) {
                   <p className="text-sm text-mirai-text-secondary leading-relaxed pl-9">
                     {item.summary}
                   </p>
+                )}
+                {item.materialUrl && (
+                  <a
+                    href={item.materialUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 text-xs font-medium text-primary-accent hover:underline pl-9 w-fit"
+                  >
+                    <FileText className="w-3.5 h-3.5" aria-hidden="true" />
+                    配付資料（PDF）
+                    <ExternalLink
+                      className="w-3 h-3 opacity-70"
+                      aria-hidden="true"
+                    />
+                    <span className="sr-only">（新しいタブで開きます）</span>
+                  </a>
                 )}
               </div>
             ))}

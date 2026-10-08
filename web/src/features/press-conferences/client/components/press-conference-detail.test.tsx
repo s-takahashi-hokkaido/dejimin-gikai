@@ -13,6 +13,7 @@ function makeItem(
     orderIndex: 0,
     title: "発表項目",
     summary: null,
+    materialUrl: null,
     turns: [],
     ...overrides,
   };
@@ -81,5 +82,27 @@ describe("PressConferenceDetail", () => {
     expect(
       screen.queryByRole("heading", { name: "記者との質疑応答" })
     ).not.toBeInTheDocument();
+  });
+
+  it("配付資料がある発表項目に PDF へのリンクを出す", () => {
+    render(
+      <PressConferenceDetail
+        pressConference={makePressConference([
+          makeItem({
+            id: "a1",
+            title: "冬のイベント",
+            materialUrl: "https://www.city.sapporo.jp/example.pdf",
+          }),
+          makeItem({ id: "a2", title: "資料なしの発表" }),
+        ])}
+      />
+    );
+    const links = screen.getAllByRole("link", { name: /配付資料（PDF）/ });
+    expect(links).toHaveLength(1);
+    expect(links[0]).toHaveAttribute(
+      "href",
+      "https://www.city.sapporo.jp/example.pdf"
+    );
+    expect(links[0]).toHaveAttribute("target", "_blank");
   });
 });

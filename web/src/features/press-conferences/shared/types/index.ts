@@ -21,6 +21,8 @@ export type PressConferenceItem = {
   orderIndex: number;
   title: string;
   summary: string | null;
+  /** 配付資料（PDF 等）の URL。主に announcement で使う */
+  materialUrl: string | null;
   turns: PressConferenceTurn[];
 };
 

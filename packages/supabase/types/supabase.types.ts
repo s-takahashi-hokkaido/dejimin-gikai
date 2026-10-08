@@ -1096,6 +1096,7 @@ export type Database = {
           created_at: string | null
           id: string
           item_type: string
+          material_url: string | null
           order_index: number
           press_conference_id: string
           summary: string | null
@@ -1105,6 +1106,7 @@ export type Database = {
           created_at?: string | null
           id?: string
           item_type: string
+          material_url?: string | null
           order_index: number
           press_conference_id: string
           summary?: string | null
@@ -1114,6 +1116,7 @@ export type Database = {
           created_at?: string | null
           id?: string
           item_type?: string
+          material_url?: string | null
           order_index?: number
           press_conference_id?: string
           summary?: string | null

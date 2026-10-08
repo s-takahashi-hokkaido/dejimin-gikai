@@ -25,7 +25,7 @@
 | [public.interview_questions](public.interview_questions.md) | 8 | 事前定義されたインタビュー質問を管理するテーブル | BASE TABLE |
 | [public.interview_report](public.interview_report.md) | 14 | インタビュー結果のレポートを保存するテーブル（AIが自動生成） | BASE TABLE |
 | [public.interview_sessions](public.interview_sessions.md) | 9 | インタビューセッションを管理するテーブル | BASE TABLE |
-| [public.press_conference_items](public.press_conference_items.md) | 7 | 記者会見項目 | BASE TABLE |
+| [public.press_conference_items](public.press_conference_items.md) | 8 | 記者会見項目 | BASE TABLE |
 | [public.press_conference_turns](public.press_conference_turns.md) | 7 | 記者会見の発言ターン | BASE TABLE |
 | [public.press_conferences](public.press_conferences.md) | 8 | 記者会見 | BASE TABLE |
 | [public.preview_tokens](public.preview_tokens.md) | 6 | Preview tokens for bill access management | BASE TABLE |
@@ -401,6 +401,7 @@ erDiagram
   text title
   text summary
   timestamp_with_time_zone created_at
+  text material_url
 }
 "public.press_conference_turns" {
   uuid id
