@@ -9,10 +9,19 @@ describe("useTextSizeToggle", () => {
     document.documentElement.classList.remove("large-text");
   });
 
-  it("保存済みの設定を読み込む", () => {
-    localStorage.setItem("text-size-large", "true");
+  it("描画前のスクリプトが付けた <html> の class を読む", () => {
+    document.documentElement.classList.add("large-text");
     const { result } = renderHook(() => useTextSizeToggle());
     expect(result.current.isLarge).toBe(true);
+  });
+
+  it("別のスイッチで切り替えても同じ値になる", () => {
+    const first = renderHook(() => useTextSizeToggle());
+    const second = renderHook(() => useTextSizeToggle());
+
+    act(() => first.result.current.handleToggle(true));
+
+    expect(second.result.current.isLarge).toBe(true);
   });
 
   it("オンにすると <html> にクラスを付けて保存する", () => {
