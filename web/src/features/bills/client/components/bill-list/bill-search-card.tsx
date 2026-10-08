@@ -6,6 +6,7 @@ import { siteConfig } from "@/config/site.config";
 import { formatDateJST } from "@/lib/utils/date";
 import type { BillWithContent } from "../../../shared/types";
 import { resolveSubmittedDate } from "../../../shared/utils/bill-dates";
+import { ReviewCompleteBadge } from "../bill-detail/review-status";
 import { BillPill } from "./bill-pill";
 import { BillStatusBadge } from "./bill-status-badge";
 import { BillTag } from "./bill-tag";
@@ -47,7 +48,15 @@ export function BillSearchCard({ bill }: { bill: BillWithContent }) {
             )}
 
             {/* タイトルは省略しない。何の議案かが読めないと選べない。 */}
-            <h3 className="text-base font-bold leading-relaxed">{title}</h3>
+            <h3 className="text-base font-bold leading-relaxed">
+              {title}
+              {bill.is_review_completed && (
+                <>
+                  {" "}
+                  <ReviewCompleteBadge />
+                </>
+              )}
+            </h3>
 
             <div className="flex flex-wrap items-center gap-3">
               <BillStatusBadge

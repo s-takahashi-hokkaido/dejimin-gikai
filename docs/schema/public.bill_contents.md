@@ -79,6 +79,7 @@ erDiagram
   text__ discussion_overview_points
   date submitted_date
   date decided_date
+  boolean is_review_completed
 }
 ```
 

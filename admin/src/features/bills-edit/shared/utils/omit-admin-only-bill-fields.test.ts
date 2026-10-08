@@ -11,6 +11,7 @@ const input = {
   is_featured: true,
   thumbnail_url: "https://example.com/a.png",
   share_thumbnail_url: "https://example.com/b.png",
+  is_review_completed: true,
 };
 
 describe("canEditAdminOnlyBillFields", () => {

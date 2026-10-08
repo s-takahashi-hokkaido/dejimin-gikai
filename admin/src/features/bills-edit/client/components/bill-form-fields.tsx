@@ -385,26 +385,49 @@ export function BillFormFields({
       />
 
       {canEditAdminOnlyFields && (
-        <FormField
-          control={control}
-          name="is_featured"
-          render={({ field }) => (
-            <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
-              <FormControl>
-                <Checkbox
-                  checked={field.value}
-                  onCheckedChange={field.onChange}
-                />
-              </FormControl>
-              <div className="space-y-1 leading-none">
-                <FormLabel>注目の議案</FormLabel>
-                <FormDescription>
-                  トップページなどで優先的に表示されます
-                </FormDescription>
-              </div>
-            </FormItem>
-          )}
-        />
+        <>
+          <FormField
+            control={control}
+            name="is_featured"
+            render={({ field }) => (
+              <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                <FormControl>
+                  <Checkbox
+                    checked={field.value}
+                    onCheckedChange={field.onChange}
+                  />
+                </FormControl>
+                <div className="space-y-1 leading-none">
+                  <FormLabel>注目の議案</FormLabel>
+                  <FormDescription>
+                    トップページなどで優先的に表示されます
+                  </FormDescription>
+                </div>
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={control}
+            name="is_review_completed"
+            render={({ field }) => (
+              <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                <FormControl>
+                  <Checkbox
+                    checked={field.value}
+                    onCheckedChange={field.onChange}
+                  />
+                </FormControl>
+                <div className="space-y-1 leading-none">
+                  <FormLabel>解説の確認済み</FormLabel>
+                  <FormDescription>
+                    解説（やさしい・詳しい）を議案の原文と照らし合わせて確認し終えたらチェックします。チェックすると公開サイトのタイトル横に確認済みの印が出て、チェックしないと「内容を確認しているところです」のお知らせが出ます
+                  </FormDescription>
+                </div>
+              </FormItem>
+            )}
+          />
+        </>
       )}
     </>
   );

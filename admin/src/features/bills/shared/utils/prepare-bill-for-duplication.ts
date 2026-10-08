@@ -22,6 +22,8 @@ export function prepareBillForDuplication(originalBill: Bill): BillInsert {
     bill_number: "",
     name: `${originalBill.name} (複製)`,
     publish_status: "draft",
+    // 複製した議案の解説は確認前なので、確認済みを引き継がない
+    is_review_completed: false,
   };
 }
 

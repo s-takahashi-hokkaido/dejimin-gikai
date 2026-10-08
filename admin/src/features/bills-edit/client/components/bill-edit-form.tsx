@@ -58,6 +58,7 @@ export function BillEditForm({
       thumbnail_url: bill.thumbnail_url,
       share_thumbnail_url: bill.share_thumbnail_url,
       is_featured: bill.is_featured,
+      is_review_completed: bill.is_review_completed,
       committee_ids: committeeIds,
       council_session_id: defaultCouncilSessionId,
     },

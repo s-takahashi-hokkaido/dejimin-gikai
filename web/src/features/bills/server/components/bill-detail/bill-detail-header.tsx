@@ -5,6 +5,10 @@ import { Button } from "@/components/ui/button";
 import { getInterviewLPLink } from "@/features/interview-config/shared/utils/interview-links";
 import { formatDateJST } from "@/lib/utils/date";
 import { BillDetailShareButton } from "../../../client/components/bill-detail/bill-detail-share-button";
+import {
+  ReviewCompleteBadge,
+  ReviewInProgressBanner,
+} from "../../../client/components/bill-detail/review-status";
 import { BillStatusBadge } from "../../../client/components/bill-list/bill-status-badge";
 import { BillTag } from "../../../client/components/bill-list/bill-tag";
 import { getBillShareData } from "../../../client/utils/share";
@@ -54,7 +58,15 @@ export async function BillDetailHeader({
           </p>
         )}
         {displayTitle && (
-          <h1 className="text-2xl font-bold mb-3">{displayTitle}</h1>
+          <h1 className="text-2xl font-bold mb-3">
+            {displayTitle}
+            {bill.is_review_completed && (
+              <>
+                {" "}
+                <ReviewCompleteBadge showTooltip />
+              </>
+            )}
+          </h1>
         )}
         <div className="flex flex-row gap-4">
           <BillStatusBadge
@@ -106,6 +118,11 @@ export async function BillDetailHeader({
         <p className="text-sm text-muted-foreground font-medium mb-4">
           {bill.name}
         </p>
+        {!bill.is_review_completed && (
+          <div className="mb-4">
+            <ReviewInProgressBanner />
+          </div>
+        )}
         <div className="flex items-center gap-2">
           {hasInterviewConfig && (
             <Button

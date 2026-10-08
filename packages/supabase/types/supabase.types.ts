@@ -257,6 +257,7 @@ export type Database = {
           discussion_overview_points: string[]
           id: string
           is_featured: boolean
+          is_review_completed: boolean
           name: string
           publish_status: Database["public"]["Enums"]["bill_publish_status"]
           publish_status_order: number | null
@@ -279,6 +280,7 @@ export type Database = {
           discussion_overview_points?: string[]
           id?: string
           is_featured?: boolean
+          is_review_completed?: boolean
           name: string
           publish_status?: Database["public"]["Enums"]["bill_publish_status"]
           publish_status_order?: number | null
@@ -301,6 +303,7 @@ export type Database = {
           discussion_overview_points?: string[]
           id?: string
           is_featured?: boolean
+          is_review_completed?: boolean
           name?: string
           publish_status?: Database["public"]["Enums"]["bill_publish_status"]
           publish_status_order?: number | null

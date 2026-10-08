@@ -25,6 +25,7 @@ const FIELD_LABELS: Record<string, string> = {
   thumbnail_url: "サムネイル画像URL",
   publish_status: "公開状態",
   is_featured: "注目",
+  is_review_completed: "解説の確認済み",
   share_thumbnail_url: "シェア用画像URL",
   council_session_id: "定例会",
   committee_id: "委員会",

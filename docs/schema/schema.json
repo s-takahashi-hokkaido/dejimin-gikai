@@ -744,6 +744,13 @@
           "type": "date",
           "nullable": true,
           "comment": "議決年月日。未議決なら null"
+        },
+        {
+          "name": "is_review_completed",
+          "type": "boolean",
+          "nullable": false,
+          "default": "false",
+          "comment": "解説の内容確認が済んでいるか。false の議案は web に「確認中」のお知らせを出す"
         }
       ],
       "indexes": [

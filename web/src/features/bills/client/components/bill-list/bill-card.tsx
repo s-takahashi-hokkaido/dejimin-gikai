@@ -6,6 +6,7 @@ import { formatDateJST } from "@/lib/utils/date";
 import type { BillWithContent } from "../../../shared/types";
 import { resolveSubmittedDate } from "../../../shared/utils/bill-dates";
 import { BillPill } from "./bill-pill";
+import { ReviewCompleteBadge } from "../bill-detail/review-status";
 import { BillStatusBadge } from "./bill-status-badge";
 import { BillTag } from "./bill-tag";
 
@@ -59,6 +60,12 @@ export function BillCard({ bill }: BillCardProps) {
               )}
               <CardTitle className="text-2xl/8 tracking-normal">
                 {displayTitle}
+                {bill.is_review_completed && (
+                  <>
+                    {" "}
+                    <ReviewCompleteBadge />
+                  </>
+                )}
               </CardTitle>
               <div className="flex flex-row gap-4">
                 <BillStatusBadge

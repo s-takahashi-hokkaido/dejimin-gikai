@@ -39,6 +39,7 @@ const baseBill: BillWithContent = {
   name: "サンプル議案",
   status: "submitted",
   is_featured: false,
+  is_review_completed: true,
   thumbnail_url: null,
   share_thumbnail_url: null,
   source_url: null,

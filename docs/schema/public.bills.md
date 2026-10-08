@@ -28,6 +28,7 @@
 | discussion_overview_points | text[] | '{}'::text[] | false |  |  |  | 議論概要ポイント |
 | submitted_date | date |  | true |  |  |  | 議会への提出年月日（本会議提出日）。未設定なら published_at を提出日として表示する |
 | decided_date | date |  | true |  |  |  | 議決年月日。未議決なら null |
+| is_review_completed | boolean | false | false |  |  |  | 解説の内容確認が済んでいるか。false の議案は web に「確認中」のお知らせを出す |
 
 ## Constraints
 
@@ -95,6 +96,7 @@ erDiagram
   text__ discussion_overview_points
   date submitted_date
   date decided_date
+  boolean is_review_completed
 }
 "public.bill_contents" {
   uuid id
