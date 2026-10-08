@@ -46,59 +46,65 @@ export function PressConferenceDetail({ pressConference }: Props) {
         )}
       </div>
 
-      {/* 市からの発表 */}
-      <section className="flex flex-col gap-4">
-        <div className="flex items-center gap-2">
-          <span className="text-xl">📣</span>
-          <h2 className="text-base font-bold text-mirai-text">市からの発表</h2>
-          <span className="text-xs text-mirai-text-muted bg-mirai-surface-muted rounded-full px-2 py-0.5">
-            {announcements.length}件
-          </span>
-        </div>
-        <div className="flex flex-col gap-3">
-          {announcements.map((item, i) => (
-            <div
-              key={item.id}
-              className="bg-white rounded-2xl border-l-4 border-primary shadow-sm px-5 py-4 flex flex-col gap-2"
-            >
-              <div className="flex items-start gap-3">
-                <span className="flex-shrink-0 mt-0.5 w-6 h-6 rounded-full bg-mirai-gradient-start text-primary-accent text-xs font-bold flex items-center justify-center">
-                  {i + 1}
-                </span>
-                <h3 className="text-sm font-bold text-mirai-text">
-                  {item.title}
-                </h3>
+      {/* 市からの発表（発表案件がない会見では見出しごと出さない） */}
+      {announcements.length > 0 && (
+        <section className="flex flex-col gap-4">
+          <div className="flex items-center gap-2">
+            <span className="text-xl">📣</span>
+            <h2 className="text-base font-bold text-mirai-text">
+              市からの発表
+            </h2>
+            <span className="text-xs text-mirai-text-muted bg-mirai-surface-muted rounded-full px-2 py-0.5">
+              {announcements.length}件
+            </span>
+          </div>
+          <div className="flex flex-col gap-3">
+            {announcements.map((item, i) => (
+              <div
+                key={item.id}
+                className="bg-white rounded-2xl border-l-4 border-primary shadow-sm px-5 py-4 flex flex-col gap-2"
+              >
+                <div className="flex items-start gap-3">
+                  <span className="flex-shrink-0 mt-0.5 w-6 h-6 rounded-full bg-mirai-gradient-start text-primary-accent text-xs font-bold flex items-center justify-center">
+                    {i + 1}
+                  </span>
+                  <h3 className="text-sm font-bold text-mirai-text">
+                    {item.title}
+                  </h3>
+                </div>
+                {item.summary && (
+                  <p className="text-sm text-mirai-text-secondary leading-relaxed pl-9">
+                    {item.summary}
+                  </p>
+                )}
               </div>
-              {item.summary && (
-                <p className="text-sm text-mirai-text-secondary leading-relaxed pl-9">
-                  {item.summary}
-                </p>
-              )}
-            </div>
-          ))}
-        </div>
-      </section>
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* 質疑応答 */}
-      <section className="flex flex-col gap-4">
-        <div className="flex items-center gap-2">
-          <Mic className="w-5 h-5 text-primary-accent" />
-          <h2 className="text-base font-bold text-mirai-text">
-            記者との質疑応答
-          </h2>
-          <span className="text-xs text-mirai-text-muted bg-mirai-surface-muted rounded-full px-2 py-0.5">
-            {qaItems.length}件
-          </span>
-        </div>
-        <p className="text-xs text-mirai-text-muted -mt-2">
-          タップすると詳しいやりとりが読めます
-        </p>
-        <div className="flex flex-col gap-2">
-          {qaItems.map((item, i) => (
-            <QaItem key={item.id} item={item} defaultOpen={i === 0} />
-          ))}
-        </div>
-      </section>
+      {qaItems.length > 0 && (
+        <section className="flex flex-col gap-4">
+          <div className="flex items-center gap-2">
+            <Mic className="w-5 h-5 text-primary-accent" />
+            <h2 className="text-base font-bold text-mirai-text">
+              記者との質疑応答
+            </h2>
+            <span className="text-xs text-mirai-text-muted bg-mirai-surface-muted rounded-full px-2 py-0.5">
+              {qaItems.length}件
+            </span>
+          </div>
+          <p className="text-xs text-mirai-text-muted -mt-2">
+            タップすると詳しいやりとりが読めます
+          </p>
+          <div className="flex flex-col gap-2">
+            {qaItems.map((item, i) => (
+              <QaItem key={item.id} item={item} defaultOpen={i === 0} />
+            ))}
+          </div>
+        </section>
+      )}
     </div>
   );
 }
