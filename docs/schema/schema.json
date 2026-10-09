@@ -4152,12 +4152,22 @@
             "user_id"
           ]
         }
+      ],
+      "triggers": [
+        {
+          "name": "admin_profiles_audit_log",
+          "def": "CREATE TRIGGER admin_profiles_audit_log AFTER INSERT OR DELETE OR UPDATE ON public.admin_profiles FOR EACH ROW EXECUTE FUNCTION record_admin_audit_log()"
+        },
+        {
+          "name": "update_admin_profiles_updated_at",
+          "def": "CREATE TRIGGER update_admin_profiles_updated_at BEFORE UPDATE ON public.admin_profiles FOR EACH ROW EXECUTE FUNCTION update_updated_at_column()"
+        }
       ]
     },
     {
       "name": "public.admin_audit_logs",
       "type": "BASE TABLE",
-      "comment": "管理画面からの変更履歴（議案・議案コンテンツ・会派見解・付託委員会）",
+      "comment": "管理画面からの変更履歴（議案・議案コンテンツ・会派見解・付託委員会・管理画面のアカウント）",
       "columns": [
         {
           "name": "id",
@@ -5338,12 +5348,6 @@
       "type": "FUNCTION"
     },
     {
-      "name": "public.get_admin_users",
-      "return_type": "record",
-      "arguments": "",
-      "type": "FUNCTION"
-    },
-    {
       "name": "public.get_interview_message_counts",
       "return_type": "record",
       "arguments": "session_ids uuid[]",
@@ -5401,6 +5405,18 @@
       "name": "public.count_public_reports_by_bill_ids",
       "return_type": "record",
       "arguments": "p_bill_ids uuid[]",
+      "type": "FUNCTION"
+    },
+    {
+      "name": "public.get_admin_accounts",
+      "return_type": "record",
+      "arguments": "",
+      "type": "FUNCTION"
+    },
+    {
+      "name": "public.hook_before_user_created",
+      "return_type": "jsonb",
+      "arguments": "event jsonb",
       "type": "FUNCTION"
     }
   ],

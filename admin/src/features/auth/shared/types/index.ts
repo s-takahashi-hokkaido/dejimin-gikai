@@ -11,15 +11,3 @@ export const loginSchema = z.object({
 });
 
 export type LoginFormData = z.infer<typeof loginSchema>;
-
-export interface AuthUser {
-  id: string;
-  email: string;
-  app_metadata: {
-    roles?: string[];
-  };
-}
-
-export interface AuthError {
-  message: string;
-}

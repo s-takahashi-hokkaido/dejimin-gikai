@@ -229,7 +229,7 @@ docker compose -f infra/compose.yml exec -T db psql -U postgres -f - < supabase/
 ```
 
 `tests/supabase/` には RLS の全拒否（`rls/default-deny.test.ts`）や、auth スキーマを読む
-`get_admin_users` などのテストがある。**これが通れば DB まわりは本番と同じと言える。**
+`get_admin_accounts` などのテストがある。**これが通れば DB まわりは本番と同じと言える。**
 
 ### 手順4: 本番と同じ形でビルドして起動
 

@@ -35,7 +35,7 @@
 | [public.topic_analysis_topics](public.topic_analysis_topics.md) | 7 | トピック解析で抽出されたトピック | BASE TABLE |
 | [public.topic_analysis_versions](public.topic_analysis_versions.md) | 13 | トピック解析のバージョン管理 | BASE TABLE |
 | [public.admin_profiles](public.admin_profiles.md) | 6 | 管理画面利用者のロールと所属会派 | BASE TABLE |
-| [public.admin_audit_logs](public.admin_audit_logs.md) | 12 | 管理画面からの変更履歴（議案・議案コンテンツ・会派見解・付託委員会） | BASE TABLE |
+| [public.admin_audit_logs](public.admin_audit_logs.md) | 12 | 管理画面からの変更履歴（議案・議案コンテンツ・会派見解・付託委員会・管理画面のアカウント） | BASE TABLE |
 | [public.bill_committees](public.bill_committees.md) | 3 | 議案の付託委員会（1議案に複数の委員会を付託できる） | BASE TABLE |
 | [public.prompts](public.prompts.md) | 6 | AIチャットのシステムプロンプト | BASE TABLE |
 | [public.prompt_versions](public.prompt_versions.md) | 7 | プロンプトの版（追記のみ） | BASE TABLE |
@@ -47,7 +47,6 @@
 | Name | ReturnType | Arguments | Type |
 | ---- | ------- | ------- | ---- |
 | public.count_reactions_by_report_ids | record | report_ids uuid[] | FUNCTION |
-| public.get_admin_users | record |  | FUNCTION |
 | public.get_interview_message_counts | record | session_ids uuid[] | FUNCTION |
 | public.is_admin | bool |  | FUNCTION |
 | public.set_active_council_session | void | target_session_id uuid | FUNCTION |
@@ -58,6 +57,8 @@
 | public.create_prompt_version | prompt_versions | p_prompt_id uuid, p_content text, p_note text DEFAULT NULL::text, p_created_by uuid DEFAULT NULL::uuid, p_base_version_id uuid DEFAULT NULL::uuid | FUNCTION |
 | public.delete_expired_chat_logs | int4 | p_retention_days integer DEFAULT 90 | FUNCTION |
 | public.count_public_reports_by_bill_ids | record | p_bill_ids uuid[] | FUNCTION |
+| public.get_admin_accounts | record |  | FUNCTION |
+| public.hook_before_user_created | jsonb | event jsonb | FUNCTION |
 
 ## Enums
 

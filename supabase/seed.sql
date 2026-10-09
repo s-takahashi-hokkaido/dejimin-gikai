@@ -64,12 +64,7 @@ SELECT
 FROM auth.users
 WHERE email = 'admin@example.com';
 
--- Grant admin role to the user
-UPDATE auth.users
-SET raw_app_meta_data = raw_app_meta_data || '{"roles": ["admin"]}'::jsonb
-WHERE email = 'admin@example.com';
-
--- 管理画面のプロフィールを作成
+-- 管理画面のプロフィールを作成（ロールの正は admin_profiles。app_metadata.roles はもう参照しない）
 -- マイグレーションのデータ移行はこのseedより先に走るため、ここで改めて登録する
 INSERT INTO public.admin_profiles (user_id, role, display_name)
 SELECT id, 'admin', email

@@ -6,7 +6,7 @@ import { buildAuditLogsHref } from "../../shared/utils/audit-log-filters";
 import {
   describeAuditAction,
   formatAuditActor,
-  formatAuditValue,
+  formatAuditFieldValue,
   formatDifficultyLevel,
   getAuditFieldLabel,
 } from "../../shared/utils/audit-log-labels";
@@ -58,6 +58,9 @@ export function AuditLogEntry({ log }: { log: AuditLogListItem }) {
         {log.committeeName && (
           <span className="text-gray-600">{log.committeeName}</span>
         )}
+        {log.accountName && (
+          <span className="text-gray-600">{log.accountName}</span>
+        )}
       </div>
 
       <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">
@@ -99,12 +102,20 @@ export function AuditLogEntry({ log }: { log: AuditLogListItem }) {
                   </td>
                   <td className="py-2 pr-2">
                     <div className="max-h-64 overflow-auto whitespace-pre-wrap break-words text-gray-600">
-                      {formatAuditValue(change.before)}
+                      {formatAuditFieldValue(
+                        change.field,
+                        change.before,
+                        ROLE_LABELS
+                      )}
                     </div>
                   </td>
                   <td className="py-2">
                     <div className="max-h-64 overflow-auto whitespace-pre-wrap break-words text-gray-900">
-                      {formatAuditValue(change.after)}
+                      {formatAuditFieldValue(
+                        change.field,
+                        change.after,
+                        ROLE_LABELS
+                      )}
                     </div>
                   </td>
                 </tr>

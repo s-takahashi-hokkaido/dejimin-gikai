@@ -1,7 +1,6 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { AlertCircle } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
@@ -17,6 +16,7 @@ import { Input } from "@/components/ui/input";
 
 import { type LoginFormData, loginSchema } from "../../shared/types";
 import { useLogin } from "../hooks/use-login";
+import { FormError } from "./form-error";
 
 export function LoginForm() {
   const searchParams = useSearchParams();
@@ -80,15 +80,14 @@ export function LoginForm() {
         />
 
         {(error || urlError) && (
-          <div className="flex items-center space-x-2 p-3 text-sm text-red-800 bg-red-50 border border-red-200 rounded-md">
-            <AlertCircle className="h-4 w-4" />
-            <span>
-              {error ||
-                (urlError === "unauthorized"
-                  ? "管理者権限がありません"
-                  : "認証エラーが発生しました")}
-            </span>
-          </div>
+          <FormError
+            message={
+              error ||
+              (urlError === "unauthorized"
+                ? "管理画面の利用権限がありません"
+                : "認証エラーが発生しました")
+            }
+          />
         )}
 
         <Button type="submit" className="w-full" disabled={isLoading}>

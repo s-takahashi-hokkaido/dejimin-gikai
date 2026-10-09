@@ -112,4 +112,60 @@ describe("toAuditLogListItems", () => {
     expect(item.billName).toBe("議案A");
     expect(item.committeeName).toBe("第一部決算特別委員会");
   });
+
+  it("アカウントの履歴に表示名と所属会派名を付ける（ロールだけの変更でも誰の変更か分かる）", () => {
+    const profile = {
+      user_id: "u0000000-0000-0000-0000-000000000001",
+      display_name: "議員A",
+      faction_id: FACTION_ID,
+    };
+    const [item] = toAuditLogListItems(
+      [
+        makeLog({
+          action: "admin_profiles.update",
+          target_table: "admin_profiles",
+          target_id: profile.user_id,
+          bill_id: null,
+          before_data: { ...profile, role: "candidate", faction_id: null },
+          after_data: { ...profile, role: "legislator" },
+        }),
+      ],
+      new Map(),
+      new Map([[FACTION_ID, "会派X"]]),
+      new Map()
+    );
+
+    expect(item.accountName).toBe("議員A");
+    expect(item.factionName).toBe("会派X");
+    expect(item.billName).toBeNull();
+  });
+
+  it("削除したアカウントは変更前の表示名を付ける", () => {
+    const [item] = toAuditLogListItems(
+      [
+        makeLog({
+          action: "admin_profiles.delete",
+          target_table: "admin_profiles",
+          bill_id: null,
+          before_data: { display_name: "退任した議員", role: "legislator" },
+        }),
+      ],
+      new Map(),
+      new Map(),
+      new Map()
+    );
+
+    expect(item.accountName).toBe("退任した議員");
+  });
+
+  it("アカウント以外の履歴には表示名を付けない", () => {
+    const [item] = toAuditLogListItems(
+      [stanceLog],
+      new Map(),
+      new Map(),
+      new Map()
+    );
+
+    expect(item.accountName).toBeNull();
+  });
 });

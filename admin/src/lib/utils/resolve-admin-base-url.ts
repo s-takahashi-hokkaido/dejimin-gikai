@@ -7,7 +7,9 @@ export const ADMIN_BASE_URL_FALLBACK = "http://localhost:3001";
  * http / https の絶対URLとして使える値なら、末尾のスラッシュを落として返す。
  * 未設定・空文字・スキーム無し・不正な値は null。
  */
-function normalizeBaseUrl(raw: string | undefined | null): string | null {
+export function normalizeBaseUrl(
+  raw: string | undefined | null
+): string | null {
   if (!raw) return null;
 
   const trimmed = raw.trim();
