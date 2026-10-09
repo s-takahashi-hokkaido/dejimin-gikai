@@ -2,11 +2,15 @@ name: Deploy VPS
 
 # さくらVPS へ web・admin を配る（手順書 docs/20260930_2104_さくらVPS構築手順.md 手順10）。
 #
-# 公開前は手動実行のみにしている。develop への push で自動デプロイにする場合は、
-# 下の push を有効にする（rsync と再起動の間は 502 になるので、公開後に入れるかどうかを判断する）。
+# 本番に出すのは main だけ。develop の変更は develop → main の PR（/deploy）をマージしてから、
+# main を指定して手動で実行する（リリースの順番は docs/20261010_0845_アカウント管理の本番リリース手順.md）。
+#
+# 手動実行のみにしているのは、マイグレーションや infra/ の更新を先に済ませてから流すため。
+# main への push で自動デプロイにする場合は、下の push を有効にする
+# （rsync と再起動の間は 502 になるので、公開後に入れるかどうかを判断する）。
 #
 #   push:
-#     branches: [develop]
+#     branches: [main]
 on:
   workflow_dispatch:
 
@@ -53,20 +57,19 @@ jobs:
           node-version-file: .node-version
           cache: "pnpm"
 
-      # ブランチの指定違いで本番に別のコードが乗るのを防ぐ。
+      # ブランチの指定違いで本番に別のコードが乗るのを防ぐ（main ブランチ以外は止める）。
+      # GITHUB_REF_NAME だと main という名前のタグでも通ってしまうので、GITHUB_REF で比べる。
       # 登録漏れも、長いビルドの後ではなくここで落とす（一覧は infra/README.md）
       - name: Check deploy ref, variables and secrets
         env:
           VPS_SSH_PRIVATE_KEY: ${{ secrets.VPS_SSH_PRIVATE_KEY }}
           VPS_SSH_KNOWN_HOSTS: ${{ secrets.VPS_SSH_KNOWN_HOSTS }}
         run: |
-          case "${GITHUB_REF_NAME}" in
-            develop|main) ;;
-            *)
-              echo "デプロイできるのは develop / main だけです（指定: ${GITHUB_REF_NAME}）" >&2
-              exit 1
-              ;;
-          esac
+          if [ "${GITHUB_REF}" != "refs/heads/main" ]; then
+            echo "デプロイできるのは main だけです（指定: ${GITHUB_REF_NAME}）" >&2
+            echo "develop の変更は develop → main の PR をマージしてから、main を指定して実行してください" >&2
+            exit 1
+          fi
 
           missing=""
           for name in VPS_HOST VPS_USER \

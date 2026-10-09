@@ -26,12 +26,16 @@ git log origin/main..origin/develop --pretty=format:"- %h %s (%an)"
 
 # 変更ファイルの統計
 git diff origin/main...origin/develop --stat
+
+# 本番で人が先に当てるもの（マイグレーションと infra/）
+git diff origin/main...origin/develop --name-only -- supabase/migrations infra
 ```
 
 差分の内容をユーザーに報告：
 - コミット数
 - 変更ファイル数
 - 主な変更内容の要約
+- マイグレーション・`infra/` の変更の有無（あれば、5. でワークフローより先に当てる必要があることを伝える）
 
 ### 3. デプロイPRの作成
 
@@ -63,8 +67,25 @@ PRのURLを表示。
 gh pr merge --merge --admin
 ```
 
-### 5. 完了報告
+### 5. 本番（さくらVPS）に反映する
+
+main にマージしただけでは VPS は変わらない。Deploy VPS ワークフローは `main` からしか実行できない（手動実行のみ）。
+
+2. で見つけたマイグレーション・`infra/` の変更は、**ワークフローより先に**当てる。
+手順は `docs/20261010_0845_アカウント管理の本番リリース手順.md` §3。
+
+本番 DB・VPS への操作は人が行う（Claude のセッションからは環境の安全チェックで止められることがある）。
+どちらも無い、または済んだら:
+
+```bash
+gh workflow run "Deploy VPS" -R s-takahashi-hokkaido/dejimin-gikai --ref main
+gh run watch -R s-takahashi-hokkaido/dejimin-gikai
+```
+
+### 6. 完了報告
 
 ```
-デプロイ完了: main ブランチにマージされました
+デプロイ完了: main ブランチにマージし、Deploy VPS（main）で VPS に反映しました
 ```
+
+マイグレーションや infra/ の変更が残っていてワークフローを流していない場合は、その旨と残りの作業を報告する。
