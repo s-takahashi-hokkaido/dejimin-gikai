@@ -11,6 +11,7 @@ import { buildUpdatePasswordUrl } from "@/features/auth/shared/utils/auth-paths"
 import { getErrorMessage } from "@/lib/utils/get-error-message";
 import type { AccountActionResult, AccountIdInput } from "../../shared/types";
 import { validateInvitationResend } from "../../shared/utils/account-rules";
+import { getAccountStatus } from "../../shared/utils/account-status";
 import {
   findAuthUserById,
   sendInvitationEmail,
@@ -32,9 +33,9 @@ export async function resendInvitation(
       return { error: "アカウントが見つかりません" };
     }
 
-    const user = await findAuthUserById(input.id);
+    const user = await findAuthUserById(profile.user_id);
     const ruleError = validateInvitationResend(
-      user.email_confirmed_at ? "active" : "invited"
+      getAccountStatus(user.email_confirmed_at)
     );
     if (ruleError) {
       return { error: ruleError };

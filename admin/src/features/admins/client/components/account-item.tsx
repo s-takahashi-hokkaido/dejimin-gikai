@@ -27,6 +27,7 @@ import type {
   AdminAccount,
   FactionOption,
 } from "../../shared/types";
+import { formatAccountDateTime } from "../../shared/utils/format-account-date-time";
 import { DISPLAY_NAME_MAX_LENGTH } from "../../shared/utils/validate-account";
 import { FactionSelect } from "./faction-select";
 import { RoleSelect } from "./role-select";
@@ -36,18 +37,6 @@ type AccountItemProps = {
   isCurrentUser: boolean;
   factionOptions: FactionOption[];
 };
-
-function formatDate(dateString: string | null) {
-  if (!dateString) return "-";
-  return new Date(dateString).toLocaleString("ja-JP", {
-    timeZone: "Asia/Tokyo",
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-}
 
 export function AccountItem({
   account,
@@ -205,7 +194,7 @@ export function AccountItem({
           <div>
             <Badge variant="secondary">招待中</Badge>
             <p className="mt-1 text-xs text-gray-500">
-              送信: {formatDate(account.invitedAt)}
+              送信: {formatAccountDateTime(account.invitedAt)}
             </p>
           </div>
         ) : (
@@ -213,7 +202,7 @@ export function AccountItem({
         )}
       </TableCell>
       <TableCell className="text-gray-600">
-        {formatDate(account.lastSignInAt)}
+        {formatAccountDateTime(account.lastSignInAt)}
       </TableCell>
       <TableCell>
         <div className="flex gap-1">

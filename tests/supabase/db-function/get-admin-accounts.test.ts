@@ -102,4 +102,17 @@ describe("get_admin_accounts() 関数", () => {
     const { error } = await client.rpc("get_admin_accounts");
     expect(error).not.toBeNull();
   });
+
+  it("匿名ログインした web の利用者（authenticated）でもパーミッションエラーになる", async () => {
+    // web の利用者は全員 authenticated ロール。呼べると管理画面の全アカウントのメールアドレスが見える
+    const client = getAnonClient();
+    const { data, error: signInError } = await client.auth.signInAnonymously();
+    expect(signInError).toBeNull();
+    if (data.user) {
+      testUsers.push({ id: data.user.id, email: "", password: "" });
+    }
+
+    const { error } = await client.rpc("get_admin_accounts");
+    expect(error?.code).toBe("42501");
+  });
 });

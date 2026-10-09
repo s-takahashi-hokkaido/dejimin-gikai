@@ -179,7 +179,9 @@ secure_password_change = false
 # Controls the minimum amount of time that must pass before sending another signup confirmation or password reset email.
 max_frequency = "1s"
 # Number of characters used in the email OTP.
-otp_length = 6
+# 本番（infra/compose.yml の GOTRUE_MAILER_OTP_LENGTH）と同じ10桁。メールにはコードを出さず token_hash のリンクだけを使うので、
+# 桁数を増やして総当たりに耐えるようにする
+otp_length = 10
 # Number of seconds before the email OTP expires (defaults to 1 hour).
 # 招待・パスワード再設定のリンクの有効期限。本番（infra/compose.yml の GOTRUE_MAILER_OTP_EXP）と同じ24時間にする
 otp_expiry = 86400

@@ -50,7 +50,12 @@ export default async function MainLayout({
                 size="sm"
                 className="text-gray-600 hover:text-gray-900"
               >
-                <Link href={UPDATE_PASSWORD_PATH}>
+                {/* 狭い画面では文字を隠すので、読み上げ用の名前を付ける */}
+                <Link
+                  href={UPDATE_PASSWORD_PATH}
+                  aria-label="パスワード変更"
+                  title="パスワード変更"
+                >
                   <KeyRound className="h-4 w-4 md:mr-2" />
                   <span className="hidden md:inline">パスワード変更</span>
                 </Link>

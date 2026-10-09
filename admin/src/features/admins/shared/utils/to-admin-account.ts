@@ -1,6 +1,7 @@
 import type { Database } from "@dejimin-gikai/supabase";
 import { isAdminRole } from "@/features/auth/shared/utils/role";
 import type { AdminAccount } from "../types";
+import { getAccountStatus } from "./account-status";
 
 export type AdminAccountRow =
   Database["public"]["Functions"]["get_admin_accounts"]["Returns"][number];
@@ -24,8 +25,7 @@ export function toAdminAccount(row: AdminAccountRow): AdminAccount | null {
     role: row.role,
     factionId: row.faction_id ?? null,
     factionName: row.faction_name ?? null,
-    // メールアドレスが確認済み＝招待メールのリンクからパスワードを設定した
-    status: row.email_confirmed_at ? "active" : "invited",
+    status: getAccountStatus(row.email_confirmed_at),
     invitedAt: row.invited_at ?? null,
     createdAt: row.created_at,
     lastSignInAt: row.last_sign_in_at ?? null,

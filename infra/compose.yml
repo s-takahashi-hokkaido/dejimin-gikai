@@ -74,8 +74,7 @@ services:
       GOTRUE_JWT_SECRET: ${JWT_SECRET:?}
       GOTRUE_JWT_ISSUER: ${SUPABASE_PUBLIC_URL}/auth/v1
       # 以下は supabase/config.toml の [auth] の主要な値を移したもの（config.toml は CLI しか読まない）。
-      # [auth.rate_limit] は anonymous_users 以外は GoTrue の既定値のまま。
-      # メール送信の上限（GOTRUE_RATE_LIMIT_EMAIL_SENT）は既定の 1時間あたり30通（サイト全体）
+      # [auth.rate_limit] は anonymous_users・email_sent 以外は GoTrue の既定値のまま。
       # 匿名ログインに必要なので signup は閉じられない（DISABLE_SIGNUP=true にすると匿名ログインも 422 になる）。
       # メールアドレスでのサインアップは before_user_created フック（下）で拒否する
       GOTRUE_DISABLE_SIGNUP: "false"
@@ -110,8 +109,15 @@ services:
       GOTRUE_SMTP_PASS: ${SMTP_PASS:-}
       GOTRUE_SMTP_ADMIN_EMAIL: ${SMTP_ADMIN_EMAIL:-noreply@ezocivic.tech}
       GOTRUE_SMTP_SENDER_NAME: ${SMTP_SENDER_NAME:-EZO CIVIC}
+      # メールの送信数の上限（1時間あたり・サイト全体）。GoTrue の既定と同じ 30。
+      # 一度に30人を超えて招待する時は .env の RATE_LIMIT_EMAIL_SENT を一時的に上げる（構築手順 手順13）
+      GOTRUE_RATE_LIMIT_EMAIL_SENT: ${RATE_LIMIT_EMAIL_SENT:-30}
       # 招待・再設定のリンクの有効期限（秒）。GoTrue の既定と同じ24時間を明示しておく（メール本文の案内と揃える）
       GOTRUE_MAILER_OTP_EXP: 86400
+      # メールのコードの桁数（6〜10）。既定の 6桁だと、公開されている議員のアドレス宛てに再設定・招待を
+      # 申し込み、24時間の有効期限のあいだに /auth/v1/verify にコードを総当たりされうる（IP ごとに5分30回まで）。
+      # メールの本文はコードではなく token_hash のリンクだけを使うので、10桁にしても利用者は困らない
+      GOTRUE_MAILER_OTP_LENGTH: 10
       # 本文は email-templates/ のファイルを compose の nginx が中から配る（supabase.conf の 8088 番）。
       # 取りに行けないと GoTrue は英語の既定テンプレート（/auth/v1/verify を GET で踏ませるリンク）で送ってしまう。
       # supabase/config.toml の [auth.email.template.*] と同じテンプレート・件名
