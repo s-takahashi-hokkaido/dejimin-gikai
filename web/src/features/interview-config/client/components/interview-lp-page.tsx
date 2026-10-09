@@ -31,13 +31,6 @@ const FEATURES: {
     iconSize: { w: 21, h: 29 },
     text: "AIがあなたの課題感や\nご経験をお聞きします",
   },
-  {
-    iconSrc: "/icons/interview-messages.svg",
-    iconSize: { w: 33, h: 26 },
-    text: siteConfig.managingParty
-      ? `ご意見は${siteConfig.managingParty}の\n政策検討に活かします`
-      : "ご意見は\n政策検討に活かします",
-  },
   ...(siteConfig.managingParty
     ? [
         {
@@ -157,10 +150,6 @@ function _InterviewOverviewSection({
             {billName}
           </Link>
           について、AIがあなたの考えを深堀りするチャット型インタビューです
-        </p>
-        <p>
-          いただいたご意見は、政策検討や市議会での審議に活用し、
-          {siteConfig.siteName}上に公開される可能性があります。
         </p>
       </div>
       <div>
