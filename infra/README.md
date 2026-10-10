@@ -285,18 +285,27 @@ gh variable list -R $R && gh secret list -R $R   # 登録を確かめる
 
 ## 4. デプロイする
 
+本番に出すのは **`main` だけ**。`develop` の変更は、`develop` → `main` の PR（`/deploy`）をマージしてから流す。
+マイグレーションや `infra/` の変更を含む時は、先にそちらを済ませる
+（順番は [構築手順](../docs/20260930_2104_さくらVPS構築手順.md) §5「デプロイ」）。
+
+> **`main` は PR #62（2026-09-29）のまま止まっている。** VPS には `develop` から流した新しい版が載っているので、
+> 最初の `/deploy` で `develop` を `main` に入れるまでは、`main` でこのワークフローを流さない（古い版に戻ってしまう）。
+> 最初のリリースは [本番リリース手順](../docs/20261010_0845_アカウント管理の本番リリース手順.md) のとおりに行う。
+
 ```bash
-gh workflow run "Deploy VPS" -R s-takahashi-hokkaido/dejimin-gikai --ref develop
+gh workflow run "Deploy VPS" -R s-takahashi-hokkaido/dejimin-gikai --ref main
 gh run watch -R s-takahashi-hokkaido/dejimin-gikai
 ```
 
-（GitHub の画面からは Actions → Deploy VPS → Run workflow）
+（GitHub の画面からは Actions → Deploy VPS → Run workflow。**Use workflow from を `main` に切り替える**。
+既定のブランチ（`develop`）のまま実行すると最初のステップで止まる）
 
-ワークフローは最初に、実行したブランチが `develop` / `main` かと、Variables / Secrets の登録漏れを
+ワークフローは最初に、実行したブランチが `main` かと、Variables / Secrets の登録漏れを
 確かめて止まる（`--ref` の指定違いで別のコードが本番に乗らないようにするため）。
 最後に、`<app>.env` の `PORT` を読んで応答が返るまで最大60秒待ち、2xx / 3xx が返ることを確かめる。
 
-公開前は手動実行のみ（`workflow_dispatch`）。`develop` への push で自動デプロイにする場合は、
+公開前は手動実行のみ（`workflow_dispatch`）。`main` への push で自動デプロイにする場合は、
 `deploy_vps.yml` の先頭にコメントで残してある `push:` を有効にする。
 
 ### デプロイ中の見え方と、戻したい時
@@ -306,8 +315,8 @@ gh run watch -R s-takahashi-hokkaido/dejimin-gikai
 ページへアクセスすると 500 になることがある。** 公開後もこの形で続けるなら、
 リリースごとに別ディレクトリへ送って symlink を差し替える形に変えるほうがよい。
 
-`--delete` なので**前の版は VPS に残らない。** 戻したい時は、戻したいコミットを `develop` に入れて
-デプロイをやり直す（ワークフローは `develop` / `main` からしか実行できない）。
+`--delete` なので**前の版は VPS に残らない。** 戻したい時は、戻したいコミットを `main` に入れて
+デプロイをやり直す（ワークフローは `main` からしか実行できない）。
 
 ### うまくいかない時
 
