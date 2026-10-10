@@ -4,19 +4,19 @@
  * @see docs/20260520_1900_札幌市版FORK_GUIDELINES適応手順書.md
  */
 export const siteConfig = {
-  siteName: "デジタル民主主義共創議会",
+  siteName: "デジ民議会",
   /**
    * サイト名を改行してよい区切り（ヘッダーで使う）。
    * スマホの幅で1行に収まらない時だけ、この区切りで折り返す。
    * つなげると siteName と同じ文字列にすること（site.config.test.ts で確認している）
    */
-  siteNameParts: ["デジタル", "民主主義", "共創議会"],
+  siteNameParts: ["デジ民", "議会"],
   siteDescription:
     "札幌市議会で今どんな議案が検討されているか、わかりやすく伝えるプラットフォームです",
   cityName: "札幌市",
   councilName: "札幌市議会",
   keywords: [
-    "デジタル民主主義共創議会",
+    "デジ民議会",
     "議案",
     "札幌市",
     "市議会",
@@ -28,7 +28,7 @@ export const siteConfig = {
   /** 議案・議決結果の一覧ページ */
   councilBillsDetailUrl:
     "https://www.city.sapporo.jp/gikai/html/giantouichiran.html",
-  twitterHashtag: "デジタル民主主義共創議会", // # なし
+  twitterHashtag: "デジ民議会", // # なし
   /**
    * OGP / SNS シェア用のデフォルト画像。
    * X・Facebook・LINE 等は OGP 画像に SVG を受け付けないため PNG を配信する。
