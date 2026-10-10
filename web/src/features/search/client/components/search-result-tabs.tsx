@@ -2,13 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import {
-  FileText,
-  MessageSquare,
-  ChevronDown,
-  Search,
-  BarChart2,
-} from "lucide-react";
+import { FileText, MessageSquare, ChevronDown, Search } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import type {
@@ -16,14 +10,12 @@ import type {
   SearchTab,
   BillSearchResult,
   QuestionSearchResult,
-  BudgetSearchResult,
 } from "../../shared/types/search-types";
 
 const TAB_LABELS: Record<SearchTab, string> = {
   all: "すべて",
   bills: "議案",
   questions: "一般質問",
-  budget: "予算",
 };
 
 const SECTION_LIMIT = 3;
@@ -91,30 +83,6 @@ function QuestionCard({ question }: { question: QuestionSearchResult }) {
   );
 }
 
-function BudgetCard({ budget }: { budget: BudgetSearchResult }) {
-  return (
-    <Link
-      href={`/budget/${budget.sessionSlug}/${budget.departmentSlug}`}
-      className="block border border-mirai-border rounded-lg p-4 bg-white hover:bg-mirai-surface transition-colors"
-    >
-      <div className="flex items-center gap-2 mb-1">
-        <BarChart2 className="size-4 text-mirai-text-muted shrink-0" />
-        <span className="text-xs text-mirai-text-muted">
-          予算 · {budget.session}
-        </span>
-      </div>
-      <p className="font-medium text-mirai-text text-sm leading-snug mb-2">
-        {budget.departmentName}
-      </p>
-      {budget.direction && (
-        <p className="text-xs text-mirai-text-secondary line-clamp-2">
-          {budget.direction}
-        </p>
-      )}
-    </Link>
-  );
-}
-
 function ResultSection<T>({
   title,
   items,
@@ -171,8 +139,8 @@ export function SearchResultTabs({ query, results }: Props) {
     );
   }
 
-  const { bills, questions, budgets } = results;
-  const totalCount = bills.length + questions.length + budgets.length;
+  const { bills, questions } = results;
+  const totalCount = bills.length + questions.length;
 
   if (totalCount === 0) {
     return (
@@ -189,7 +157,6 @@ export function SearchResultTabs({ query, results }: Props) {
     { key: "all", count: totalCount },
     { key: "bills", count: bills.length },
     { key: "questions", count: questions.length },
-    { key: "budget", count: budgets.length },
   ];
 
   return (
@@ -238,13 +205,6 @@ export function SearchResultTabs({ query, results }: Props) {
             title="一般質問"
             items={questions}
             renderCard={(q, i) => <QuestionCard key={i} question={q} />}
-          />
-        )}
-        {(tab === "all" || tab === "budget") && budgets.length > 0 && (
-          <ResultSection
-            title="予算"
-            items={budgets}
-            renderCard={(b, i) => <BudgetCard key={i} budget={b} />}
           />
         )}
       </div>

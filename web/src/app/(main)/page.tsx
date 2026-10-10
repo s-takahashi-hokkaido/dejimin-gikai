@@ -1,6 +1,5 @@
 import { Container } from "@/components/layouts/container";
 import { About } from "@/components/top/about";
-import { BudgetOverviewBanner } from "@/components/top/budget-overview-banner";
 import { GeneralQuestionsBanner } from "@/components/top/general-questions-banner";
 import { Hero } from "@/components/top/hero";
 import { PastSessionsSection } from "@/components/top/past-sessions-section";
@@ -19,18 +18,11 @@ import type { BillWithContent } from "@/features/bills/shared/types";
 import { chatBillName } from "@/features/bills/shared/utils/chat-bill-name";
 import { pickHomeSections } from "@/features/bills/shared/utils/pick-home-sections";
 import { countTagChipItems } from "@/features/bills/shared/utils/tag-chip-items";
-import { getLatestBudgetSession } from "@/features/budget-overview/server/loaders/get-latest-budget-session";
-import { getSessionsWithBudget } from "@/features/budget-overview/server/loaders/get-sessions-with-budget";
-import { getFiscalYearLabel } from "@/features/budget-overview/shared/utils/fiscal-year-label";
 import { HomeChatClient } from "@/features/chat/client/components/home-chat-client";
 import { CurrentCouncilSession } from "@/features/council-sessions/client/components/current-council-session";
 import { getAllPastSessions } from "@/features/council-sessions/server/loaders/get-all-past-sessions";
 import { getCurrentCouncilSession } from "@/features/council-sessions/server/loaders/get-current-council-session";
 import { getLatestSessionWithQuestions } from "@/features/general-questions/server/loaders/get-latest-session-with-questions";
-import { PressConferenceArchiveSection } from "@/features/press-conferences/client/components/press-conference-archive-section";
-import { PressConferenceNoticeBanner } from "@/features/press-conferences/client/components/press-conference-notice-banner";
-import { getLatestPressConference } from "@/features/press-conferences/server/loaders/get-latest-press-conference";
-import { getPressConferences } from "@/features/press-conferences/server/loaders/get-press-conferences";
 import { getJapanTime } from "@/lib/utils/date";
 
 /** カテゴリタブの「注目」から飛ばす先。 */
@@ -41,25 +33,17 @@ export default async function Home() {
   const [
     { billsByTag, featuredBills, interviewOpenBills },
     currentSession,
-    latestBudgetSession,
     currentDifficulty,
     pastSessions,
-    budgetSessions,
     latestQuestionsSlug,
-    latestPressConference,
-    pressConferences,
     suggestableBills,
     featuredTags,
   ] = await Promise.all([
     loadHomeData(),
     getCurrentCouncilSession(getJapanTime()),
-    getLatestBudgetSession(),
     getDifficultyLevel(),
     getAllPastSessions(),
-    getSessionsWithBudget(),
     getLatestSessionWithQuestions(),
-    getLatestPressConference(),
-    getPressConferences(),
     getSuggestableBills(),
     getFeaturedTags(),
   ]);
@@ -109,25 +93,6 @@ export default async function Home() {
         </div>
       </Container>
 
-      {/* 市長記者会見バナー */}
-      {latestPressConference && (
-        <Container className="pt-4">
-          <PressConferenceNoticeBanner
-            pressConference={latestPressConference}
-          />
-        </Container>
-      )}
-
-      {/* 予算概要バナー（予算のある最新の会期へ。開会中の会期には予算が無いことが多い） */}
-      {latestBudgetSession?.slug && (
-        <Container className="pt-6">
-          <BudgetOverviewBanner
-            sessionSlug={latestBudgetSession.slug}
-            fiscalYearLabel={getFiscalYearLabel(latestBudgetSession.name)}
-          />
-        </Container>
-      )}
-
       {/* 一般質問バナー */}
       {latestQuestionsSlug && (
         <Container className="pt-3">
@@ -158,17 +123,11 @@ export default async function Home() {
         </div>
       </Container>
 
-      {/* Archive セクション（過去の定例会・過去の予算・市長記者会見） */}
+      {/* Archive セクション（過去の定例会） */}
       <div className="bg-mirai-surface-muted py-10">
         <Container>
           <div className="flex flex-col gap-8">
-            <PastSessionsSection
-              sessions={pastSessions}
-              budgetSessions={budgetSessions}
-            />
-            <PressConferenceArchiveSection
-              pressConferences={pressConferences}
-            />
+            <PastSessionsSection sessions={pastSessions} />
           </div>
         </Container>
       </div>
