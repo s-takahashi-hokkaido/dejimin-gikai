@@ -20,7 +20,6 @@ import {
 } from "@/components/ai-elements/prompt-input";
 import { Button } from "@/components/ui/button";
 import type { BillWithContent } from "@/features/bills/shared/types";
-import type { BudgetChatContext } from "@/features/chat/server/services/handle-chat-request";
 import { toUserFacingErrorMessage } from "@/features/chat/shared/utils/user-facing-error-message";
 import { useIsDesktop } from "@/hooks/use-is-desktop";
 import { useMediaQuery } from "@/hooks/use-media-query";
@@ -40,14 +39,13 @@ interface ChatWindowProps {
   isOpen: boolean;
   onClose: () => void;
   pageContext?: {
-    type: "home" | "bill" | "budget";
+    type: "home" | "bill";
     bills?: Array<{
       name: string;
       summary?: string;
       tags?: string[];
       isFeatured?: boolean;
     }>;
-    budget?: BudgetChatContext;
   };
   disableAutoFocus?: boolean;
   returnFocusRef: RefObject<HTMLElement | null>;

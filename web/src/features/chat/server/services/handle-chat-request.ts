@@ -29,24 +29,12 @@ import {
 import { insertChatLogs } from "../repositories/chat-log-repository";
 import { checkDailyCostGuard, recordChatUsage } from "./cost-tracker";
 
-export type BudgetChatContext = {
-  departmentName: string;
-  direction?: string | null;
-  totalBudget?: number | null;
-  themes?: Array<{
-    title: string;
-    aiSummary?: string | null;
-    initiatives?: Array<{ title: string; description?: string | null }>;
-  }>;
-};
-
 export type ChatMessageMetadata = {
   billContext?: BillWithContent;
   hasInterviewConfig?: boolean;
   pageContext?: {
-    type: "home" | "bill" | "budget";
+    type: "home" | "bill";
     bills?: Array<{ id: string; name: string; summary?: string }>;
-    budget?: BudgetChatContext;
   };
   difficultyLevel: DifficultyLevelEnum;
   sessionId: string;
@@ -220,11 +208,6 @@ async function buildPrompt(
   context: ChatMessageMetadata,
   promptProvider: PromptProvider
 ) {
-  // Budget チャットはインラインプロンプトを使用（DB 管理外）
-  if (context.pageContext?.type === "budget") {
-    return buildBudgetPrompt(context);
-  }
-
   // Determine prompt name
   const promptName =
     context.pageContext?.type === "home"
@@ -253,48 +236,6 @@ async function buildPrompt(
       error instanceof Error ? error.message : String(error)
     );
   }
-}
-
-/**
- * 予算概要チャット用のインラインプロンプトを生成
- */
-function buildBudgetPrompt(context: ChatMessageMetadata) {
-  const budget = context.pageContext?.budget;
-  const promptName = "budget-chat-system";
-
-  const themesText =
-    budget?.themes
-      ?.map((t) => {
-        const initiatives = t.initiatives
-          ?.map(
-            (i) => `  - ${i.title}${i.description ? `：${i.description}` : ""}`
-          )
-          .join("\n");
-        return `【${t.title}】${t.aiSummary ? `\n${t.aiSummary}` : ""}${initiatives ? `\n施策:\n${initiatives}` : ""}`;
-      })
-      .join("\n\n") ?? "";
-
-  const content = `あなたは札幌市の予算概要を市民にわかりやすく説明するAIアシスタントです。
-
-## 対象局の情報
-- 局名: ${budget?.departmentName ?? ""}
-- 予算総額: ${budget?.totalBudget ? `${(budget.totalBudget / 10000).toFixed(0)}億円` : "不明"}
-- 今年度の方向性: ${budget?.direction ?? ""}
-
-## 重点テーマと施策
-${themesText}
-
-## 回答ガイドライン
-- 市民目線でわかりやすく、具体的に説明してください
-- 専門用語は噛み砕いて説明してください
-- 「この施策は自分にどう関係するか」という視点を意識してください
-- 上記の情報に基づいて回答し、情報がない場合は正直にその旨を伝えてください
-- 予算額の比較や施策の背景など、市民が気になりそな点を補足してください`;
-
-  return {
-    promptName,
-    promptResult: { content, versionId: null },
-  };
 }
 
 function buildUsageMetadata(

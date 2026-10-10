@@ -6,19 +6,19 @@ export type ChatLogInsert = Database["public"]["Tables"]["chat_logs"]["Insert"];
 export type ChatLogContext = {
   userId: string;
   sessionId: string | null;
-  pageType: "home" | "bill" | "budget";
+  pageType: "home" | "bill";
   billId: string | null;
   promptName: string;
   promptVersionId: string | null;
   model: string;
 };
 
-const PAGE_TYPES = ["home", "bill", "budget"] as const;
+const PAGE_TYPES = ["home", "bill"] as const;
 
 /**
  * ブラウザが送ってきたページ種別を、会話ログに入れられる値に揃える
  *
- * handleChatRequest は home・budget 以外を議案のチャットとして扱うため、
+ * handleChatRequest は home 以外を議案のチャットとして扱うため、
  * それ以外の値は "bill" にする（DB の check 制約でログごと落ちないように）。
  */
 export function normalizeChatPageType(

@@ -126,9 +126,7 @@ export default async function Home() {
       {/* Archive セクション（過去の定例会） */}
       <div className="bg-mirai-surface-muted py-10">
         <Container>
-          <div className="flex flex-col gap-8">
-            <PastSessionsSection sessions={pastSessions} />
-          </div>
+          <PastSessionsSection sessions={pastSessions} />
         </Container>
       </div>
 
