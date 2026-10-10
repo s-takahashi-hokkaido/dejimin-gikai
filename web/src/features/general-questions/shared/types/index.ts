@@ -23,3 +23,13 @@ export type GeneralQuestion = {
   created_at: string;
   updated_at: string;
 };
+
+/**
+ * 定例会ごとの3行まとめ。
+ * - lines: 定例会全体の「どんな話があった？」3行（未作成なら null）
+ * - themeLines: カテゴリラベル → そのテーマの3行（未作成のテーマはキーなし）
+ */
+export type SessionQuestionOverview = {
+  lines: string[] | null;
+  themeLines: Record<string, string[]>;
+};

@@ -33,6 +33,13 @@
 | admin_profiles_role_idx | CREATE INDEX admin_profiles_role_idx ON public.admin_profiles USING btree (role) |
 | admin_profiles_faction_id_idx | CREATE INDEX admin_profiles_faction_id_idx ON public.admin_profiles USING btree (faction_id) |
 
+## Triggers
+
+| Name | Definition |
+| ---- | ---------- |
+| admin_profiles_audit_log | CREATE TRIGGER admin_profiles_audit_log AFTER INSERT OR DELETE OR UPDATE ON public.admin_profiles FOR EACH ROW EXECUTE FUNCTION record_admin_audit_log() |
+| update_admin_profiles_updated_at | CREATE TRIGGER update_admin_profiles_updated_at BEFORE UPDATE ON public.admin_profiles FOR EACH ROW EXECUTE FUNCTION update_updated_at_column() |
+
 ## Relations
 
 ```mermaid

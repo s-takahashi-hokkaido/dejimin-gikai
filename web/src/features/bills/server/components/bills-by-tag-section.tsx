@@ -1,6 +1,5 @@
-import Link from "next/link";
+import { BillCardList } from "../../client/components/bill-list/bill-card-list";
 import type { BillsByTag } from "../../shared/types";
-import { BillCard } from "../../client/components/bill-list/bill-card";
 
 interface BillsByTagSectionProps {
   billsByTag: BillsByTag[];
@@ -27,14 +26,8 @@ export function BillsByTagSection({ billsByTag }: BillsByTagSectionProps) {
             )}
           </div>
 
-          {/* 議案カード一覧 */}
-          <div className="flex flex-col gap-4">
-            {bills.map((bill) => (
-              <Link key={bill.id} href={`/bills/${bill.id}`}>
-                <BillCard bill={bill} />
-              </Link>
-            ))}
-          </div>
+          {/* 先頭だけフルカード、2件目以降はコンパクト */}
+          <BillCardList bills={bills} />
         </section>
       ))}
     </div>

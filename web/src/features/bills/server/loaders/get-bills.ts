@@ -4,8 +4,8 @@ import type { DifficultyLevelEnum } from "@/features/bill-difficulty/shared/type
 import { CACHE_TAGS } from "@/lib/cache-tags";
 import type { BillWithContent } from "../../shared/types";
 import {
+  findBillIdsWithPublicInterview,
   findPublishedBillsWithContents,
-  findTagsByBillIds,
 } from "../repositories/bill-repository";
 
 export async function getBills(): Promise<BillWithContent[]> {
@@ -16,20 +16,23 @@ export async function getBills(): Promise<BillWithContent[]> {
 
 const _getCachedBills = unstable_cache(
   async (difficultyLevel: DifficultyLevelEnum): Promise<BillWithContent[]> => {
-    const data = await findPublishedBillsWithContents(difficultyLevel);
-
-    // タグ情報を一括取得
-    const billIds = data.map((item) => item.id);
-    const tagsByBillId = await findTagsByBillIds(billIds);
+    // タグは議案と一緒に埋め込みで引き、インタビュー状態は一括で引く
+    const [data, interviewBillIds] = await Promise.all([
+      findPublishedBillsWithContents(difficultyLevel),
+      findBillIdsWithPublicInterview(),
+    ]);
 
     const billsWithContent: BillWithContent[] = data.map((item) => {
-      const { bill_contents, ...bill } = item;
+      const { bill_contents, bills_tags, ...bill } = item;
       return {
         ...bill,
         bill_content: Array.isArray(bill_contents)
           ? bill_contents[0]
           : undefined,
-        tags: tagsByBillId.get(item.id) ?? [],
+        tags: bills_tags
+          .map((link) => link.tags)
+          .filter((tag): tag is NonNullable<typeof tag> => tag !== null),
+        hasPublicInterview: interviewBillIds.has(item.id),
       };
     });
 
@@ -38,6 +41,6 @@ const _getCachedBills = unstable_cache(
   ["bills-list"],
   {
     revalidate: 600, // 10分（600秒）
-    tags: [CACHE_TAGS.BILLS],
+    tags: [CACHE_TAGS.BILLS, CACHE_TAGS.INTERVIEW_CONFIGS],
   }
 );

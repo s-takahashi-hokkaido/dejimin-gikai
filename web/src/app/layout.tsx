@@ -5,6 +5,7 @@ import NextTopLoader from "nextjs-toploader";
 import { siteConfig } from "@/config/site.config";
 import type { ReactNode } from "react";
 import { env } from "@/lib/env";
+import { TextSizeInitializer } from "@/lib/text-size/initializer";
 
 const notoSansJP = Noto_Sans_JP({
   variable: "--font-noto-sans-jp",
@@ -77,10 +78,14 @@ export default function RootLayout({
   children: ReactNode;
 }>) {
   return (
-    <html lang="ja">
+    // 文字サイズの設定は描画前のスクリプトで <html> の class に反映するため、
+    // その差分をハイドレーションの不一致として扱わない
+    <html lang="ja" suppressHydrationWarning>
       <body
         className={`${notoSansJP.variable} ${lexendGiga.variable} font-sans antialiased bg-mirai-surface-light`}
       >
+        {/* 共通ヘッダーの無いページ（一般質問の会期ページなど）でも文字サイズの設定を反映する */}
+        <TextSizeInitializer />
         <NextTopLoader showSpinner={false} color="#3b82c4" />
         {children}
       </body>

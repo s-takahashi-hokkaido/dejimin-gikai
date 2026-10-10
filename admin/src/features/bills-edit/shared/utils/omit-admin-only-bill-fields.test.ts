@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   canEditAdminOnlyBillFields,
   omitAdminOnlyBillFields,
+  shouldResetReviewOnContentEdit,
 } from "./omit-admin-only-bill-fields";
 
 const input = {
@@ -11,6 +12,7 @@ const input = {
   is_featured: true,
   thumbnail_url: "https://example.com/a.png",
   share_thumbnail_url: "https://example.com/b.png",
+  is_review_completed: true,
 };
 
 describe("canEditAdminOnlyBillFields", () => {
@@ -46,5 +48,16 @@ describe("omitAdminOnlyBillFields", () => {
     const original = { ...input };
     omitAdminOnlyBillFields("legislator", original);
     expect(original).toEqual(input);
+  });
+});
+
+describe("shouldResetReviewOnContentEdit", () => {
+  it("運営者以外が解説を書き換えたら確認済みを外す", () => {
+    expect(shouldResetReviewOnContentEdit("legislator")).toBe(true);
+    expect(shouldResetReviewOnContentEdit("candidate")).toBe(true);
+  });
+
+  it("運営者の編集では外さない", () => {
+    expect(shouldResetReviewOnContentEdit("admin")).toBe(false);
   });
 });

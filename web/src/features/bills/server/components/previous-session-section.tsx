@@ -3,6 +3,10 @@ import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import type { CouncilSession } from "@/features/council-sessions/shared/types";
+import {
+  formatSessionDescription,
+  getSessionStartYear,
+} from "@/features/council-sessions/shared/utils/group-sessions-by-year";
 import { CompactBillCard } from "../../client/components/bill-list/compact-bill-card";
 import type { BillWithContent } from "../../shared/types";
 
@@ -29,9 +33,8 @@ export function PreviousSessionSection({
 
   const sessionBillsUrl = `/sessions/${session.slug}/bills`;
   const sessionQuestionsUrl = `/sessions/${session.slug}/questions`;
-  const startDate = new Date(session.start_date);
-  const endDate = new Date(session.end_date ?? session.start_date);
-  const sessionDescription = `${startDate.getFullYear()}.${startDate.getMonth() + 1}月〜${endDate.getMonth() + 1}月に実施された${session.name}`;
+  const startYear = getSessionStartYear(session);
+  const sessionDescription = formatSessionDescription(session);
 
   return (
     <section className="flex flex-col gap-6">
@@ -56,7 +59,7 @@ export function PreviousSessionSection({
         <Link href={sessionBillsUrl} className="group">
           <h3 className="text-[22px] font-bold text-black leading-[1.48] flex items-center gap-1.5">
             <span className="flex items-center gap-4">
-              {new Date(session.start_date).getFullYear()}年 {session.name}
+              {startYear}年 {session.name}
               の議案
               <span>{totalBillCount}件</span>
             </span>

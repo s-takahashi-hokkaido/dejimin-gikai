@@ -8,10 +8,11 @@ import {
   useEffect,
   useImperativeHandle,
   useMemo,
+  useRef,
   useState,
 } from "react";
+import { Button } from "@/components/ui/button";
 import type { BillWithContent } from "@/features/bills/shared/types";
-import type { BudgetChatContext } from "@/features/chat/server/services/handle-chat-request";
 import { ChatWindow } from "./chat-window";
 
 // アニメーション定数
@@ -26,14 +27,13 @@ interface ChatButtonProps {
   hasInterviewConfig?: boolean;
   difficultyLevel: string;
   pageContext?: {
-    type: "home" | "bill" | "budget";
+    type: "home" | "bill";
     bills?: Array<{
       name: string;
       summary?: string;
       tags?: string[];
       isFeatured?: boolean;
     }>;
-    budget?: BudgetChatContext;
   };
 }
 
@@ -47,6 +47,7 @@ export const ChatButton = forwardRef<ChatButtonRef, ChatButtonProps>(
     const [isCompact, setIsCompact] = useState(false);
     const [showText, setShowText] = useState(true);
     const [openedWithText, setOpenedWithText] = useState(false);
+    const chatTriggerRef = useRef<HTMLButtonElement>(null);
     const pathname = usePathname();
 
     // Chat state をここで管理することで、モーダルが閉じても状態が保持される
@@ -120,10 +121,12 @@ export const ChatButton = forwardRef<ChatButtonRef, ChatButtonProps>(
               transitionDuration: `${ANIMATION_DURATION.SIZE_TRANSITION}ms`,
             }}
           >
-            <button
+            <Button
+              ref={chatTriggerRef}
               type="button"
+              variant="ghost"
               onClick={() => setIsOpen(true)}
-              className={`relative bg-white rounded-[50px] hover:opacity-90 flex items-center w-full py-2 transition-all ease-in-out ${
+              className={`relative bg-white hover:bg-white hover:text-inherit rounded-[50px] hover:opacity-90 flex items-center w-full py-2 transition-all ease-in-out ${
                 isCompact
                   ? "h-[35px] px-4 justify-center gap-2.5"
                   : "h-14 justify-end pr-4 pl-6 gap-2.5"
@@ -132,6 +135,8 @@ export const ChatButton = forwardRef<ChatButtonRef, ChatButtonProps>(
                 transitionDuration: `${ANIMATION_DURATION.SIZE_TRANSITION}ms`,
               }}
               aria-label="議案について質問する"
+              aria-haspopup="dialog"
+              aria-expanded={isOpen}
             >
               <span
                 className={`text-mirai-text-placeholder text-sm font-medium leading-[1.5em] tracking-[0.01em] ${
@@ -162,7 +167,7 @@ export const ChatButton = forwardRef<ChatButtonRef, ChatButtonProps>(
                   />
                 </div>
               )}
-            </button>
+            </Button>
           </div>
         </div>
 
@@ -178,6 +183,7 @@ export const ChatButton = forwardRef<ChatButtonRef, ChatButtonProps>(
           }}
           pageContext={pageContext}
           disableAutoFocus={openedWithText}
+          returnFocusRef={chatTriggerRef}
           sessionId={sessionId}
         />
       </>

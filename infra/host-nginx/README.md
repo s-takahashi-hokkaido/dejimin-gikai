@@ -1,7 +1,7 @@
 # ホストの nginx の vhost
 
 さくらVPS のホスト側に入れる nginx（TLS 終端）の vhost。
-手順は [さくらVPS 立ち上げ手順](../../docs/20260924_1404_さくらVPS立ち上げ手順.md) の **手順9** が正。
+手順は [さくらVPS 構築手順](../../docs/20260930_2104_さくらVPS構築手順.md) の **手順9** が正。
 
 nginx は 2 段ある。ここにあるのは **外側（ホスト）** の設定で、`infra/nginx/supabase.conf` は
 compose の中の nginx（Supabase の API をパスで振り分けるゲートウェイ代わり）の設定。役割が違うので混ぜない。
@@ -57,20 +57,32 @@ done
 web にも Basic 認証はあるが、画面（HTML）にしか効かず `/api/chat` などは素通しになる
 （`web/src/middleware.ts` の `_isHtmlRequest`）ため、公開前は nginx で全パスを塞ぐ。
 
-パスワードファイルを作る（2 つの vhost で同じ `/etc/nginx/htpasswd-gikai` を使う）。
+パスワードファイルは vhost ごとに分けている。web と admin でパスワードを別々に変えられるようにするため。
+
+| vhost | パスワードファイル |
+|---|---|
+| `gikai.ezocivic.tech` | `/etc/nginx/htpasswd-gikai-web` |
+| `gikai-admin.ezocivic.tech` | `/etc/nginx/htpasswd-gikai` |
 
 ```bash
-sudo htpasswd -c /etc/nginx/htpasswd-gikai <ユーザー名>   # 2 人目以降は -c を付けない
+sudo htpasswd -c /etc/nginx/htpasswd-gikai-web <ユーザー名>   # web。2 人目以降は -c を付けない
+sudo htpasswd -c /etc/nginx/htpasswd-gikai     <ユーザー名>   # admin。同上
 ```
+
+パスワードを変える時は `-c` を付けずに `sudo htpasswd <ファイル> <ユーザー名>` を流す
+（`-c` はファイルを作り直すので、他のユーザーが消える）。reload は要らない。
+
+> 置いた後の `sites-available/` の vhost は certbot が TLS の行を書き足しているので、
+> このディレクトリからコピーし直すとそれが消える。参照先だけを変える時は、置いてあるファイルを `sed -i` で直す。
 
 `db` にはかけない。ブラウザの supabase-js は別オリジンの API に認証情報を付けないので、
 かけると画面から Supabase を呼べなくなる。`db` は RLS（ポリシー無し＝全拒否）で守られている。
 
-**公開する時（T1 の判断の後）** は、2 つの vhost の次の 2 行を消して reload する。
+**公開する時** は、2 つの vhost の次の 2 行を消して reload する。
 
 ```nginx
 auth_basic "EZO CIVIC (preview)";
-auth_basic_user_file /etc/nginx/htpasswd-gikai;
+auth_basic_user_file /etc/nginx/htpasswd-gikai-web;   # gikai-admin では /etc/nginx/htpasswd-gikai
 ```
 
 ```bash
@@ -103,7 +115,7 @@ webroot 方式に切り替えても 401 にならないよう `/.well-known/acme
 ## IPv6
 
 3 つとも `listen [::]:80;` をコメントアウトで置いてある。IPv6 で待ち受けるかは公開前に決める
-（手順書 手順6・§7 の未決事項）。**有効にするなら 3 つ揃えて**、DNS の AAAA レコードと同時に入れる。
+（構築手順 手順6・§8 の未決事項）。**有効にするなら 3 つ揃えて**、DNS の AAAA レコードと同時に入れる。
 nginx を直さずに AAAA だけ足すと、IPv6 で来た利用者が繋がらない。
 
 ## 変更したら

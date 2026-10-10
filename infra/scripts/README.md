@@ -1,7 +1,7 @@
 # VPS の定期処理スクリプト
 
 さくらVPS で cron から動かすスクリプト。呼び出しの定義は [`infra/cron/gikai`](../cron/gikai)（`/etc/cron.d/gikai` に置く）。
-手順は [さくらVPS 立ち上げ手順](../../docs/20260924_1404_さくらVPS立ち上げ手順.md) の **手順11** が正。
+手順は [さくらVPS 構築手順](../../docs/20260930_2104_さくらVPS構築手順.md) の **手順11** が正。
 
 | スクリプト | 時刻 | 何をするか |
 |---|---|---|
@@ -58,7 +58,7 @@ ls -la /srv/backups/"$(date +%Y%m%d)"
 > **`/srv/backups` の中身には、市民のインタビュー回答・利用者のメールアドレスとパスワードハッシュが入る。**
 > ディレクトリは 700、ファイルは 600（スクリプトの `umask 077` と `chmod 700`）。手元に持ち出す時も置き場所に気をつける。
 
-**VPS の中にだけ置いても、VPS が壊れたら一緒に失う。** 外への持ち出し先は手順書 §7 の未決事項
+**VPS の中にだけ置いても、VPS が壊れたら一緒に失う。** 外への持ち出し先は構築手順 §8 の未決事項
 （案 (a) 手元の WSL から毎日 `rsync` で取りに行く、案 (b) さくらのオブジェクトストレージ）。
 
 ## 復元
@@ -69,7 +69,34 @@ ls -la /srv/backups/"$(date +%Y%m%d)"
 1. `docker compose down` してから `volumes/db/data` と `volumes/storage` を消す（起動中に作り直すとコンテナが古いディレクトリを見続ける）
 2. `storage.tar` を `--xattrs --xattrs-include='user.*'` 付きで戻す
 3. `docker compose up -d` して、**`migrations.txt` の最後の版まで**マイグレーションを流す
-4. `set session_replication_role = replica;` を先に付けて `data.sql` を `supabase_admin` で流す
-5. リポジトリを最新に戻して残りのマイグレーションを流す
+4. **マイグレーションが入れた行を空にする**（下記）
+5. `set session_replication_role = replica;` を先に付けて `data.sql` を `supabase_admin` で流す
+6. リポジトリを最新に戻して残りのマイグレーションを流す
+
+### 手順4: マイグレーションが入れた行を空にする（省くと復元が途中で止まる）
+
+```bash
+psql "$DB_URL" -c "truncate table public.prompt_versions, public.prompts cascade;"
+```
+
+`prompts` / `prompt_versions` は `20260923140000_move_langfuse_to_db.sql` が3件ずつ入れる。
+`data.sql` にも同じ行が入っているので、そのまま流すと `ON_ERROR_STOP=1` で止まる。
+
+```
+ERROR:  duplicate key value violates unique constraint "prompts_name_key"
+DETAIL:  Key (name)=(top-chat-system) already exists.
+CONTEXT:  COPY prompts, line 1
+```
+
+**止まる位置が悪い。** `prompts` は dump の 51/64 番目で、そこから後の13テーブル
+（`prompt_versions`・`report_reactions`・`topic_analysis_*`・**`storage.objects`** など）が
+一切入らない。`storage.objects` が欠けると、**画像ファイルは `storage.tar` から戻っているのに
+DB に行が無く、画像が表示されない**状態になる。
+
+`storage.buckets` は同じ理由で dump から除外してあるが、`prompts` は**管理画面から編集できる**
+（`admin/src/features/prompts/`）ので除外してはいけない。本番で編集した版を復元するために、
+dump には含めたまま、復元側で先に空にする。
+
+2026-10-01 の復元テスト（手順12 #9）で見つけた。
 
 復元の練習は**手元の compose に対して**行う（手順12 #9。VPS には戻さない）。

@@ -8,7 +8,11 @@ import type { MiraiStance } from "../../shared/types";
 // ============================================================
 
 /**
- * 公開済み議案を難易度コンテンツ付きで取得
+ * 公開済み議案を難易度コンテンツ・タグ付きで取得
+ *
+ * タグは埋め込みで一緒に引く。全議案の id を `.in()` に並べて別に引くと、
+ * 議案が増えるにつれてリクエストの URL が伸び、nginx の上限（既定 8KB、
+ * 200件ほど）を超えて取得ごと失敗する。
  */
 export async function findPublishedBillsWithContents(
   difficultyLevel: DifficultyLevelEnum
@@ -28,18 +32,75 @@ export async function findPublishedBillsWithContents(
         difficulty_level,
         created_at,
         updated_at
+      ),
+      bills_tags (
+        tags (
+          id,
+          label
+        )
       )
     `
     )
     .eq("publish_status", "published")
     .eq("bill_contents.difficulty_level", difficultyLevel)
-    .order("published_at", { ascending: false });
+    .order("submitted_on", { ascending: false, nullsFirst: false });
 
   if (error) {
     throw new Error(`Failed to fetch bills: ${error.message}`);
   }
 
   return data;
+}
+
+/** Supabase が1リクエストで返す行数の上限（既定値）。 */
+const SUPABASE_MAX_ROWS = 1000;
+
+/**
+ * 検索候補用に、公開済み議案の名称・番号・タイトル・タグだけを取得する。
+ *
+ * `findPublishedBillsWithContents` は解説本文（数KB／件）まで引くため、候補の
+ * 絞り込みに使うには重すぎる。ここは候補行に出す最小限だけを選ぶ。
+ */
+export async function findPublishedBillsForSuggest(
+  difficultyLevel: DifficultyLevelEnum
+) {
+  const supabase = createAdminClient();
+  const { data, error } = await supabase
+    .from("bills")
+    .select(
+      `
+      id,
+      name,
+      bill_number,
+      bill_contents!inner (title),
+      bills_tags (tags (id, label))
+    `
+    )
+    .eq("publish_status", "published")
+    .eq("bill_contents.difficulty_level", difficultyLevel)
+    // 提出日は定例会ごとに数十件が同じ値を持つので、番号と id で順序を固定する。
+    // 候補は上位数件で打ち切るため、並びが揺れると出る候補そのものが変わる。
+    .order("submitted_on", { ascending: false, nullsFirst: false })
+    .order("bill_number", { ascending: true })
+    .order("id", { ascending: true });
+
+  if (error) {
+    // 候補は検索の補助なので、落とさずに空で返して検索自体は使える状態にする。
+    console.error("Failed to fetch bills for suggest:", error);
+    return [];
+  }
+
+  const rows = data ?? [];
+  // Supabase は max_rows を超えた行を返さない。到達したら古い議案が候補から
+  // 静かに落ちるので、気づけるようにログを残す。
+  if (rows.length >= SUPABASE_MAX_ROWS) {
+    console.warn(
+      `findPublishedBillsForSuggest hit the row limit (${SUPABASE_MAX_ROWS}). ` +
+        "候補から漏れる議案が出ているため、サーバー側検索への移行を検討する。"
+    );
+  }
+
+  return rows;
 }
 
 /**
@@ -226,7 +287,7 @@ export async function findPublishedBillsByDietSession(
     .eq("publish_status", "published")
     .eq("bill_contents.difficulty_level", difficultyLevel)
     .order("status_order", { ascending: true })
-    .order("published_at", { ascending: false });
+    .order("submitted_on", { ascending: false, nullsFirst: false });
 
   if (error) {
     throw new Error(
@@ -267,7 +328,7 @@ export async function findPreviousSessionBills(
     .eq("publish_status", "published")
     .eq("bill_contents.difficulty_level", difficultyLevel)
     .order("status_order", { ascending: true })
-    .order("published_at", { ascending: false })
+    .order("submitted_on", { ascending: false, nullsFirst: false })
     .limit(limit);
 
   if (error) {
@@ -310,6 +371,10 @@ export async function countPublishedBillsByDietSession(
 
 /**
  * featured_priorityが設定されているタグを取得
+ *
+ * 取得に失敗したときは `null` を返す。0件と区別できないと、呼び出し側が
+ * 「タグが無い」としてキャッシュに載せてしまい、一時的なエラーで絞り込みが
+ * 消えたまま固定される。
  */
 export async function findFeaturedTags() {
   const supabase = createAdminClient();
@@ -317,11 +382,14 @@ export async function findFeaturedTags() {
     .from("tags")
     .select("id, label, description, featured_priority")
     .not("featured_priority", "is", null)
-    .order("featured_priority", { ascending: true });
+    // 同じ優先度のタグは label で並べる。指定しないと順序が不定で、
+    // カテゴリタブの並びがデプロイごとに入れ替わりうる。
+    .order("featured_priority", { ascending: true })
+    .order("label", { ascending: true });
 
   if (error) {
     console.error("Failed to fetch featured tags:", error);
-    return [];
+    return null;
   }
 
   return data ?? [];
@@ -414,7 +482,7 @@ export async function findFeaturedBillsWithContents(
     .eq("publish_status", "published")
     .eq("is_featured", true)
     .eq("bill_contents.difficulty_level", difficultyLevel)
-    .order("published_at", { ascending: false });
+    .order("submitted_on", { ascending: false, nullsFirst: false });
 
   if (councilSessionId) {
     query = query.eq("council_session_id", councilSessionId);
@@ -428,6 +496,105 @@ export async function findFeaturedBillsWithContents(
   }
 
   return data ?? [];
+}
+
+// ============================================================
+// AI Interview
+// ============================================================
+
+/**
+ * AIインタビューを受付中の公開済み議案を取得
+ *
+ * 受付中の判定は「status = public の interview_configs があること」。
+ * 公開設定は1議案に1件しか作れない（idx_interview_configs_bill_public）ので、
+ * inner join でも議案の行が重複しない。
+ *
+ * 既に議案の配列を持っている場合は `findBillIdsWithPublicInterview` で受付中の
+ * 印を付けるだけで済む。こちらは「受付中の議案そのもの」を引くためのもの。
+ *
+ * 定例会では絞らない。インタビューの受付は会期の開閉とは独立に運用され、
+ * 閉会中でも受付中のものは受付中として案内したいため。
+ *
+ * 解説本文（content）は引かない。数KB／件あるのに、カードが出すのは
+ * タイトルと要約だけで、キャッシュにその分が丸ごと残ってしまう。
+ */
+export async function findBillsWithPublicInterview(
+  difficultyLevel: DifficultyLevelEnum
+) {
+  const supabase = createAdminClient();
+  const { data, error } = await supabase
+    .from("bills")
+    .select(
+      `
+      *,
+      bill_contents!inner (
+        id,
+        bill_id,
+        title,
+        summary,
+        difficulty_level,
+        created_at,
+        updated_at
+      ),
+      bills_tags (
+        tags (
+          id,
+          label
+        )
+      ),
+      interview_configs!inner (
+        id
+      )
+    `
+    )
+    .eq("publish_status", "published")
+    .eq("bill_contents.difficulty_level", difficultyLevel)
+    .eq("interview_configs.status", "public")
+    .order("submitted_on", { ascending: false, nullsFirst: false })
+    .order("bill_number", { ascending: true });
+
+  // 空配列に潰さず投げる。呼び出し元は unstable_cache の外で受けるので、
+  // 一時的なDBエラーが「0件」としてキャッシュに載ることを避けられる。
+  if (error) {
+    throw new Error(
+      `Failed to fetch bills with public interview: ${error.message}`
+    );
+  }
+
+  const rows = data ?? [];
+  // Supabase は max_rows を超えた行を返さない。到達したら受付中の議案が
+  // セクションから静かに落ちるので、気づけるようにログを残す。
+  if (rows.length >= SUPABASE_MAX_ROWS) {
+    console.warn(
+      `findBillsWithPublicInterview hit the row limit (${SUPABASE_MAX_ROWS}).`
+    );
+  }
+
+  return rows;
+}
+
+/**
+ * 公開中のインタビュー設定を持つ議案の id をすべて取得
+ *
+ * 一覧の議案に受付中の印を付けるために使う。受付中の設定は1議案に1件までで
+ * 全体でもごく少ないので、議案の id で絞らずに全件引く。全議案の id を
+ * `.in()` に並べると、議案が増えたときに URL が上限を超える。
+ *
+ * status="public" のみで判定する。受付を終えた設定は status="closed" になる。
+ */
+export async function findBillIdsWithPublicInterview(): Promise<Set<string>> {
+  const supabase = createAdminClient();
+  const { data, error } = await supabase
+    .from("interview_configs")
+    .select("bill_id")
+    .eq("status", "public");
+
+  if (error) {
+    console.error("Failed to fetch interview configs:", error);
+    return new Set();
+  }
+
+  return new Set(data.map((row) => row.bill_id));
 }
 
 // ============================================================

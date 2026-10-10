@@ -9,6 +9,7 @@ const validInput: BillCreateInput = {
   status: "submitted",
   status_note: null,
   is_featured: false,
+  is_review_completed: false,
   committee_ids: [],
 };
 

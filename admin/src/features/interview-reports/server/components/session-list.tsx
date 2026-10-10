@@ -147,16 +147,18 @@ export function SessionList({
                     {session.message_count}
                   </TableCell>
                   <TableCell>
-                    <Link href={`/bills/${billId}/reports/${session.id}`}>
-                      <Button
-                        variant="link"
-                        size="sm"
-                        className="text-blue-600"
-                      >
+                    {/* 既読のレポートが分かるよう :visited で色を変える */}
+                    <Button
+                      asChild
+                      variant="link"
+                      size="sm"
+                      className="text-blue-600 visited:text-purple-600"
+                    >
+                      <Link href={`/bills/${billId}/reports/${session.id}`}>
                         詳細を見る
                         <ExternalLink className="h-3 w-3 ml-1" />
-                      </Button>
-                    </Link>
+                      </Link>
+                    </Button>
                   </TableCell>
                 </TableRow>
               );

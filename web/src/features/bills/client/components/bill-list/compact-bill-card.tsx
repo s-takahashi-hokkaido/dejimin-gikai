@@ -2,6 +2,8 @@ import Image from "next/image";
 import { Card } from "@/components/ui/card";
 import { formatDateJST } from "@/lib/utils/date";
 import type { BillWithContent } from "../../../shared/types";
+import { resolveSubmittedDate } from "../../../shared/utils/bill-dates";
+import { ReviewCompleteBadge } from "../bill-detail/review-status";
 import { BillStatusBadge } from "./bill-status-badge";
 
 interface CompactBillCardProps {
@@ -16,16 +18,23 @@ interface CompactBillCardProps {
 export function CompactBillCard({ bill, className }: CompactBillCardProps) {
   const displayTitle = bill.bill_content?.title || bill.name;
   const statusLabel = "提出";
+  const submittedDate = resolveSubmittedDate(bill);
 
   return (
     <Card
-      className={`border-[0.5px] border-mirai-text-placeholder rounded-2xl shadow-none hover:bg-muted/50 transition-colors overflow-hidden ${className ?? ""}`}
+      className={`border border-black shadow-none hover:bg-muted/50 transition-colors overflow-hidden ${className ?? ""}`}
     >
       <div className="flex">
         {/* コンテンツエリア */}
         <div className="flex-1 p-4 flex flex-col gap-2">
           <h3 className="font-bold text-[15px] leading-[1.6] line-clamp-2">
             {displayTitle}
+            {bill.is_review_completed && (
+              <>
+                {" "}
+                <ReviewCompleteBadge />
+              </>
+            )}
           </h3>
           <div className="flex items-center gap-3">
             <BillStatusBadge
@@ -33,9 +42,9 @@ export function CompactBillCard({ bill, className }: CompactBillCardProps) {
               billType={bill.bill_type}
               className="w-fit"
             />
-            {bill.published_at && (
+            {submittedDate && (
               <span className="text-xs text-muted-foreground">
-                {formatDateJST(bill.published_at)} {statusLabel}
+                {formatDateJST(submittedDate)} {statusLabel}
               </span>
             )}
           </div>

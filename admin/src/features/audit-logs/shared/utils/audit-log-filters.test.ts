@@ -26,6 +26,12 @@ describe("parseAuditLogFilters", () => {
     expect(parseAuditLogFilters({ table: "bills_tags" }).table).toBeNull();
   });
 
+  it("アカウントの履歴で絞り込める", () => {
+    expect(parseAuditLogFilters({ table: "admin_profiles" }).table).toBe(
+      "admin_profiles"
+    );
+  });
+
   it("UUID でない議案IDは無視する（クエリへの混入を防ぐ）", () => {
     expect(
       parseAuditLogFilters({ billId: "x,target_id.is.null" }).billId

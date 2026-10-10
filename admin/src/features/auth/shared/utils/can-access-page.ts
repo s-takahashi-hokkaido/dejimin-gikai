@@ -21,7 +21,7 @@ export const NAV_ITEMS: readonly NavItem[] = [
   { href: "/ai-collection", label: "AI情報収集" },
   { href: "/audit-logs", label: "変更履歴" },
   { href: "/prompts", label: "プロンプト" },
-  { href: "/admins", label: "管理者" },
+  { href: "/admins", label: "アカウント" },
 ];
 
 /** トップレベルのパスごとの許可ロール。未定義は admin のみ（deny by default） */

@@ -31,13 +31,6 @@ const FEATURES: {
     iconSize: { w: 21, h: 29 },
     text: "AIがあなたの課題感や\nご経験をお聞きします",
   },
-  {
-    iconSrc: "/icons/interview-messages.svg",
-    iconSize: { w: 33, h: 26 },
-    text: siteConfig.managingParty
-      ? `ご意見は${siteConfig.managingParty}の\n政策検討に活かします`
-      : "ご意見は\n政策検討に活かします",
-  },
   ...(siteConfig.managingParty
     ? [
         {
@@ -158,21 +151,18 @@ function _InterviewOverviewSection({
           </Link>
           について、AIがあなたの考えを深堀りするチャット型インタビューです
         </p>
-        <p>
-          いただいたご意見は、政策検討や市議会での審議に活用し、
-          {siteConfig.siteName}上に公開される可能性があります。
-        </p>
       </div>
       <div>
-        <Link href={billLink}>
-          <Button
-            variant="outline"
-            className="w-full border border-black rounded-[100px] h-[48px] px-6 font-bold text-[15px] hover:opacity-90 transition-opacity flex items-center justify-center gap-4"
-          >
+        <Button
+          asChild
+          variant="outline"
+          className="w-full border border-black rounded-[100px] h-[48px] px-6 font-bold text-[15px] hover:opacity-90 transition-opacity flex items-center justify-center gap-4"
+        >
+          <Link href={billLink}>
             <span>議案詳細はこちら</span>
             <ArrowRight className="size-4" />
-          </Button>
-        </Link>
+          </Link>
+        </Button>
       </div>
     </div>
   );
@@ -295,12 +285,12 @@ function _InterviewFooterActions({
         sessionInfo={sessionInfo}
         previewToken={previewToken}
       />
-      <Link href={billLink}>
-        <Button variant="outline" className="w-full">
+      <Button asChild variant="outline" className="w-full">
+        <Link href={billLink}>
           <Undo2 className="size-5" />
           <span>議案詳細に戻る</span>
-        </Button>
-      </Link>
+        </Link>
+      </Button>
     </div>
   );
 }

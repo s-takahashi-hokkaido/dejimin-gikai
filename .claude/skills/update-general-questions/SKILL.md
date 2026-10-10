@@ -123,6 +123,23 @@ curl -s -A "Mozilla/5.0" \
 - **複数の答弁者**: `answerer_role` に「役職（氏名）・役職（氏名）」の形でまとめ、`answerer_name` は空にする
 - 中国語簡体字・繁体字の混入をチェックする（例: 议・务・该）
 
+## 3行まとめ（general_question_overviews）
+
+会期ページ（`/sessions/[session_slug]/questions`）の冒頭に出す「どんな話があった？（今回の3行まとめ）」と、テーマ（カテゴリ）を畳んでいるときに出すテーマ別の3行を、`general_question_overviews` に会期ごとに1行で持つ。
+
+| カラム | 内容 |
+|---|---|
+| `council_session_id` | 主キー（`council_sessions` と 1:1） |
+| `lines` | 会期全体の3行（`text[]`）。各行1文で、会期を横断する大きな話題を書く。空配列なら画面に出ない |
+| `theme_lines` | テーマ別の3行（`jsonb`）。`{ "子育て・教育": ["…", "…", "…"], … }` の形で、キーは `build-topic-groups.ts` の `CATEGORY_MAP` の `label`（と「その他」）に**完全一致**させる。一致しないキーは表示されない。行の無いテーマはキーごと省いてよい |
+
+- **入力**: その会期の公開済み（または公開予定）の `general_questions.topics`（`title` / `question_summary` / `answer_summary`）。テーマ別の3行は、そのテーマに分類されるトピックだけから作る（`buildTopicGroups` と同じ分類になるよう、トピックの `title` で判定する）
+- **文体**: topics の要約と同じ基準（やさしく、断定しすぎない）。答弁に無いことや、市の方針として決まっていないことを書かない。特定の会派・議員の主張だけを並べない
+- **本文は AI 生成なので、必ずユーザーに提示して確認を取ってから書き込む**（CLAUDE.md「AI生成コンテンツのDB更新ルール」）。テーマ別の3行に別のテーマの話が混ざっていないかを特に確認する
+- 書き込みは会期単位の upsert（`on conflict (council_session_id) do update`）。`updated_at` も更新する
+- 3行まとめは `general_questions` の `publish_status` とは別に表示される（行があれば出る）。会期を公開する前に入れる場合は、公開と同じタイミングで入れるか、ユーザーに確認する
+- 書き込み後は下の手順 10 と同じく `general-questions` タグのキャッシュを消す
+
 ## 手順
 
 1. 会議一覧（`ACT=100`）で、対象の定例会の各日の `FINO` を特定する。会議録が未公開なら止めてユーザーに伝える
@@ -133,7 +150,7 @@ curl -s -A "Mozilla/5.0" \
 6. **ユーザーレビュー（必須）**: 生成内容を提示し、承認を得てから書き込む（CLAUDE.md「AI生成コンテンツのDB更新ルール」）
 7. `publish_status: draft` で登録する。`general_questions` には管理画面が無いので、REST または SQL で書き込む。接続は `db-access` スキルに従う（北海道版の本番DBは未確定なので、接続先をユーザーに確認する）
 8. web は `published` の行しか表示しない。表示の確認はローカル環境（ローカルDBで `published` にする）で行う。`/sessions/[session_slug]/questions` のテーマ別ビューでカテゴリ分類を目で確認し、`/questions/[id]` で要約と原文の切り替えを確認する
-9. ユーザーの確認後、会期単位で `published` にする
+9. ユーザーの確認後、会期単位で `published` にする。あわせて「3行まとめ」（上の節）を作り、ユーザーの確認を取ってから `general_question_overviews` に入れる
 10. **web のキャッシュを消す**: 一般質問の loader は `unstable_cache`（タグ `general-questions`、10分）でキャッシュしている。DBを直接書き換えた場合は管理画面経由のキャッシュ無効化が走らないので、web の `/api/revalidate` を呼ぶ
 
 ```bash
@@ -143,7 +160,7 @@ curl -s -X POST "<web のURL>/api/revalidate" \
   -d '{"tags": ["general-questions"]}'
 ```
 
-キャッシュしているのは会期別一覧（`get-general-questions-by-session.ts`）と個人ページ（`get-general-question-by-id.ts`）の loader。トップページのバナーは最新の公開済みの会期を自動で拾い、その loader はキャッシュしていないので、追加作業は不要。
+キャッシュしているのは会期別一覧（`get-general-questions-by-session.ts`）・3行まとめ（`get-general-question-overview-by-session.ts`）・個人ページ（`get-general-question-by-id.ts`）の loader。トップページのバナーは最新の公開済みの会期を自動で拾い、その loader はキャッシュしていないので、追加作業は不要。
 
 ## 関連
 

@@ -35,15 +35,16 @@ export function InterviewSessionErrorView({
         </div>
       </div>
 
-      <Link href={lpLink}>
-        <Button
-          variant="outline"
-          className="flex items-center gap-2 border-black rounded-[100px] font-bold"
-        >
+      <Button
+        asChild
+        variant="outline"
+        className="flex items-center gap-2 border-black rounded-[100px] font-bold"
+      >
+        <Link href={lpLink}>
           <ArrowLeft className="w-4 h-4" />
           インタビュートップに戻る
-        </Button>
-      </Link>
+        </Link>
+      </Button>
     </div>
   );
 }

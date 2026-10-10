@@ -68,6 +68,11 @@ export const previewRegistry: PreviewGroup[] = [
         label: "PublicConsentModal",
         description: "インタビュー公開設定モーダル",
       },
+      {
+        path: "/dev/features/interview/summary-input",
+        label: "InterviewSummaryInput",
+        description: "要約フェーズの入力欄（レポート提出／未生成時の安全網）",
+      },
     ],
   },
 ];

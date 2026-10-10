@@ -17,7 +17,12 @@ export type SeedBill = {
   sourceUrl: string;
   status: BillStatus;
   statusNote: string | null;
+  /** 本会議提出日（JST 0 時）。submittedDate が無い議案は、web がこれを提出日として表示する */
   publishedAt: string;
+  /** 本会議提出日（YYYY-MM-DD）。省略時は publishedAt が提出日として表示される */
+  submittedDate?: string;
+  /** 本会議の議決日（YYYY-MM-DD）。未議決なら省略する */
+  decidedDate?: string;
   isFeatured: boolean;
   /** 付託委員会（committees.name）。分割付託は全委員会を列挙する */
   committees: string[];

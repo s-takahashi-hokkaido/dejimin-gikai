@@ -1,13 +1,14 @@
 # infra/
 
 さくらVPS（Ubuntu 24.04 / 2GB）に載せるための設定ファイル置き場。
-全体の手順は [docs/20260924_1404_さくらVPS立ち上げ手順.md](../docs/20260924_1404_さくらVPS立ち上げ手順.md)、
+全体の手順は [docs/20260930_2104_さくらVPS構築手順.md](../docs/20260930_2104_さくらVPS構築手順.md)、
 ローカルでの検証結果は [docs/20260922_2100_ローカルdocker-compose検証結果.md](../docs/20260922_2100_ローカルdocker-compose検証結果.md) を参照。
 
 | パス | 中身 | VPS 上の置き場所 |
 |---|---|---|
 | `compose.yml` / `.env.example` | セルフホスト Supabase（db / auth / rest / storage / nginx） | `/srv/gikai/infra/`（リポジトリを clone して使う） |
 | `nginx/supabase.conf` | 上記 compose のゲートウェイ nginx の設定 | compose がマウントする |
+| `email-templates/` | 管理画面の招待・パスワード再設定メールの本文。GoTrue が compose の nginx（中だけの 8088 番）から取る。ローカルの Supabase CLI も `supabase/config.toml` から同じファイルを使う | compose がマウントする |
 | `db/roles.sql` / `db/jwt.sql` | db コンテナの初期化スクリプト | compose がマウントする |
 | `systemd/gikai-web.service` | web（Next.js standalone）の systemd unit | `/etc/systemd/system/gikai-web.service` |
 | `systemd/gikai-admin.service` | admin（Next.js standalone）の systemd unit | `/etc/systemd/system/gikai-admin.service` |
@@ -140,8 +141,29 @@ chmod 600 /srv/gikai/admin.env
 
 ### 2-3. systemd unit と sudoers
 
+VPS にはリポジトリを置かない方針（手順書 手順8）なので、手元から送ってから置く。
+
 ```bash
-# リポジトリを clone した場所（例: ~/mirai-gikai-hokkaido）で
+# 手元（リポジトリ直下）
+scp infra/systemd/gikai-web.service infra/systemd/gikai-admin.service infra/sudoers/gikai-deploy ezocivic-vps1:/tmp/
+```
+
+```bash
+# VPS（ssh -t ezocivic-vps1 で入って。/tmp に送った3つを置く）
+cd /tmp
+sudo install -o root -g root -m 0644 gikai-web.service   /etc/systemd/system/
+sudo install -o root -g root -m 0644 gikai-admin.service /etc/systemd/system/
+sudo install -o root -g root -m 0440 gikai-deploy        /etc/sudoers.d/gikai-deploy
+sudo visudo -cf /etc/sudoers.d/gikai-deploy      # 構文確認（必須）
+rm gikai-web.service gikai-admin.service gikai-deploy
+
+sudo systemctl daemon-reload
+sudo systemctl enable gikai-web gikai-admin      # 起動は成果物を置いた後
+```
+
+VPS にリポジトリを clone してある場合は、その場所で次のようにしてもよい。
+
+```bash
 sudo install -o root -g root -m 0644 infra/systemd/gikai-web.service   /etc/systemd/system/
 sudo install -o root -g root -m 0644 infra/systemd/gikai-admin.service /etc/systemd/system/
 sudo install -o root -g root -m 0440 infra/sudoers/gikai-deploy        /etc/sudoers.d/gikai-deploy
@@ -238,36 +260,52 @@ ssh-keyscan -p 2222 -t ed25519 gikai.ezocivic.tech   # → [gikai.ezocivic.tech]
 **登録しないもの**: `SUPABASE_SERVICE_ROLE_KEY`、`OPENAI_API_KEY`、`REVALIDATE_SECRET`、
 DB のパスワード、`JWT_SECRET`。これらは VPS の env ファイルにだけ置く。
 
-`gh` で登録する場合:
+**repository レベルに登録する。** リポジトリには Environment（Preview / Production）もあるが、
+`deploy_vps.yml` は `environment:` を指定していないので、Environment に登録した値は読まれない。
+
+`gh` で登録する場合。このリポジトリはリモートが複数（origin / upstream / team-mirai）あるので、
+`-R` を付けないと `multiple remotes detected` で止まるか、別のリポジトリに登録してしまう。
 
 ```bash
-gh variable set VPS_HOST --body "gikai.ezocivic.tech"
-gh variable set VPS_USER --body "ubuntu"
-gh variable set NEXT_PUBLIC_SUPABASE_URL --body "https://db.ezocivic.tech"
-gh variable set NEXT_PUBLIC_SUPABASE_ANON_KEY --body "<anon の JWT>"
-gh variable set NEXT_PUBLIC_WEB_URL --body "https://gikai.ezocivic.tech"
-gh variable set NEXT_PUBLIC_APP_URL --body "https://gikai-admin.ezocivic.tech"
+R=s-takahashi-hokkaido/dejimin-gikai
+gh variable set VPS_HOST -R $R --body "gikai.ezocivic.tech"
+gh variable set VPS_USER -R $R --body "ubuntu"
+gh variable set NEXT_PUBLIC_SUPABASE_URL -R $R --body "https://db.ezocivic.tech"
+gh variable set NEXT_PUBLIC_SUPABASE_ANON_KEY -R $R --body "<anon の JWT>"
+gh variable set NEXT_PUBLIC_WEB_URL -R $R --body "https://gikai.ezocivic.tech"
+gh variable set NEXT_PUBLIC_APP_URL -R $R --body "https://gikai-admin.ezocivic.tech"
 
-gh secret set VPS_SSH_PRIVATE_KEY < ~/.ssh/gikai_deploy
-ssh-keyscan -t ed25519 gikai.ezocivic.tech | gh secret set VPS_SSH_KNOWN_HOSTS
+gh secret set VPS_SSH_PRIVATE_KEY -R $R < ~/.ssh/gikai_deploy
+ssh-keyscan -t ed25519 gikai.ezocivic.tech | gh secret set VPS_SSH_KNOWN_HOSTS -R $R
+
+gh variable list -R $R && gh secret list -R $R   # 登録を確かめる
 ```
 
 ---
 
 ## 4. デプロイする
 
+本番に出すのは **`main` だけ**。`develop` の変更は、`develop` → `main` の PR（`/deploy`）をマージしてから流す。
+マイグレーションや `infra/` の変更を含む時は、先にそちらを済ませる
+（順番は [構築手順](../docs/20260930_2104_さくらVPS構築手順.md) §5「デプロイ」）。
+
+> **`main` は PR #62（2026-09-29）のまま止まっている。** VPS には `develop` から流した新しい版が載っているので、
+> 最初の `/deploy` で `develop` を `main` に入れるまでは、`main` でこのワークフローを流さない（古い版に戻ってしまう）。
+> 最初のリリースは [本番リリース手順](../docs/20261010_0845_アカウント管理の本番リリース手順.md) のとおりに行う。
+
 ```bash
-gh workflow run "Deploy VPS" --ref develop
-gh run watch
+gh workflow run "Deploy VPS" -R s-takahashi-hokkaido/dejimin-gikai --ref main
+gh run watch -R s-takahashi-hokkaido/dejimin-gikai
 ```
 
-（GitHub の画面からは Actions → Deploy VPS → Run workflow）
+（GitHub の画面からは Actions → Deploy VPS → Run workflow。**Use workflow from を `main` に切り替える**。
+既定のブランチ（`develop`）のまま実行すると最初のステップで止まる）
 
-ワークフローは最初に、実行したブランチが `develop` / `main` かと、Variables / Secrets の登録漏れを
+ワークフローは最初に、実行したブランチが `main` かと、Variables / Secrets の登録漏れを
 確かめて止まる（`--ref` の指定違いで別のコードが本番に乗らないようにするため）。
 最後に、`<app>.env` の `PORT` を読んで応答が返るまで最大60秒待ち、2xx / 3xx が返ることを確かめる。
 
-公開前は手動実行のみ（`workflow_dispatch`）。`develop` への push で自動デプロイにする場合は、
+公開前は手動実行のみ（`workflow_dispatch`）。`main` への push で自動デプロイにする場合は、
 `deploy_vps.yml` の先頭にコメントで残してある `push:` を有効にする。
 
 ### デプロイ中の見え方と、戻したい時
@@ -277,15 +315,16 @@ gh run watch
 ページへアクセスすると 500 になることがある。** 公開後もこの形で続けるなら、
 リリースごとに別ディレクトリへ送って symlink を差し替える形に変えるほうがよい。
 
-`--delete` なので**前の版は VPS に残らない。** 戻したい時は、戻したいコミットを `develop` に入れて
-デプロイをやり直す（ワークフローは `develop` / `main` からしか実行できない）。
+`--delete` なので**前の版は VPS に残らない。** 戻したい時は、戻したいコミットを `main` に入れて
+デプロイをやり直す（ワークフローは `main` からしか実行できない）。
 
 ### うまくいかない時
 
 | 症状 | 見るところ |
 |---|---|
+| 18 秒ほどで `exit code 1`（画面には理由が出ない） | ログの `Check deploy ref, variables and secrets` に `GitHub に登録されていません: ...` が出ていれば §3 の登録漏れ。repository レベルに登録したか |
 | rsync が `Permission denied` | `/srv/gikai/{web,admin}` の所有者が `ubuntu` か |
-| `sudo: a password is required` | `/etc/sudoers.d/gikai-deploy` の有無・権限（0440）・`VPS_USER` と1行目のユーザーが一致しているか |
+| `sudo: a password is required` | §2-3 を済ませたか（最初のデプロイの前に要る）。`/etc/sudoers.d/gikai-deploy` の有無・権限（0440）・`VPS_USER` と1行目のユーザーが一致しているか |
 | `Host key verification failed` | `VPS_SSH_KNOWN_HOSTS` を `VPS_HOST` と同じ名前で取り直す。SSH のポートを変えている場合は `ssh-keyscan -p <port>` で取る（§3-1） |
 | 起動しない | `journalctl -u gikai-web -n 50`。env ファイルの読み取り権限、`WorkingDirectory` の `server.js` の有無 |
 | メモリで落ちる（`MemoryMax`） | `systemctl status gikai-web` の Memory。実測は web 230MiB / admin 190MiB（検証結果 §4-7） |

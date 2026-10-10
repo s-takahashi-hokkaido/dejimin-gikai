@@ -3,13 +3,14 @@
   <!-- 左側のアクセントバー -->
   <rect x="0" y="0" width="12" height="630" fill="#3b82c4"/>
   <!-- 中央ボックス -->
-  <rect x="200" y="140" width="800" height="350" rx="12" stroke="#3b82c4" stroke-width="4" fill="white"/>
-  <!-- メインテキスト -->
-  <text x="600" y="270" font-family="Noto Sans JP, sans-serif" font-size="80" font-weight="bold" fill="#3b82c4" text-anchor="middle">デジ民議会</text>
+  <rect x="200" y="90" width="800" height="420" rx="12" stroke="#3b82c4" stroke-width="4" fill="white"/>
+  <!-- メインテキスト（1行だと 80px では箱に収まらないので、ヘッダーと同じ区切りで2行にする） -->
+  <text x="600" y="210" font-family="Noto Sans JP, sans-serif" font-size="80" font-weight="bold" fill="#3b82c4" text-anchor="middle">デジタル民主主義</text>
+  <text x="600" y="310" font-family="Noto Sans JP, sans-serif" font-size="80" font-weight="bold" fill="#3b82c4" text-anchor="middle">共創議会</text>
   <!-- 区切り線 -->
-  <line x1="280" y1="305" x2="920" y2="305" stroke="#3b82c4" stroke-width="2"/>
+  <line x1="280" y1="350" x2="920" y2="350" stroke="#3b82c4" stroke-width="2"/>
   <!-- サブテキスト -->
-  <text x="600" y="360" font-family="Noto Sans JP, sans-serif" font-size="36" fill="#555555" text-anchor="middle">（非公式）　札幌市版</text>
+  <text x="600" y="410" font-family="Noto Sans JP, sans-serif" font-size="36" fill="#555555" text-anchor="middle">（非公式）　札幌市版</text>
   <!-- 下部キャッチコピー -->
-  <text x="600" y="560" font-family="Noto Sans JP, sans-serif" font-size="24" fill="#888888" text-anchor="middle">札幌市議会で今どんな議案が検討されているか、わかりやすく伝えるプラットフォーム</text>
+  <text x="600" y="575" font-family="Noto Sans JP, sans-serif" font-size="24" fill="#888888" text-anchor="middle">札幌市議会で今どんな議案が検討されているか、わかりやすく伝えるプラットフォーム</text>
 </svg>

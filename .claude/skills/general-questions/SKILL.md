@@ -10,10 +10,12 @@ description: 一般質問機能の設計・データ管理・UI決定事項の�
 ### セッション一覧ページ `/sessions/[session_slug]/questions`
 **テーマ別市民向けビュー**を採用（2026-05-01 確定）。
 
-- `SessionTopicsView` コンポーネント（Server Component）
-- `buildTopicGroups()` でトピックを8カテゴリに自動分類
-- 市の答弁を先に・大きく表示（課題より結果を前面に）
-- 「質疑の詳細→」で個人ページへ遷移
+- `SessionTopicsView`（Server Component）が `buildTopicGroups()` でトピックを8カテゴリに自動分類し、`SessionQuestionsOverview`（Client Component）に渡す
+- 冒頭に「どんな話があった？（今回の3行まとめ）」、その下にテーマごとのアコーディオン（2026-10 に福岡市版 #87・#88・#89 から移植）
+  - テーマは最初すべて畳む。畳んでいる間はテーマ別の3行を出し、開くとカードを出す。「すべて開く／閉じる」あり
+  - 3行まとめは `general_question_overviews`（会期ごとに1行。全体の `lines` とテーマ別の `theme_lines`）。行が無い会期・テーマは何も出さない
+- カードは市の答弁を先に・大きく表示（課題より結果を前面に）
+- 「質疑の詳細→」で個人ページの該当トピック（`/questions/[id]#topic-N`）へ遷移
 
 ### 個人詳細ページ `/questions/[id]`
 **要約／原文の切り替えトグル**を採用（2026-05-08 確定）。
@@ -49,20 +51,23 @@ web/src/features/general-questions/
 │   ├── types/index.ts                          # GeneralQuestion 型定義
 │   └── utils/
 │       ├── build-topic-groups.ts               # カテゴリ分類ロジック（純粋関数）
+│       ├── parse-session-overview.ts           # 3行まとめの DB 行を整える（純粋関数）
 │       └── build-topic-groups.test.ts          # テスト
 ├── server/
 │   ├── repositories/general-questions-repository.ts
 │   ├── loaders/
 │   │   ├── get-general-questions-by-session.ts
+│   │   ├── get-general-question-overview-by-session.ts  # 3行まとめ
 │   │   ├── get-general-question-by-id.ts
 │   │   └── get-latest-session-with-questions.ts  # トップページバナー用
 │   └── components/
-│       ├── session-topics-view.tsx             # テーマ別一覧（採用デザイン）
+│       ├── session-topics-view.tsx             # テーマ別一覧の入口（分類して client に渡す）
 │       ├── raw-transcript-view.tsx             # 原文表示（raw_textのみの場合）
 │       └── general-question-list.tsx           # 旧リスト（未使用）
 └── client/
     └── components/
-        ├── question-chat-view.tsx              # チャット形式（採用デザイン）
+        ├── session-questions-overview.tsx      # 3行まとめ＋テーマ別アコーディオン（採用デザイン）
+        ├── question-chat-view.tsx              # チャット形式（採用デザイン）。トピックごとに #topic-N のアンカー
         ├── question-view-toggle.tsx            # 要約/原文切り替えトグル（採用デザイン）
         └── general-question-topics.tsx         # 旧アコーディオン（未使用）
 ```

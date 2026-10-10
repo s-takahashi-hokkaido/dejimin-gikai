@@ -1,8 +1,12 @@
 import Image from "next/image";
 import { RubySafeLineClamp } from "@/components/ruby-safe-line-clamp";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
+import { siteConfig } from "@/config/site.config";
 import { formatDateJST } from "@/lib/utils/date";
 import type { BillWithContent } from "../../../shared/types";
+import { resolveSubmittedDate } from "../../../shared/utils/bill-dates";
+import { BillPill } from "./bill-pill";
+import { ReviewCompleteBadge } from "../bill-detail/review-status";
 import { BillStatusBadge } from "./bill-status-badge";
 import { BillTag } from "./bill-tag";
 
@@ -11,11 +15,15 @@ interface BillCardProps {
 }
 
 export function BillCard({ bill }: BillCardProps) {
+  const submittedDate = resolveSubmittedDate(bill);
   const displayTitle = bill.bill_content?.title;
   const summary = bill.bill_content?.summary;
+  // AIインタビューを使わない設定では、受付中の設定が残っていても案内しない
+  const showInterviewPill =
+    siteConfig.features.aiInterview && bill.hasPublicInterview;
 
   return (
-    <Card className="border border-black hover:bg-muted/50 transition-colors relative overflow-hidden max-w-[634px]">
+    <Card className="border border-black shadow-none hover:bg-muted/50 transition-colors relative overflow-hidden max-w-[634px]">
       <div className="flex flex-col">
         {/* 注目バッジエリア */}
         {bill.is_featured && (
@@ -52,6 +60,12 @@ export function BillCard({ bill }: BillCardProps) {
               )}
               <CardTitle className="text-2xl/8 tracking-normal">
                 {displayTitle}
+                {bill.is_review_completed && (
+                  <>
+                    {" "}
+                    <ReviewCompleteBadge />
+                  </>
+                )}
               </CardTitle>
               <div className="flex flex-row gap-4">
                 <BillStatusBadge
@@ -60,8 +74,10 @@ export function BillCard({ bill }: BillCardProps) {
                   className="w-fit"
                 />
                 <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
-                  {bill.published_at && (
-                    <time>{formatDateJST(bill.published_at)} 提出</time>
+                  {submittedDate && (
+                    <time dateTime={submittedDate}>
+                      {formatDateJST(submittedDate)} 提出
+                    </time>
                   )}
                 </div>
               </div>
@@ -71,12 +87,15 @@ export function BillCard({ bill }: BillCardProps) {
                 lineClamp={4}
                 className="text-sm leading-relaxed"
               />
-              {/* タグ表示 */}
-              {bill.tags && bill.tags.length > 0 && (
+              {/* タグ・受付中の表示 */}
+              {(bill.tags.length > 0 || showInterviewPill) && (
                 <div className="flex flex-wrap gap-3">
                   {bill.tags.map((tag) => (
                     <BillTag key={tag.id} tag={tag} />
                   ))}
+                  {showInterviewPill && (
+                    <BillPill>AIインタビュー受付中</BillPill>
+                  )}
                 </div>
               )}
             </div>

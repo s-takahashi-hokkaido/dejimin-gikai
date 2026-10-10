@@ -130,6 +130,37 @@ export async function countPublicReportsByBillId(billId: string) {
 }
 
 /**
+ * 複数議案の公開インタビューレポート件数をまとめて数える。
+ *
+ * 議案一覧で議案ごとに回答数を出すため、countPublicReportsByBillId を議案数ぶん
+ * 呼ぶと百回以上のクエリになる。集約は DB 側（count_public_reports_by_bill_ids）で行う。
+ * 公開の定義（管理者公開 × ユーザー公開）は countPublicReportsByBillId と同じ。
+ *
+ * 0件の議案は返り値に現れないので、呼び出し側で 0 として扱えるよう Map で返す。
+ */
+export async function countPublicReportsByBillIds(
+  billIds: readonly string[]
+): Promise<Map<string, number>> {
+  if (billIds.length === 0) return new Map();
+
+  const supabase = createAdminClient();
+  const { data, error } = await supabase.rpc(
+    "count_public_reports_by_bill_ids",
+    { p_bill_ids: [...billIds] }
+  );
+
+  if (error) {
+    throw new Error(
+      `Failed to count public interview reports by bill ids: ${error.message}`
+    );
+  }
+
+  return new Map(
+    (data ?? []).map((row) => [row.bill_id, Number(row.report_count)])
+  );
+}
+
+/**
  * 公開レポートをIDから取得（認証不要）
  * 公開条件: is_public_by_admin = true AND is_public_by_user = true
  */

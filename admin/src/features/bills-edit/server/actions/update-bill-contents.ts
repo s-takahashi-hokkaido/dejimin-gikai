@@ -12,7 +12,11 @@ import {
   billContentsUpdateSchema,
   type DifficultyLevel,
 } from "../../shared/types/bill-contents";
-import { upsertBillContent } from "../repositories/bill-edit-repository";
+import { shouldResetReviewOnContentEdit } from "../../shared/utils/omit-admin-only-bill-fields";
+import {
+  updateBillRecord,
+  upsertBillContent,
+} from "../repositories/bill-edit-repository";
 
 export type UpdateBillContentsResult =
   | { success: true }
@@ -29,6 +33,8 @@ export async function updateBillContents(
     // バリデーション
     const validatedData = billContentsUpdateSchema.parse(input);
 
+    let wroteContent = false;
+
     // 各難易度レベルのupsertを並行実行
     const upsertPromises = (["normal", "hard"] as DifficultyLevel[]).map(
       async (difficulty) => {
@@ -38,6 +44,7 @@ export async function updateBillContents(
         if (!data.title && !data.summary && !data.content) {
           return;
         }
+        wroteContent = true;
 
         await upsertBillContent(
           {
@@ -53,6 +60,11 @@ export async function updateBillContents(
     );
 
     await Promise.all(upsertPromises);
+
+    // 運営者以外が解説を書き換えたら、確認済みの印を外す（運営者が確認し直す）
+    if (wroteContent && shouldResetReviewOnContentEdit(admin.role)) {
+      await updateBillRecord(billId, { is_review_completed: false }, admin);
+    }
 
     // web側のキャッシュを無効化
     await invalidateWebCache([WEB_CACHE_TAGS.BILLS]);

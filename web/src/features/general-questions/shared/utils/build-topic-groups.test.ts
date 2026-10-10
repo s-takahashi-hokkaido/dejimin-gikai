@@ -171,4 +171,60 @@ describe("buildTopicGroups", () => {
   it("空配列は空グループを返す", () => {
     expect(buildTopicGroups([])).toHaveLength(0);
   });
+
+  it("各ブロックは先頭トピックのindexをtopicIndexに持つ", () => {
+    // topics: [0]保育=子育て, [1]耐震=防災 → 2ブロック（index 0, 1）
+    const groups = buildTopicGroups([mockQuestion]);
+    const childCare = groups.find((g) => g.categoryLabel === "子育て・教育");
+    const bousai = groups.find((g) => g.categoryLabel === "防災・安全");
+    expect(childCare?.entries[0].topicIndex).toBe(0);
+    expect(bousai?.entries[0].topicIndex).toBe(1);
+  });
+
+  it("連続同カテゴリをまとめたブロックのtopicIndexは先頭トピックの位置", () => {
+    const q: GeneralQuestion = {
+      id: "q-idx",
+      council_session_id: "session-1",
+      questioner_name: "テスト",
+      questioner_party: null,
+      questioner_number: 9,
+      session_day: 1,
+      question_order: 9,
+      summary: "",
+      topics: [
+        // [0] 子育て
+        {
+          title: "保育の充実",
+          question_summary: "q",
+          answer_summary: "a",
+          answerer_role: "局長",
+          answerer_name: "A",
+        },
+        // [1][2] 防災（連続→1ブロック, 先頭index=1）
+        {
+          title: "耐震化の推進",
+          question_summary: "q",
+          answer_summary: "a",
+          answerer_role: "局長",
+          answerer_name: "A",
+        },
+        {
+          title: "火災警報の見直し",
+          question_summary: "q",
+          answer_summary: "a",
+          answerer_role: "局長",
+          answerer_name: "A",
+        },
+      ],
+      raw_text: null,
+      source_url: null,
+      publish_status: "published",
+      created_at: "2026-04-01T00:00:00Z",
+      updated_at: "2026-04-01T00:00:00Z",
+    };
+    const groups = buildTopicGroups([q]);
+    const bousai = groups.find((g) => g.categoryLabel === "防災・安全");
+    expect(bousai?.entries[0].topicCount).toBe(2);
+    expect(bousai?.entries[0].topicIndex).toBe(1);
+  });
 });

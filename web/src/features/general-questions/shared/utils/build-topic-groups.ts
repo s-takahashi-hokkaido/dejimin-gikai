@@ -7,6 +7,8 @@ export type TopicEntry = {
   answererRole: string;
   answererName: string;
   topicCount: number;
+  /** このブロックの先頭トピックが議員の topics 配列の何番目か（詳細ページのアンカー用） */
+  topicIndex: number;
   questioner: {
     id: string;
     name: string;
@@ -188,7 +190,8 @@ export function assignCategory(topicTitle: string): {
 
 function buildEntry(
   q: GeneralQuestion,
-  topics: GeneralQuestionTopic[]
+  topics: GeneralQuestionTopic[],
+  topicIndex: number
 ): TopicEntry {
   const first = topics[0];
   // block_summary がある場合（複数トピック統合時にAI生成）はそれを優先
@@ -201,6 +204,7 @@ function buildEntry(
     answererRole: useBlockSummary ? "" : first.answerer_role,
     answererName: useBlockSummary ? "" : first.answerer_name,
     topicCount: topics.length,
+    topicIndex,
     questioner: {
       id: q.id,
       name: q.questioner_name,
@@ -219,27 +223,34 @@ export function buildTopicGroups(questions: GeneralQuestion[]): TopicGroup[] {
     topics: GeneralQuestionTopic[];
     iconName: string;
     categoryLabel: string;
+    topicIndex: number;
   }> = [];
 
   for (const q of questions) {
     let currentBlock: (typeof blocks)[0] | null = null;
 
-    for (const t of q.topics) {
+    q.topics.forEach((t, i) => {
       const { label, iconName } = assignCategory(t.title);
 
       if (currentBlock && currentBlock.categoryLabel === label) {
         currentBlock.topics.push(t);
       } else {
-        currentBlock = { q, topics: [t], iconName, categoryLabel: label };
+        currentBlock = {
+          q,
+          topics: [t],
+          iconName,
+          categoryLabel: label,
+          topicIndex: i,
+        };
         blocks.push(currentBlock);
       }
-    }
+    });
   }
 
   const categoryMap = new Map<string, TopicGroup>();
 
-  for (const { q, topics, iconName, categoryLabel } of blocks) {
-    const entry = buildEntry(q, topics);
+  for (const { q, topics, iconName, categoryLabel, topicIndex } of blocks) {
+    const entry = buildEntry(q, topics, topicIndex);
     const existing = categoryMap.get(categoryLabel);
     if (existing) {
       existing.entries.push(entry);

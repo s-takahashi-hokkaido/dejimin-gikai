@@ -1,4 +1,4 @@
-export type SearchTab = "all" | "bills" | "questions" | "budget";
+export type SearchTab = "all" | "bills" | "questions";
 
 export type BillSearchResult = {
   id: string;
@@ -17,17 +17,7 @@ export type QuestionSearchResult = {
   session: string;
 };
 
-export type BudgetSearchResult = {
-  id: string;
-  departmentName: string;
-  direction: string | null;
-  session: string;
-  sessionSlug: string;
-  departmentSlug: string;
-};
-
 export type SearchResults = {
   bills: BillSearchResult[];
   questions: QuestionSearchResult[];
-  budgets: BudgetSearchResult[];
 };

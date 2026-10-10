@@ -4,7 +4,9 @@ import type { DifficultyLevelEnum } from "@/features/bill-difficulty/shared/type
 import { getActiveCouncilSession } from "@/features/council-sessions/server/loaders/get-active-council-session";
 import { CACHE_TAGS } from "@/lib/cache-tags";
 import type { BillsByTag } from "../../shared/types";
+import { sortBills } from "../../shared/utils/sort-bills";
 import {
+  findBillIdsWithPublicInterview,
   findFeaturedTags,
   findPublishedBillsByTag,
 } from "../repositories/bill-repository";
@@ -19,10 +21,18 @@ export async function getBillsByFeaturedTags(): Promise<BillsByTag[]> {
   const difficultyLevel = await getDifficultyLevel();
   const activeSession = await getActiveCouncilSession();
 
-  return _getCachedBillsByFeaturedTags(
-    difficultyLevel,
-    activeSession?.id ?? null
-  );
+  try {
+    return await _getCachedBillsByFeaturedTags(
+      difficultyLevel,
+      activeSession?.id ?? null
+    );
+  } catch (error) {
+    // 取得失敗はキャッシュ関数の外で受ける。中で空配列に変換すると、失敗が
+    // 正常な結果として10分キャッシュされてしまう。トップは他のセクションが
+    // 出れば成立するので、ここで空に縮退させる。
+    console.error("Failed to fetch bills by featured tags:", error);
+    return [];
+  }
 }
 
 const _getCachedBillsByFeaturedTags = unstable_cache(
@@ -32,73 +42,90 @@ const _getCachedBillsByFeaturedTags = unstable_cache(
   ): Promise<BillsByTag[]> => {
     const featuredTags = await findFeaturedTags();
 
+    // 取得失敗はキャッシュに載せない。空配列を返すと0件と区別できず、一時的な
+    // DBエラー1回でタグ別セクションが10分消えたままになる。
+    if (featuredTags === null) {
+      throw new Error("Failed to fetch featured tags");
+    }
+
     if (featuredTags.length === 0) {
       return [];
     }
 
-    // 各タグの議案を並列で取得
-    const results = await Promise.all(
-      featuredTags.map(async (tag) => {
-        const data = await findPublishedBillsByTag(
-          tag.id,
-          difficultyLevel,
-          councilSessionId
-        );
+    // 各タグの議案とインタビュー状態を並列で取得
+    const [results, interviewBillIds] = await Promise.all([
+      Promise.all(
+        featuredTags.map(async (tag) => {
+          const data = await findPublishedBillsByTag(
+            tag.id,
+            difficultyLevel,
+            councilSessionId
+          );
 
-        if (!data || data.length === 0) {
-          return null;
-        }
+          if (!data || data.length === 0) {
+            return null;
+          }
 
-        // データを整形
-        const bills = data
-          .map((item) => {
-            const billData = item.bills;
-            if (!billData) return null;
+          // データを整形
+          const bills = data
+            .map((item) => {
+              const billData = item.bills;
+              if (!billData) return null;
 
-            const { bill_contents, bills_tags, ...bill } = billData;
-            const billContent = Array.isArray(bill_contents)
-              ? bill_contents[0]
-              : undefined;
+              const { bill_contents, bills_tags, ...bill } = billData;
+              const billContent = Array.isArray(bill_contents)
+                ? bill_contents[0]
+                : undefined;
 
-            // billに紐づくすべてのタグを取得
-            const tags = Array.isArray(bills_tags)
-              ? bills_tags
-                  .map((bt) => bt.tags)
-                  .filter((t): t is NonNullable<typeof t> => t !== null)
-              : [];
+              // billに紐づくすべてのタグを取得
+              const tags = Array.isArray(bills_tags)
+                ? bills_tags
+                    .map((bt) => bt.tags)
+                    .filter((t): t is NonNullable<typeof t> => t !== null)
+                : [];
 
-            return {
-              ...bill,
-              bill_content: billContent,
-              tags,
-            };
-          })
-          .filter((bill): bill is NonNullable<typeof bill> => bill !== null);
+              return {
+                ...bill,
+                bill_content: billContent,
+                tags,
+              };
+            })
+            .filter((bill): bill is NonNullable<typeof bill> => bill !== null);
 
-        if (bills.length === 0) {
-          return null;
-        }
+          if (bills.length === 0) {
+            return null;
+          }
 
-        return {
-          tag: {
-            id: tag.id,
-            label: tag.label,
-            description: tag.description ?? undefined,
-            priority: tag.featured_priority ?? -1,
-          },
-          bills,
-        };
-      })
-    );
+          return {
+            tag: {
+              id: tag.id,
+              label: tag.label,
+              description: tag.description ?? undefined,
+              priority: tag.featured_priority ?? -1,
+            },
+            // 取得順は不定。先頭だけ大きいカードで出すので、並びを固定しておかないと
+            // キャッシュが更新されるたびに先頭の議案が入れ替わる。
+            bills: sortBills(bills, "new"),
+          };
+        })
+      ),
+      findBillIdsWithPublicInterview(),
+    ]);
 
-    // nullを除外して返す
-    return results.filter(
-      (result): result is NonNullable<typeof result> => result !== null
-    );
+    // nullを除外し、インタビュー状態を付与して返す
+    return results
+      .filter((result): result is NonNullable<typeof result> => result !== null)
+      .map((result) => ({
+        ...result,
+        bills: result.bills.map((bill) => ({
+          ...bill,
+          hasPublicInterview: interviewBillIds.has(bill.id),
+        })),
+      }));
   },
   ["featured-bills-list"],
   {
     revalidate: 600, // 10分（600秒）
-    tags: [CACHE_TAGS.BILLS],
+    tags: [CACHE_TAGS.BILLS, CACHE_TAGS.INTERVIEW_CONFIGS],
   }
 );

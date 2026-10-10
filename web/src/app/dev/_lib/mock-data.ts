@@ -1,4 +1,5 @@
 import type {
+  BillContent,
   BillStatusEnum,
   BillWithContent,
 } from "@/features/bills/shared/types";
@@ -13,26 +14,10 @@ export const allBillStatuses: BillStatusEnum[] = [
   "rejected",
 ];
 
-const baseBill: BillWithContent = {
-  id: "mock-bill-001",
-  bill_number: "",
-  bill_type: "bill",
-  discussion_overview_points: [],
-  name: "サンプル議案",
-  status: "submitted",
-  is_featured: false,
-  thumbnail_url: null,
-  share_thumbnail_url: null,
-  source_url: null,
-  published_at: "2026-02-15",
-  publish_status: "published",
-  status_note: null,
-  status_order: 4,
-  publish_status_order: 2,
-  council_session_id: null,
-  created_at: "2026-02-15T00:00:00Z",
-  updated_at: "2026-02-15T00:00:00Z",
-  bill_content: {
+export function createMockBillContent(
+  overrides: Partial<BillContent> = {}
+): BillContent {
+  return {
     id: "mock-content-001",
     bill_id: "mock-bill-001",
     title: "サンプル法案のタイトル",
@@ -42,7 +27,34 @@ const baseBill: BillWithContent = {
     difficulty_level: "normal",
     created_at: "2026-02-15T00:00:00Z",
     updated_at: "2026-02-15T00:00:00Z",
-  },
+    ...overrides,
+  };
+}
+
+const baseBill: BillWithContent = {
+  id: "mock-bill-001",
+  bill_number: "",
+  bill_type: "bill",
+  discussion_overview_points: [],
+  name: "サンプル議案",
+  status: "submitted",
+  is_featured: false,
+  is_review_completed: true,
+  thumbnail_url: null,
+  share_thumbnail_url: null,
+  source_url: null,
+  published_at: "2026-02-15",
+  submitted_date: null,
+  submitted_on: null,
+  decided_date: null,
+  publish_status: "published",
+  status_note: null,
+  status_order: 4,
+  publish_status_order: 2,
+  council_session_id: null,
+  created_at: "2026-02-15T00:00:00Z",
+  updated_at: "2026-02-15T00:00:00Z",
+  bill_content: createMockBillContent(),
   tags: [
     { id: "tag-1", label: "経済" },
     { id: "tag-2", label: "環境" },

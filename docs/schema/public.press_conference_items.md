@@ -15,6 +15,7 @@
 | title | text |  | false |  |  | 項目タイトル |
 | summary | text |  | true |  |  | 要約 |
 | created_at | timestamp with time zone | now() | true |  |  |  |
+| material_url | text |  | true |  |  | 配付資料（PDF 等）の URL。主に announcement で使う。無い場合は null |
 
 ## Constraints
 
@@ -47,6 +48,7 @@ erDiagram
   text title
   text summary
   timestamp_with_time_zone created_at
+  text material_url
 }
 "public.press_conference_turns" {
   uuid id

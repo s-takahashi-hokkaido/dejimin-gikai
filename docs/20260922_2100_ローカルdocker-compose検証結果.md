@@ -126,6 +126,11 @@ nginx で全部に CORS を付けると、自前で返す rest / auth とヘッ�
 
 `GOTRUE_PASSWORD_MIN_LENGTH` も `config.toml` の 6 のまま。管理者のパスワードの最低文字数なので、議員に開放する前に見直す（管理画面の表示「6文字以上」と合わせて変える）。
 
+> **2026-10-08 追記（T10）**: メールでのサインアップは GoTrue の before_user_created フック
+> （`public.hook_before_user_created`。匿名ユーザー以外の作成を拒否）で塞いだ。管理画面のアカウントは
+> admin API の `createUser` で作ってから招待メールを送るので、フックを通らない。パスワードの最低文字数は 12 にした。
+> 詳細は [権限設計 §9 C-4](20260912_1736_管理画面ロール権限設計.md)、本番での手順は [構築手順](20260930_2104_さくらVPS構築手順.md) 手順13。
+
 ### 4-4. 手順書のコマンドや構成の修正
 
 | 箇所 | 問題 | 修正 |
@@ -190,11 +195,19 @@ docker compose up -d
 ( cd "$INFRA/.." && npx supabase migration up --include-all \
   --db-url "postgresql://postgres:$POSTGRES_PASSWORD@127.0.0.1:5433/postgres?sslmode=disable" )
 
-# 4. データを流し込む。session_replication_role の変更には superuser が要るので supabase_admin で実行する
+# 4. マイグレーションが入れた行を空にする（2026-10-01 追記。省くと手順5 が途中で止まる）
+#    prompts / prompt_versions は 20260923140000_move_langfuse_to_db.sql が入れる。
+#    data.sql にも同じ行があるので、消さずに流すと prompts の COPY で ON_ERROR_STOP に掛かり、
+#    そこから後の13テーブル（storage.objects を含む）が入らない。
+#    storage.buckets と違い prompts は管理画面から編集できるので、dump から除外はしない。
+docker compose exec -T db psql -U postgres -c \
+  "truncate table public.prompt_versions, public.prompts cascade;"
+
+# 5. データを流し込む。session_replication_role の変更には superuser が要るので supabase_admin で実行する
 ( echo "set session_replication_role = replica;"; cat "$BACKUP_DIR/data.sql" ) \
   | docker compose exec -T db psql -U supabase_admin -d postgres -v ON_ERROR_STOP=1 -q
 
-# 5. リポジトリを最新に戻していれば、残りのマイグレーションを流す
+# 6. リポジトリを最新に戻していれば、残りのマイグレーションを流す
 ```
 
 古い版のデータを新しいスキーマに直接流し込むと、列の変更で失敗したり、`session_replication_role = replica` のせいで

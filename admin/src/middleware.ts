@@ -1,12 +1,14 @@
 import { createUnauthorizedResponse } from "@dejimin-gikai/shared/auth/basic-auth";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
+import { isPublicAuthPath } from "@/features/auth/shared/utils/auth-paths";
 import {
   getAdminBasicAuthConfig,
   isHtmlNavigation,
   validateBasicAuth,
 } from "@/lib/basic-auth";
 import { updateSession } from "@/lib/supabase/middleware";
+import { buildRedirectUrl } from "@/lib/utils/build-redirect-url";
 
 export async function middleware(request: NextRequest) {
   // 1層目: 全員共通のBasic認証
@@ -25,8 +27,9 @@ export async function middleware(request: NextRequest) {
 
   const { supabaseResponse, user } = await updateSession(request);
 
-  // ログイン画面は常にアクセス可能
-  if (request.nextUrl.pathname === "/login") {
+  // ログイン画面・パスワード再設定の画面は常にアクセス可能
+  // （招待・再設定メールのリンクはログインしていない状態で開く）
+  if (isPublicAuthPath(request.nextUrl.pathname)) {
     return supabaseResponse;
   }
 
@@ -43,9 +46,20 @@ export async function middleware(request: NextRequest) {
   // 権限漏れになるのを避けるため、認可は (protected)/layout.tsx と
   // 各ページ・Server Action で admin_profiles を見て判定する。
   if (!user) {
-    const url = request.nextUrl.clone();
-    url.pathname = "/login";
-    return NextResponse.redirect(url);
+    // request.nextUrl はそのまま使わない。standalone では Host ヘッダーではなく
+    // HOSTNAME:PORT から作られるため、nginx の裏で https://localhost:3003/login に
+    // 飛ばしてしまう（詳細は buildRedirectUrl）
+    const loginUrl = buildRedirectUrl("/login", {
+      host: request.headers.get("host"),
+      forwardedProto: request.headers.get("x-forwarded-proto"),
+      fallbackUrl: request.nextUrl,
+    });
+    const response = NextResponse.redirect(loginUrl);
+    // updateSession がセッション更新で積んだ Cookie を落とさない
+    for (const cookie of supabaseResponse.cookies.getAll()) {
+      response.cookies.set(cookie);
+    }
+    return response;
   }
 
   return supabaseResponse;

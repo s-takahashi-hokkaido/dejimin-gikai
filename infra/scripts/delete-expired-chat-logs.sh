@@ -6,7 +6,7 @@
 # 定義は supabase/migrations/20260923140000_move_langfuse_to_db.sql。
 # 関数は anon / authenticated から execute を revoke してあるので、postgres（superuser）で呼ぶ。
 #
-# 手順:   docs/20260924_1404_さくらVPS立ち上げ手順.md 手順11
+# 手順:   docs/20260930_2104_さくらVPS構築手順.md 手順11
 # 方針:   docs/20260912_1528_プロジェクト方針とやりたいこと整理.md §5 ④（保存期間 90 日）
 #
 # プライバシーポリシーの「90日で自動的に削除」は、この cron が動いていることが前提。

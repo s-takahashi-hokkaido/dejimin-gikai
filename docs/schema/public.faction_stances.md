@@ -77,6 +77,10 @@ erDiagram
   text source_url
   text bill_type
   text__ discussion_overview_points
+  date submitted_date
+  date decided_date
+  boolean is_review_completed
+  date submitted_on
 }
 "public.factions" {
   uuid id

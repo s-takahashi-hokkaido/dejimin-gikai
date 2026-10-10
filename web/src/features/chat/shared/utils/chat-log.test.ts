@@ -51,13 +51,15 @@ describe("extractLatestUserText", () => {
 });
 
 describe("normalizeChatPageType", () => {
-  it.each(["home", "bill", "budget"] as const)("%s はそのまま返す", (type) => {
+  it.each(["home", "bill"] as const)("%s はそのまま返す", (type) => {
     expect(normalizeChatPageType(type)).toBe(type);
   });
 
   it("未指定や想定外の値は議案のチャットとして扱う", () => {
     expect(normalizeChatPageType(undefined)).toBe("bill");
     expect(normalizeChatPageType("unknown")).toBe("bill");
+    // 予算概要のチャットは廃止したので、古い画面から来ても議案として扱う
+    expect(normalizeChatPageType("budget")).toBe("bill");
   });
 });
 
