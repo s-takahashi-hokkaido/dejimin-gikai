@@ -30,7 +30,7 @@ export function HeaderClient({ difficultyLevel }: HeaderClientProps) {
               className="flex items-center space-x-2"
               aria-label="ホーム"
             >
-              {/* 長いサイト名がスマホで右のボタン群を押し出さないよう、区切りの位置でだけ折り返す */}
+              {/* 狭い幅でサイト名が右のボタン群を押し出さないよう、区切りの位置でだけ折り返す */}
               <div className="text-sm sm:text-base font-bold leading-tight">
                 {siteConfig.siteNameParts.map((part) => (
                   <span key={part} className="inline-block whitespace-nowrap">

@@ -1,7 +1,7 @@
 [Unit]
-# デジタル民主主義共創議会 admin（Next.js の standalone 成果物を node で起動する）
+# デジ民議会 admin（Next.js の standalone 成果物を node で起動する）
 # 配置と起動の手順は infra/README.md を参照
-Description=Gikai admin (Next.js standalone)
+Description=Dejimin Gikai admin (Next.js standalone)
 After=network.target
 
 [Service]

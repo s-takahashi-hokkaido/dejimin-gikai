@@ -123,8 +123,8 @@ services:
       # supabase/config.toml の [auth.email.template.*] と同じテンプレート・件名
       GOTRUE_MAILER_TEMPLATES_INVITE: http://nginx:8088/invite.html
       GOTRUE_MAILER_TEMPLATES_RECOVERY: http://nginx:8088/recovery.html
-      GOTRUE_MAILER_SUBJECTS_INVITE: "【デジタル民主主義共創議会】管理画面への招待"
-      GOTRUE_MAILER_SUBJECTS_RECOVERY: "【デジタル民主主義共創議会】管理画面のパスワード再設定"
+      GOTRUE_MAILER_SUBJECTS_INVITE: "【デジ民議会】管理画面への招待"
+      GOTRUE_MAILER_SUBJECTS_RECOVERY: "【デジ民議会】管理画面のパスワード再設定"
       # メールアドレスでのサインアップを拒否し、匿名ログインだけを通す（関数はマイグレーション 20261010000000）。
       # 関数が無いまま有効にすると匿名ログインも失敗するので、マイグレーションを当ててから compose を更新する
       GOTRUE_HOOK_BEFORE_USER_CREATED_ENABLED: "true"
