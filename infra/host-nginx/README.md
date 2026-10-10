@@ -15,7 +15,7 @@ compose の中の nginx（Supabase の API をパスで振り分けるゲート�
 
 | ファイル | ドメイン | 上流 | Basic 認証 |
 |---|---|---|---|
-| `gikai.ezocivic.tech.conf` | `gikai.ezocivic.tech` | `127.0.0.1:3004`（web） | かける（公開前） |
+| `gikai.ezocivic.tech.conf` | `gikai.ezocivic.tech` | `127.0.0.1:3004`（web） | 2026-10-10 に外した |
 | `gikai-admin.ezocivic.tech.conf` | `gikai-admin.ezocivic.tech` | `127.0.0.1:3003`（admin） | かける（公開前） |
 | `db.ezocivic.tech.conf` | `db.ezocivic.tech` | `127.0.0.1:8000`（compose の nginx） | **かけない** |
 
@@ -53,7 +53,7 @@ done
 
 ## 公開前の Basic 認証
 
-`gikai` と `gikai-admin` は、`auth_basic` を **server ブロック全体** にかけている。
+`gikai-admin` は、`auth_basic` を **server ブロック全体** にかけている（`gikai` も同じようにかけていたが、2026-10-10 に外した）。
 web にも Basic 認証はあるが、画面（HTML）にしか効かず `/api/chat` などは素通しになる
 （`web/src/middleware.ts` の `_isHtmlRequest`）ため、公開前は nginx で全パスを塞ぐ。
 
@@ -78,7 +78,7 @@ sudo htpasswd -c /etc/nginx/htpasswd-gikai     <ユーザー名>   # admin。同
 `db` にはかけない。ブラウザの supabase-js は別オリジンの API に認証情報を付けないので、
 かけると画面から Supabase を呼べなくなる。`db` は RLS（ポリシー無し＝全拒否）で守られている。
 
-**公開する時** は、2 つの vhost の次の 2 行を消して reload する。
+**公開する時** は、vhost の次の 2 行を消して reload する（`gikai` は 2026-10-10 に外し済み。残りは `gikai-admin`）。
 
 ```nginx
 auth_basic "EZO CIVIC (preview)";
