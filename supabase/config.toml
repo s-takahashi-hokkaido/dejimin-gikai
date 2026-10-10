@@ -199,11 +199,11 @@ otp_expiry = 86400
 # 招待・パスワード再設定のメール。本番（infra/compose.yml）と同じテンプレートを使う。
 # リンクは admin の /update-password に token_hash を付けたもの（GoTrue の /verify を GET で踏ませない）
 [auth.email.template.invite]
-subject = "【デジタル民主主義共創議会】管理画面への招待"
+subject = "【デジ民議会】管理画面への招待"
 content_path = "./infra/email-templates/invite.html"
 
 [auth.email.template.recovery]
-subject = "【デジタル民主主義共創議会】管理画面のパスワード再設定"
+subject = "【デジ民議会】管理画面のパスワード再設定"
 content_path = "./infra/email-templates/recovery.html"
 
 [auth.sms]
