@@ -53,7 +53,7 @@ export const siteConfig = {
    */
   operator: {
     name: "s.takahashi" as string,
-    contactUrl: "https://x.com/s_takahashi_cte" as string,
+    contactUrl: "https://x.com/s_takahashi_ect" as string,
     /** 利用規約の準拠法・管轄裁判所（第一審の専属的合意管轄） */
     jurisdiction: "札幌地方裁判所" as string,
   },
