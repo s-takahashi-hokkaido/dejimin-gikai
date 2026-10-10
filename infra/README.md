@@ -287,7 +287,11 @@ gh variable list -R $R && gh secret list -R $R   # 登録を確かめる
 
 本番に出すのは **`main` だけ**。`develop` の変更は、`develop` → `main` の PR（`/deploy`）をマージしてから流す。
 マイグレーションや `infra/` の変更を含む時は、先にそちらを済ませる
-（順番は [本番リリース手順](../docs/20261010_0845_アカウント管理の本番リリース手順.md)）。
+（順番は [構築手順](../docs/20260930_2104_さくらVPS構築手順.md) §5「デプロイ」）。
+
+> **`main` は PR #62（2026-09-29）のまま止まっている。** VPS には `develop` から流した新しい版が載っているので、
+> 最初の `/deploy` で `develop` を `main` に入れるまでは、`main` でこのワークフローを流さない（古い版に戻ってしまう）。
+> 最初のリリースは [本番リリース手順](../docs/20261010_0845_アカウント管理の本番リリース手順.md) のとおりに行う。
 
 ```bash
 gh workflow run "Deploy VPS" -R s-takahashi-hokkaido/dejimin-gikai --ref main

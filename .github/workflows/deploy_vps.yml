@@ -3,7 +3,11 @@ name: Deploy VPS
 # さくらVPS へ web・admin を配る（手順書 docs/20260930_2104_さくらVPS構築手順.md 手順10）。
 #
 # 本番に出すのは main だけ。develop の変更は develop → main の PR（/deploy）をマージしてから、
-# main を指定して手動で実行する（リリースの順番は docs/20261010_0845_アカウント管理の本番リリース手順.md）。
+# main を指定して手動で実行する（順番は手順書 §5「デプロイ」）。
+#
+# main 以外を止めるのは指定違いを防ぐため。このファイル自体は他のブランチでも書き換えられ、
+# デプロイ鍵は repository の Secrets なので、権限の制限にはならない。
+# 本当に main だけにするなら、Environment にブランチの制限を掛けて鍵をそちらに移す（リリース手順 §6）。
 #
 # 手動実行のみにしているのは、マイグレーションや infra/ の更新を先に済ませてから流すため。
 # main への push で自動デプロイにする場合は、下の push を有効にする
@@ -42,31 +46,16 @@ jobs:
       NEXT_PUBLIC_APP_URL: ${{ vars.NEXT_PUBLIC_APP_URL }}
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v5
-
-      - name: Install pnpm
-        uses: pnpm/action-setup@41ff72655975bd51cab0327fa583b6e92b6d3061 # v4.2.0
-        with:
-          version: 10
-
-      # VPS の実行環境と揃える（手順書 手順5）。バージョンは .node-version が唯一の出どころ
-      - name: Setup Node.js
-        uses: actions/setup-node@v6
-        with:
-          node-version-file: .node-version
-          cache: "pnpm"
-
       # ブランチの指定違いで本番に別のコードが乗るのを防ぐ（main ブランチ以外は止める）。
       # GITHUB_REF_NAME だと main という名前のタグでも通ってしまうので、GITHUB_REF で比べる。
-      # 登録漏れも、長いビルドの後ではなくここで落とす（一覧は infra/README.md）
+      # 登録漏れも、checkout やビルドの前にここで落とす（一覧は infra/README.md）
       - name: Check deploy ref, variables and secrets
         env:
           VPS_SSH_PRIVATE_KEY: ${{ secrets.VPS_SSH_PRIVATE_KEY }}
           VPS_SSH_KNOWN_HOSTS: ${{ secrets.VPS_SSH_KNOWN_HOSTS }}
         run: |
           if [ "${GITHUB_REF}" != "refs/heads/main" ]; then
-            echo "デプロイできるのは main だけです（指定: ${GITHUB_REF_NAME}）" >&2
+            echo "デプロイできるのは main ブランチだけです（指定: ${GITHUB_REF}）" >&2
             echo "develop の変更は develop → main の PR をマージしてから、main を指定して実行してください" >&2
             exit 1
           fi
@@ -85,6 +74,21 @@ jobs:
             echo "infra/README.md の「GitHub 側に登録するもの」を参照してください。" >&2
             exit 1
           fi
+
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@41ff72655975bd51cab0327fa583b6e92b6d3061 # v4.2.0
+        with:
+          version: 10
+
+      # VPS の実行環境と揃える（手順書 手順5）。バージョンは .node-version が唯一の出どころ
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version-file: .node-version
+          cache: "pnpm"
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile

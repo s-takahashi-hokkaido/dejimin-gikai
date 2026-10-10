@@ -27,8 +27,8 @@ git log origin/main..origin/develop --pretty=format:"- %h %s (%an)"
 # 変更ファイルの統計
 git diff origin/main...origin/develop --stat
 
-# 本番で人が先に当てるもの（マイグレーションと infra/）
-git diff origin/main...origin/develop --name-only -- supabase/migrations infra
+# 本番で人が先に当てるもの（マイグレーションと infra/。README などの .md は除く）
+git diff origin/main...origin/develop --name-only -- supabase/migrations infra ':(exclude)*.md'
 ```
 
 差分の内容をユーザーに報告：
@@ -71,16 +71,34 @@ gh pr merge --merge --admin
 
 main にマージしただけでは VPS は変わらない。Deploy VPS ワークフローは `main` からしか実行できない（手動実行のみ）。
 
-2. で見つけたマイグレーション・`infra/` の変更は、**ワークフローより先に**当てる。
-手順は `docs/20261010_0845_アカウント管理の本番リリース手順.md` §3。
+2. で見つけたマイグレーション・`infra/` の変更は、**ワークフローより先に**当てる（手順書 `docs/20260930_2104_さくらVPS構築手順.md`）。
+
+| 変更 | 当て方 |
+|---|---|
+| `supabase/migrations/` | 手順8-1・8-2（トンネルと `export`）の後、`main` を checkout して `npx supabase migration up --include-all --db-url "$PROD_DB_URL"`（手順8-3） |
+| `infra/` | §5「`infra/` を直した時」の表。`compose.yml`・`nginx/` だけでなく、`host-nginx/`・`systemd/`・`cron/` は置き直しが要る |
 
 本番 DB・VPS への操作は人が行う（Claude のセッションからは環境の安全チェックで止められることがある）。
-どちらも無い、または済んだら:
+どちらも無い、または済んだら、Deploy VPS を流して結果を待つ:
 
 ```bash
-gh workflow run "Deploy VPS" -R s-takahashi-hokkaido/dejimin-gikai --ref main
-gh run watch -R s-takahashi-hokkaido/dejimin-gikai
+R=s-takahashi-hokkaido/dejimin-gikai
+since=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+gh workflow run "Deploy VPS" -R $R --ref main
+
+# 今流した run の ID を取る（一覧に出るまで数秒かかる。前回の run を拾わないよう、流した時刻より後のものに絞る）
+for i in $(seq 1 10); do
+  run_id=$(gh run list -R $R --workflow "Deploy VPS" --branch main --event workflow_dispatch -L 1 \
+    --json databaseId,createdAt -q ".[] | select(.createdAt >= \"$since\") | .databaseId")
+  [ -n "$run_id" ] && break
+  sleep 3
+done
+
+# 失敗したら 0 以外で終わる（--exit-status が無いと失敗しても 0 で終わる）
+gh run watch "$run_id" -R $R --exit-status
 ```
+
+失敗したら `gh run view "$run_id" -R $R --log-failed | tail -30` で原因を見る（手順書 手順10-4 の表）。
 
 ### 6. 完了報告
 
