@@ -118,7 +118,7 @@ chmod 600 /srv/gikai/admin.env
 | `NEXT_PUBLIC_APP_URL` | ✕ | ○ | **web は読まない**（手順書 手順10 の表を修正） |
 | `ADMIN_URL` | ○ | ✕ | 未設定だと `http://localhost:3001` になる |
 | `ADMIN_INTERNAL_URL` | ✕ | ○ | `http://127.0.0.1:3003`。トピック分析が admin 自身を呼ぶ時の宛先（PR #56）。未設定だと `NEXT_PUBLIC_APP_URL` に送り、Basic 認証で 401 になる |
-| `WEB_INTERNAL_URL` | ✕ | ○ | `http://127.0.0.1:3004`。admin → web の `/api/revalidate` の宛先（PR #51）。未設定だと `NEXT_PUBLIC_WEB_URL` に送り、Basic 認証で 401 になる |
+| `WEB_INTERNAL_URL` | ✕ | ○ | `http://127.0.0.1:3004`。admin → web の `/api/revalidate` の宛先（PR #51）。未設定だと `NEXT_PUBLIC_WEB_URL` に送り、web に Basic 認証をかけている間は 401 になる（2026-10-10 に外したが、かけ直した時のために設定しておく） |
 | `REVALIDATE_SECRET` | ○ | ○ | 両方に同じ値 |
 | `OPENAI_API_KEY` | ○ | ○ | コードには現れない。AI SDK が `process.env` から直接読む |
 | `AI_GLOBAL_DAILY_COST_LIMIT_USD` / `CHAT_DAILY_COST_LIMIT_USD` / `INTERVIEW_DAILY_COST_LIMIT_USD` | ○ | ✕ | 未設定なら 5 / 0.5 / 0.5 |
@@ -137,7 +137,7 @@ chmod 600 /srv/gikai/admin.env
 > `NEXT_PUBLIC_*` はビルド時に埋め込まれるため env ファイルでは逃がせないので、
 > 内部宛て（`http://127.0.0.1:3004` など）に送るためのサーバー専用の変数が別に必要になる。
 > web への revalidate は `WEB_INTERNAL_URL`（PR #51）、トピック分析の自分呼びは `ADMIN_INTERNAL_URL`（PR #56）で対応済み。
-> **admin.env にこの2つが無いと、どちらも 401 になる。**
+> **admin.env に `ADMIN_INTERNAL_URL` が無いと、トピック分析が 401 になる。** `WEB_INTERNAL_URL` が無いと 401 になるのは web に Basic 認証をかけている間だけ（2026-10-10 に外した）。
 
 ### 2-3. systemd unit と sudoers
 
