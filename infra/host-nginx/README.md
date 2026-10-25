@@ -54,23 +54,25 @@ done
 ## 公開前の Basic 認証
 
 `gikai-admin` は、`auth_basic` を **server ブロック全体** にかけている（`gikai` も同じようにかけていたが、2026-10-10 に外した）。
-web にも Basic 認証はあるが、画面（HTML）にしか効かず `/api/chat` などは素通しになる
-（`web/src/middleware.ts` の `_isHtmlRequest`）ため、公開前は nginx で全パスを塞ぐ。
+アプリにも Basic 認証はあるが、web・admin とも画面（HTML）にしか効かず API は素通しになる
+（`web/src/middleware.ts` の `_isHtmlRequest`・`admin/src/middleware.ts` の `isHtmlNavigation`）ため、公開前は nginx で全パスを塞ぐ。
 
 パスワードファイルは vhost ごとに分けている。web と admin でパスワードを別々に変えられるようにするため。
 
 | vhost | パスワードファイル |
 |---|---|
-| `gikai.ezocivic.tech` | `/etc/nginx/htpasswd-gikai-web` |
+| `gikai.ezocivic.tech` | `/etc/nginx/htpasswd-gikai-web`（web にかける時だけ。2026-10-10 から使っていない） |
 | `gikai-admin.ezocivic.tech` | `/etc/nginx/htpasswd-gikai` |
 
 ```bash
-sudo htpasswd -c /etc/nginx/htpasswd-gikai-web <ユーザー名>   # web。2 人目以降は -c を付けない
-sudo htpasswd -c /etc/nginx/htpasswd-gikai     <ユーザー名>   # admin。同上
+sudo htpasswd -c /etc/nginx/htpasswd-gikai     <ユーザー名>   # admin。2 人目以降は -c を付けない
+sudo htpasswd -c /etc/nginx/htpasswd-gikai-web <ユーザー名>   # web にもかける時だけ。同上
 ```
 
 パスワードを変える時は `-c` を付けずに `sudo htpasswd <ファイル> <ユーザー名>` を流す
 （`-c` はファイルを作り直すので、他のユーザーが消える）。reload は要らない。
+ユーザー名を変える時は、新しいユーザーを足し、**そのユーザーで入れることを確かめてから**
+`sudo htpasswd -D <ファイル> <古いユーザー名>` で消す（確かめずに消すと、足すのに失敗していた時に誰も入れなくなる。手順は [構築手順](../../docs/20260930_2104_さくらVPS構築手順.md) §5「Basic 認証のユーザー名・パスワード」）。
 
 > 置いた後の `sites-available/` の vhost は certbot が TLS の行を書き足しているので、
 > このディレクトリからコピーし直すとそれが消える。参照先だけを変える時は、置いてあるファイルを `sed -i` で直す。
@@ -78,11 +80,11 @@ sudo htpasswd -c /etc/nginx/htpasswd-gikai     <ユーザー名>   # admin。同
 `db` にはかけない。ブラウザの supabase-js は別オリジンの API に認証情報を付けないので、
 かけると画面から Supabase を呼べなくなる。`db` は RLS（ポリシー無し＝全拒否）で守られている。
 
-**公開する時** は、vhost の次の 2 行を消して reload する（`gikai` は 2026-10-10 に外し済み。残りは `gikai-admin`）。
+**公開する時** は、`gikai-admin` の vhost の次の 2 行を消して reload する（`gikai` は 2026-10-10 に外し済み）。
 
 ```nginx
 auth_basic "EZO CIVIC (preview)";
-auth_basic_user_file /etc/nginx/htpasswd-gikai-web;   # gikai-admin では /etc/nginx/htpasswd-gikai
+auth_basic_user_file /etc/nginx/htpasswd-gikai;
 ```
 
 ```bash
