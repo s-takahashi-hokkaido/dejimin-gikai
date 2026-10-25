@@ -59,31 +59,17 @@ export function About() {
                 このサイトは「チームみらい」開発の「みらい議会」をベースに作成しています。
               </p>
 
-              <div className="flex flex-col gap-4">
-                <LinkButton
-                  href="https://team-mir.ai/"
-                  icon={{
-                    src: "/icons/info-icon.svg",
-                    alt: "",
-                    width: 20,
-                    height: 20,
-                  }}
-                >
-                  「チームみらい」について
-                </LinkButton>
-
-                <LinkButton
-                  href="https://gikai.team-mir.ai/"
-                  icon={{
-                    src: "/icons/interview-icon-3.svg",
-                    alt: "",
-                    width: 18,
-                    height: 17,
-                  }}
-                >
-                  本家「みらい議会」（国会版）を見に行く
-                </LinkButton>
-              </div>
+              <LinkButton
+                href="https://gikai.team-mir.ai/"
+                icon={{
+                  src: "/icons/interview-icon-3.svg",
+                  alt: "",
+                  width: 18,
+                  height: 17,
+                }}
+              >
+                本家「みらい議会」（国会版）を見に行く
+              </LinkButton>
             </div>
 
             <div className="flex flex-col gap-1 text-[13px] leading-relaxed text-[#404040]">
