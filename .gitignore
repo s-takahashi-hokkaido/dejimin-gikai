@@ -19,6 +19,9 @@ docs/fukuoka/sample/
 # upstream（fork元）参照用ディレクトリ（ローカル参照のみ）
 mirai-gikai-upstream/
 
+# 他プロジェクトの機能・UI・デザインを流用するための参照用 clone 置き場（ローカル参照のみ）
+/references/
+
 # セルフホスト Supabase のデータ（DB・画像ファイル）と、誤って infra/ に置いた dump・バックアップ
 infra/volumes/
 infra/*.sql
