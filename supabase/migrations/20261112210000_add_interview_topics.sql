@@ -4,7 +4,8 @@
 --   docs/20261112_2009_AIインタビュー広場_機能設計.md §3・§7
 --   docs/20261112_2150_AIインタビュー広場_インタビュー対象の抽象化.md（D2）
 --
---   1. interview_topics を作る（状態と日時の整合・作成者の写し・取り下げを CHECK で守る）
+--   1. interview_topics を作る（状態と日時の整合・作成者の写し・取り下げを CHECK で守り、
+--      状態の逆戻りとオープン後の写しの書き換えをトリガーで止める）
 --   2. interview_configs を議案か議題のどちらか一方に紐づける
 --   3. topic_analysis_versions を議案か議題のどちらか一方に紐づける
 --   4. interview_topics の変更を監査ログに残す
@@ -75,6 +76,9 @@ create table public.interview_topics (
     check (closes_at is null or closes_at > opened_at),
   constraint interview_topics_closed_after_open
     check (closed_at is null or closed_at >= opened_at),
+  -- 期限切れの自動クローズは、期限より前には起きない
+  constraint interview_topics_expired_after_deadline
+    check (closed_reason is distinct from 'expired' or closed_at >= closes_at),
 
   -- 公開した議題（open / closed）は本文と作成者の写しを必ず持つ
   constraint interview_topics_published_requires_body
@@ -82,6 +86,10 @@ create table public.interview_topics (
   constraint interview_topics_published_requires_author_snapshot check (
     status = 'draft'
     or (author_display_name is not null and author_role is not null)
+  ),
+  -- 写しの表示名は空にしない（アカウント削除後はこれしか表示できないため）
+  constraint interview_topics_author_display_name_not_blank check (
+    author_display_name is null or btrim(author_display_name) <> ''
   ),
   -- 写しのロールと会派は admin_profiles と同じ規則（議員は会派あり、候補者は会派なし）
   constraint interview_topics_author_snapshot_role check (
@@ -123,6 +131,56 @@ create index interview_topics_open_closes_at_idx
 create trigger update_interview_topics_updated_at
   before update on public.interview_topics
   for each row execute function public.update_updated_at_column();
+
+-- 状態の遷移と、オープン後に変えてはいけない列を守る。
+-- CHECK 制約は1行の中の整合しか見られないので、更新前後を比べるところはトリガーで行う
+create function public.guard_interview_topic_update()
+returns trigger
+language plpgsql
+set search_path = ''
+as $$
+begin
+  -- 状態は 下書き → オープン → クローズ の順にしか進めない（機能設計 §3。再オープンもしない）
+  if new.status is distinct from old.status
+    and not (
+      (old.status = 'draft' and new.status = 'open')
+      or (old.status = 'open' and new.status = 'closed')
+    ) then
+    raise exception '議題の状態は % から % に変えられません', old.status, new.status
+      using errcode = 'check_violation';
+  end if;
+
+  -- オープン後は、オープン日時・期限・作成者の写しを変えない（K7: オープン時点のまま表示する）
+  if old.status <> 'draft' and (
+    new.opened_at is distinct from old.opened_at
+    or new.closes_at is distinct from old.closes_at
+    or new.author_display_name is distinct from old.author_display_name
+    or new.author_role is distinct from old.author_role
+    or new.author_faction_name is distinct from old.author_faction_name
+  ) then
+    raise exception 'オープンした議題のオープン日時・期限・作成者の写しは変えられません'
+      using errcode = 'check_violation';
+  end if;
+
+  -- クローズ後は、クローズ日時と理由を変えない
+  if old.status = 'closed' and (
+    new.closed_at is distinct from old.closed_at
+    or new.closed_reason is distinct from old.closed_reason
+  ) then
+    raise exception 'クローズした議題のクローズ日時と理由は変えられません'
+      using errcode = 'check_violation';
+  end if;
+
+  return new;
+end;
+$$;
+
+comment on function public.guard_interview_topic_update() is
+  '議題の状態を下書き→オープン→クローズの順にしか進めず、オープン後の日時と作成者の写しを固定するトリガー関数';
+
+create trigger interview_topics_guard_update
+  before update on public.interview_topics
+  for each row execute function public.guard_interview_topic_update();
 
 comment on table public.interview_topics is
   'AIインタビュー広場の議題（議員・候補者が出す問い。議案には紐づかない）';

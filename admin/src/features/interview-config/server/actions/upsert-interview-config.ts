@@ -85,10 +85,11 @@ export async function updateInterviewConfig(
     // バリデーション
     const validatedData = interviewConfigSchema.parse(input);
 
+    // 現在の設定のbill_idを取得（議題の設定なら例外。議案の画面からは議題の設定を触らせない）
+    const currentConfig = await findInterviewConfigBillId(configId);
+
     // 公開設定の場合、他の公開設定を非公開にする
     if (validatedData.status === "public") {
-      // まず現在の設定のbill_idを取得
-      const currentConfig = await findInterviewConfigBillId(configId);
       await closeOtherPublicConfigs(currentConfig.bill_id, configId);
     }
 
@@ -214,6 +215,9 @@ export async function deleteInterviewConfig(
 ): Promise<InterviewConfigResult> {
   try {
     await requireAdmin();
+
+    // 議題の設定なら例外（議案の画面からは議題の設定を消させない）
+    await findInterviewConfigBillId(configId);
 
     await deleteInterviewConfigRecord(configId);
 

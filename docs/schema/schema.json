@@ -5105,6 +5105,16 @@
       ],
       "constraints": [
         {
+          "name": "interview_topics_author_display_name_not_blank",
+          "type": "CHECK",
+          "def": "CHECK (((author_display_name IS NULL) OR (btrim(author_display_name) \u003c\u003e ''::text)))",
+          "table": "public.interview_topics",
+          "referenced_table": "",
+          "columns": [
+            "author_display_name"
+          ]
+        },
+        {
           "name": "interview_topics_author_snapshot_role",
           "type": "CHECK",
           "def": "CHECK (((author_role IS NULL) OR ((author_role = 'legislator'::text) AND (author_faction_name IS NOT NULL)) OR ((author_role = 'candidate'::text) AND (author_faction_name IS NULL))))",
@@ -5145,6 +5155,18 @@
           "columns": [
             "closes_at",
             "opened_at"
+          ]
+        },
+        {
+          "name": "interview_topics_expired_after_deadline",
+          "type": "CHECK",
+          "def": "CHECK (((closed_reason IS DISTINCT FROM 'expired'::text) OR (closed_at \u003e= closes_at)))",
+          "table": "public.interview_topics",
+          "referenced_table": "",
+          "columns": [
+            "closed_reason",
+            "closed_at",
+            "closes_at"
           ]
         },
         {
@@ -5254,6 +5276,10 @@
         {
           "name": "update_interview_topics_updated_at",
           "def": "CREATE TRIGGER update_interview_topics_updated_at BEFORE UPDATE ON public.interview_topics FOR EACH ROW EXECUTE FUNCTION update_updated_at_column()"
+        },
+        {
+          "name": "interview_topics_guard_update",
+          "def": "CREATE TRIGGER interview_topics_guard_update BEFORE UPDATE ON public.interview_topics FOR EACH ROW EXECUTE FUNCTION guard_interview_topic_update()"
         },
         {
           "name": "interview_topics_audit_log",
@@ -5850,6 +5876,12 @@
       "name": "public.hook_before_user_created",
       "return_type": "jsonb",
       "arguments": "event jsonb",
+      "type": "FUNCTION"
+    },
+    {
+      "name": "public.guard_interview_topic_update",
+      "return_type": "trigger",
+      "arguments": "",
       "type": "FUNCTION"
     }
   ],

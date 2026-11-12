@@ -14,6 +14,7 @@ import { prepareQuestionsForInsert } from "../../shared/utils/prepare-questions-
 import {
   createInterviewQuestions,
   deleteInterviewQuestionsByConfigId,
+  findInterviewConfigBillId,
 } from "../repositories/interview-config-repository";
 
 export type SaveInterviewQuestionsResult =
@@ -29,6 +30,9 @@ export async function saveInterviewQuestions(
 
     // バリデーション
     const validatedQuestions = interviewQuestionsInputSchema.parse(questions);
+
+    // 議題の設定なら例外（議案の画面からは議題の質問を触らせない。議題の質問は P2b で扱う）
+    await findInterviewConfigBillId(interviewConfigId);
 
     // 既存の質問を全て削除
     await deleteInterviewQuestionsByConfigId(interviewConfigId);

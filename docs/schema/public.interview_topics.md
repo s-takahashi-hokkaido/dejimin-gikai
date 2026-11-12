@@ -29,10 +29,12 @@ AIインタビュー広場の議題（議員・候補者が出す問い。議案
 
 | Name | Type | Definition |
 | ---- | ---- | ---------- |
+| interview_topics_author_display_name_not_blank | CHECK | CHECK (((author_display_name IS NULL) OR (btrim(author_display_name) <> ''::text))) |
 | interview_topics_author_snapshot_role | CHECK | CHECK (((author_role IS NULL) OR ((author_role = 'legislator'::text) AND (author_faction_name IS NOT NULL)) OR ((author_role = 'candidate'::text) AND (author_faction_name IS NULL)))) |
 | interview_topics_closed_after_open | CHECK | CHECK (((closed_at IS NULL) OR (closed_at >= opened_at))) |
 | interview_topics_closed_reason_check | CHECK | CHECK ((closed_reason = ANY (ARRAY['manual'::text, 'expired'::text]))) |
 | interview_topics_closes_after_open | CHECK | CHECK (((closes_at IS NULL) OR (closes_at > opened_at))) |
+| interview_topics_expired_after_deadline | CHECK | CHECK (((closed_reason IS DISTINCT FROM 'expired'::text) OR (closed_at >= closes_at))) |
 | interview_topics_published_requires_author_snapshot | CHECK | CHECK (((status = 'draft'::text) OR ((author_display_name IS NOT NULL) AND (author_role IS NOT NULL)))) |
 | interview_topics_published_requires_body | CHECK | CHECK (((status = 'draft'::text) OR (btrim(body_md) <> ''::text))) |
 | interview_topics_status_check | CHECK | CHECK ((status = ANY (ARRAY['draft'::text, 'open'::text, 'closed'::text]))) |
@@ -58,6 +60,7 @@ AIインタビュー広場の議題（議員・候補者が出す問い。議案
 | Name | Definition |
 | ---- | ---------- |
 | update_interview_topics_updated_at | CREATE TRIGGER update_interview_topics_updated_at BEFORE UPDATE ON public.interview_topics FOR EACH ROW EXECUTE FUNCTION update_updated_at_column() |
+| interview_topics_guard_update | CREATE TRIGGER interview_topics_guard_update BEFORE UPDATE ON public.interview_topics FOR EACH ROW EXECUTE FUNCTION guard_interview_topic_update() |
 | interview_topics_audit_log | CREATE TRIGGER interview_topics_audit_log AFTER INSERT OR DELETE OR UPDATE ON public.interview_topics FOR EACH ROW EXECUTE FUNCTION record_admin_audit_log() |
 
 ## Relations

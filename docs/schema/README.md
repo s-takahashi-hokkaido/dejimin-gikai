@@ -60,6 +60,7 @@
 | public.count_public_reports_by_bill_ids | record | p_bill_ids uuid[] | FUNCTION |
 | public.get_admin_accounts | record |  | FUNCTION |
 | public.hook_before_user_created | jsonb | event jsonb | FUNCTION |
+| public.guard_interview_topic_update | trigger |  | FUNCTION |
 
 ## Enums
 

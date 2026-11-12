@@ -596,8 +596,9 @@ export async function findBillIdsWithPublicInterview(): Promise<Set<string>> {
     return new Set();
   }
 
+  // SQL で null を除いているが、型は string | null のままなので型ガードで絞る
   return new Set(
-    data.flatMap((row) => (row.bill_id === null ? [] : [row.bill_id]))
+    data.map((row) => row.bill_id).filter((id): id is string => id !== null)
   );
 }
 

@@ -211,6 +211,25 @@ describe("interview_topics: 状態と日時の整合", () => {
     expect(error?.code).toBe(CHECK_VIOLATION);
   });
 
+  it("期限切れのクローズは、期限より前の日時にできない", async () => {
+    const { error } = await insertTopic(
+      closedTopicColumns({ closed_reason: "expired" })
+    );
+    expect(error?.code).toBe(CHECK_VIOLATION);
+
+    const openedAt = new Date(Date.now() - 40 * 24 * 60 * 60 * 1000);
+    const closesAt = new Date(openedAt.getTime() + 30 * 24 * 60 * 60 * 1000);
+    const { error: expired } = await insertTopic(
+      closedTopicColumns({
+        opened_at: openedAt.toISOString(),
+        closes_at: closesAt.toISOString(),
+        closed_at: closesAt.toISOString(),
+        closed_reason: "expired",
+      })
+    );
+    expect(expired).toBeNull();
+  });
+
   it("状態は draft / open / closed のどれか", async () => {
     const { error } = await insertTopic({ status: "archived" });
     expect(error?.code).toBe(CHECK_VIOLATION);
@@ -265,6 +284,120 @@ describe("interview_topics: 公開した議題は本文と作成者の写しを�
       openTopicColumns({ author_role: "admin", author_faction_name: null })
     );
     expect(error?.code).toBe(CHECK_VIOLATION);
+  });
+
+  it("写しの表示名は空にできない", async () => {
+    const { error } = await insertTopic(
+      openTopicColumns({ author_display_name: " " })
+    );
+    expect(error?.code).toBe(CHECK_VIOLATION);
+  });
+});
+
+describe("interview_topics: 状態の遷移とオープン後に固定する列", () => {
+  async function updateTopic(
+    id: string,
+    values: Partial<Database["public"]["Tables"]["interview_topics"]["Update"]>
+  ) {
+    const { error } = await adminClient
+      .from("interview_topics")
+      .update(values)
+      .eq("id", id);
+    return error;
+  }
+
+  it("下書き → オープン → クローズの順に進められる", async () => {
+    const topic = await createTopic(legislatorA.id);
+    expect(await updateTopic(topic.id, openTopicColumns())).toBeNull();
+    expect(
+      await updateTopic(topic.id, {
+        status: "closed",
+        closed_at: new Date(Date.now() + 1000).toISOString(),
+        closed_reason: "manual",
+      })
+    ).toBeNull();
+  });
+
+  it("クローズした議題を再オープンできない", async () => {
+    const topic = await createTopic(legislatorA.id, closedTopicColumns());
+    const error = await updateTopic(topic.id, {
+      status: "open",
+      closed_at: null,
+      closed_reason: null,
+    });
+    expect(error?.code).toBe(CHECK_VIOLATION);
+  });
+
+  it("オープンした議題を下書きに戻せない", async () => {
+    const topic = await createTopic(legislatorA.id, openTopicColumns());
+    const error = await updateTopic(topic.id, {
+      status: "draft",
+      opened_at: null,
+      closes_at: null,
+      author_display_name: null,
+      author_role: null,
+      author_faction_name: null,
+    });
+    expect(error?.code).toBe(CHECK_VIOLATION);
+  });
+
+  it("下書きをオープンを飛ばしてクローズにできない", async () => {
+    const topic = await createTopic(legislatorA.id);
+    const error = await updateTopic(topic.id, closedTopicColumns());
+    expect(error?.code).toBe(CHECK_VIOLATION);
+  });
+
+  it("オープン後は、作成者の写し・オープン日時・期限を変えられない", async () => {
+    const topic = await createTopic(legislatorA.id, openTopicColumns());
+
+    expect(
+      (await updateTopic(topic.id, { author_display_name: "別の名前" }))?.code
+    ).toBe(CHECK_VIOLATION);
+    expect(
+      (
+        await updateTopic(topic.id, {
+          author_role: "candidate",
+          author_faction_name: null,
+        })
+      )?.code
+    ).toBe(CHECK_VIOLATION);
+    expect(
+      (
+        await updateTopic(topic.id, {
+          closes_at: new Date(
+            Date.now() + 365 * 24 * 60 * 60 * 1000
+          ).toISOString(),
+        })
+      )?.code
+    ).toBe(CHECK_VIOLATION);
+    expect(
+      (await updateTopic(topic.id, { opened_at: new Date().toISOString() }))
+        ?.code
+    ).toBe(CHECK_VIOLATION);
+  });
+
+  it("オープン中でもタイトルと本文は更新できる（回答が始まる前の編集。判定はアプリ層）", async () => {
+    const topic = await createTopic(legislatorA.id, openTopicColumns());
+    expect(
+      await updateTopic(topic.id, {
+        title: "直したタイトル",
+        body_md: "直した本文",
+      })
+    ).toBeNull();
+  });
+
+  it("クローズ後は、クローズ日時と理由を変えられないが、取り下げはできる", async () => {
+    const topic = await createTopic(legislatorA.id, closedTopicColumns());
+
+    expect(
+      (await updateTopic(topic.id, { closed_reason: "expired" }))?.code
+    ).toBe(CHECK_VIOLATION);
+    expect(
+      await updateTopic(topic.id, {
+        withdrawn_at: new Date().toISOString(),
+        withdrawn_reason: "取り下げの理由",
+      })
+    ).toBeNull();
   });
 });
 
