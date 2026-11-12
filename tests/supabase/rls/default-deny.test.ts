@@ -28,6 +28,7 @@ const tables = [
   "interview_sessions",
   "interview_messages",
   "interview_report",
+  "interview_topics",
 ] as const;
 
 describe("RLS default deny（全テーブル共通）", () => {

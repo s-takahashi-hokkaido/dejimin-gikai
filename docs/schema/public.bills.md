@@ -70,9 +70,9 @@ erDiagram
 "public.bills_tags" }o--|| "public.bills" : "FOREIGN KEY (bill_id) REFERENCES bills(id) ON DELETE CASCADE"
 "public.chats" }o--|| "public.bills" : "FOREIGN KEY (bill_id) REFERENCES bills(id) ON DELETE CASCADE"
 "public.faction_stances" }o--|| "public.bills" : "FOREIGN KEY (bill_id) REFERENCES bills(id) ON DELETE CASCADE"
-"public.interview_configs" }o--|| "public.bills" : "FOREIGN KEY (bill_id) REFERENCES bills(id) ON DELETE CASCADE"
+"public.interview_configs" }o--o| "public.bills" : "FOREIGN KEY (bill_id) REFERENCES bills(id) ON DELETE CASCADE"
 "public.preview_tokens" }o--|| "public.bills" : "FOREIGN KEY (bill_id) REFERENCES bills(id) ON DELETE CASCADE"
-"public.topic_analysis_versions" }o--|| "public.bills" : "FOREIGN KEY (bill_id) REFERENCES bills(id) ON DELETE CASCADE"
+"public.topic_analysis_versions" }o--o| "public.bills" : "FOREIGN KEY (bill_id) REFERENCES bills(id) ON DELETE CASCADE"
 "public.bill_committees" }o--|| "public.bills" : "FOREIGN KEY (bill_id) REFERENCES bills(id) ON DELETE CASCADE"
 "public.bills" }o--o| "public.council_sessions" : "FOREIGN KEY (council_session_id) REFERENCES council_sessions(id) ON DELETE SET NULL"
 
@@ -161,6 +161,7 @@ erDiagram
   interview_mode_enum mode
   text chat_model
   integer estimated_duration
+  uuid interview_topic_id FK
 }
 "public.preview_tokens" {
   uuid id
@@ -184,6 +185,7 @@ erDiagram
   timestamp_with_time_zone started_at
   timestamp_with_time_zone completed_at
   jsonb phase_data
+  uuid interview_topic_id FK
 }
 "public.bill_committees" {
   uuid bill_id FK

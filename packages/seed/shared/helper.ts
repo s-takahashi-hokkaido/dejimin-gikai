@@ -25,6 +25,7 @@ const TABLES_TO_CLEAR = [
   "interview_sessions",
   "interview_questions",
   "interview_configs",
+  "interview_topics",
   "faction_stances",
   "chats",
   "bill_contents",
@@ -47,4 +48,43 @@ export async function clearAllData(supabase: AdminClient) {
   }
 
   console.log("✅ Cleared existing data");
+}
+
+/**
+ * 指定したメールアドレスの Auth ユーザーを削除する（admin_profiles は cascade で消える）。
+ *
+ * seed で作る議員アカウントは会派（factions）を参照しているので、
+ * clearAllData で会派を消す前に呼ぶ。
+ */
+export async function deleteAuthUsersByEmail(
+  supabase: AdminClient,
+  emails: readonly string[]
+) {
+  const targets = new Set(emails.map((email) => email.toLowerCase()));
+  const perPage = 1000;
+  const userIds: string[] = [];
+
+  // 削除しながらページを進めると行がずれるので、先に全ページを読んでから消す
+  for (let page = 1; ; page++) {
+    const { data, error } = await supabase.auth.admin.listUsers({
+      page,
+      perPage,
+    });
+    if (error) throw new Error(`Failed to list auth users: ${error.message}`);
+
+    for (const user of data.users) {
+      if (user.email && targets.has(user.email.toLowerCase())) {
+        userIds.push(user.id);
+      }
+    }
+
+    if (data.users.length < perPage) break;
+  }
+
+  for (const userId of userIds) {
+    const { error } = await supabase.auth.admin.deleteUser(userId);
+    if (error) {
+      throw new Error(`Failed to delete auth user ${userId}: ${error.message}`);
+    }
+  }
 }

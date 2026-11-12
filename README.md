@@ -76,6 +76,8 @@ WHERE email = '<1で作成したユーザーのemail>';
 
 > [!NOTE]
 > 開発環境では、seedデータによって、`email: admin@example.com, password: admin123456` のAdminユーザーが作成されます。
+> AIインタビュー広場の議題の作成者として、議員 `legislator-a@example.com` / `legislator-b@example.com`（password: `legislator123456`）と
+> 候補者 `candidate-c@example.com`（password: `candidate123456`）も `pnpm seed` で作成されます（`packages/seed/main/plaza-topics.ts`）。
 
 ## 本番デプロイ
 

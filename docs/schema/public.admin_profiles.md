@@ -8,7 +8,7 @@
 
 | Name | Type | Default | Nullable | Children | Parents | Comment |
 | ---- | ---- | ------- | -------- | -------- | ------- | ------- |
-| user_id | uuid |  | false |  | [auth.users](auth.users.md) |  |
+| user_id | uuid |  | false | [public.interview_topics](public.interview_topics.md) | [auth.users](auth.users.md) |  |
 | role | text |  | false |  |  | ロール(admin:運営者 / legislator:議員 / candidate:出馬者) |
 | faction_id | uuid |  | true |  | [public.factions](public.factions.md) | 所属会派ID(legislatorのみ必須) |
 | display_name | text |  | false |  |  | 表示名(監査ログや画面表示に使用) |
@@ -46,6 +46,7 @@
 erDiagram
 
 "public.admin_profiles" |o--|| "auth.users" : "FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE"
+"public.interview_topics" }o--o| "public.admin_profiles" : "FOREIGN KEY (author_user_id) REFERENCES admin_profiles(user_id) ON DELETE SET NULL"
 "public.admin_profiles" }o--o| "public.factions" : "FOREIGN KEY (faction_id) REFERENCES factions(id) ON DELETE RESTRICT"
 
 "public.admin_profiles" {
@@ -92,6 +93,24 @@ erDiagram
   boolean is_sso_user
   timestamp_with_time_zone deleted_at
   boolean is_anonymous
+}
+"public.interview_topics" {
+  uuid id
+  uuid author_user_id FK
+  text title
+  text body_md
+  text status
+  timestamp_with_time_zone opened_at
+  timestamp_with_time_zone closes_at
+  timestamp_with_time_zone closed_at
+  text closed_reason
+  text author_display_name
+  text author_role
+  text author_faction_name
+  timestamp_with_time_zone withdrawn_at
+  text withdrawn_reason
+  timestamp_with_time_zone created_at
+  timestamp_with_time_zone updated_at
 }
 "public.factions" {
   uuid id

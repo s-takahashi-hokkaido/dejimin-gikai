@@ -85,10 +85,11 @@ export async function updateInterviewConfig(
     // バリデーション
     const validatedData = interviewConfigSchema.parse(input);
 
+    // 現在の設定のbill_idを取得（議題の設定なら例外。議案の画面からは議題の設定を触らせない）
+    const currentConfig = await findInterviewConfigBillId(configId);
+
     // 公開設定の場合、他の公開設定を非公開にする
     if (validatedData.status === "public") {
-      // まず現在の設定のbill_idを取得
-      const currentConfig = await findInterviewConfigBillId(configId);
       await closeOtherPublicConfigs(currentConfig.bill_id, configId);
     }
 
@@ -139,6 +140,15 @@ export async function duplicateInterviewConfig(
       };
     }
 
+    // 議題（AIインタビュー広場）の設定は議題ごとに1つなので複製しない
+    const billId = originalConfig.bill_id;
+    if (billId === null) {
+      return {
+        success: false,
+        error: "議案のインタビュー設定ではないため複製できません",
+      };
+    }
+
     // 元の質問を取得
     const originalQuestions = await findInterviewQuestionsByConfigId(configId);
 
@@ -146,7 +156,7 @@ export async function duplicateInterviewConfig(
     let newConfig: { id: string };
     try {
       newConfig = await createInterviewConfigRecord({
-        bill_id: originalConfig.bill_id,
+        bill_id: billId,
         name: `${originalConfig.name}（コピー）`,
         status: "closed" as const,
         mode: originalConfig.mode as "loop" | "bulk",
@@ -205,6 +215,9 @@ export async function deleteInterviewConfig(
 ): Promise<InterviewConfigResult> {
   try {
     await requireAdmin();
+
+    // 議題の設定なら例外（議案の画面からは議題の設定を消させない）
+    await findInterviewConfigBillId(configId);
 
     await deleteInterviewConfigRecord(configId);
 

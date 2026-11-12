@@ -363,3 +363,70 @@ export async function createTestInterviewMessages(
   if (error) throw new Error(`interview_messages 作成失敗: ${error.message}`);
   return data;
 }
+
+type InterviewTopicInsert =
+  Database["public"]["Tables"]["interview_topics"]["Insert"];
+
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+/**
+ * オープン状態の議題に必要な列（日時と作成者の写し）
+ * 期限はオープンから30日後（機能設計 §6-4 の設定値）
+ */
+export function openTopicColumns(
+  overrides: Partial<InterviewTopicInsert> = {}
+): Partial<InterviewTopicInsert> {
+  const openedAt = new Date();
+  return {
+    status: "open",
+    opened_at: openedAt.toISOString(),
+    closes_at: new Date(openedAt.getTime() + 30 * DAY_MS).toISOString(),
+    author_display_name: "テスト議員",
+    author_role: "legislator",
+    author_faction_name: "テスト会派",
+    ...overrides,
+  };
+}
+
+/** クローズ状態の議題に必要な列（日時と作成者の写し） */
+export function closedTopicColumns(
+  overrides: Partial<InterviewTopicInsert> = {}
+): Partial<InterviewTopicInsert> {
+  const openedAt = new Date(Date.now() - 10 * DAY_MS);
+  return {
+    ...openTopicColumns({
+      opened_at: openedAt.toISOString(),
+      closes_at: new Date(openedAt.getTime() + 30 * DAY_MS).toISOString(),
+    }),
+    status: "closed",
+    closed_at: new Date().toISOString(),
+    closed_reason: "manual",
+    ...overrides,
+  };
+}
+
+/** テスト用 interview_topic を作成（既定は下書き） */
+export async function createTestInterviewTopic(
+  authorUserId: string | null,
+  overrides: Partial<InterviewTopicInsert> = {}
+) {
+  const { data, error } = await adminClient
+    .from("interview_topics")
+    .insert({
+      author_user_id: authorUserId,
+      title: `テスト議題 ${Date.now()}`,
+      body_md: "テスト議題の本文",
+      ...overrides,
+    })
+    .select()
+    .single();
+  if (error) throw new Error(`interview_topic 作成失敗: ${error.message}`);
+  return data;
+}
+
+/** テスト用 interview_topic を削除（CASCADE でインタビュー設定・論点分析も削除） */
+export async function cleanupTestInterviewTopic(
+  topicId: string
+): Promise<void> {
+  await adminClient.from("interview_topics").delete().eq("id", topicId);
+}
