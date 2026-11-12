@@ -6,7 +6,9 @@ import {
   createInterviewQuestions,
 } from "./data";
 import { INTERVIEW_TARGET, sapporoSessions } from "./sapporo-bills/sessions";
-import { createAdminClient, clearAllData } from "../shared/helper";
+import { plazaSeedAccounts, plazaTopicFixtures } from "./plaza-topics";
+import { type PlazaSeedAuthor, planPlazaTopicSeed } from "./utils/plan-plaza-topic-seed";
+import { createAdminClient, clearAllData, deleteAuthUsersByEmail } from "../shared/helper";
 // 採決のあった status の一覧は seed:bills と同じものを使う（二重管理を避ける）
 import { VOTED_STATUSES } from "../bills/utils/plan-bill-seed";
 
@@ -15,6 +17,11 @@ async function seedDatabase() {
   console.log("🌱 Starting database seeding...");
 
   try {
+    // 議題の作成者のアカウントは会派を参照しているので、会派を消す前に消す
+    await deleteAuthUsersByEmail(
+      supabase,
+      plazaSeedAccounts.map((account) => account.email)
+    );
     await clearAllData(supabase);
 
     // Insert tags
@@ -209,6 +216,64 @@ async function seedDatabase() {
       console.log("⚠️ Skipped interview config (target bill not found)");
     }
 
+    // Insert plaza accounts and topics (AIインタビュー広場)
+    console.log("🗣️  Inserting plaza accounts and topics...");
+    const factionDisplayNameByName = new Map(factions.map((f) => [f.name, f.display_name]));
+    const plazaAuthors = new Map<string, PlazaSeedAuthor>();
+    for (const account of plazaSeedAccounts) {
+      const { data: created, error: userError } = await supabase.auth.admin.createUser({
+        email: account.email,
+        password: account.password,
+        email_confirm: true,
+      });
+      if (userError) throw new Error(`Failed to create plaza account ${account.email}: ${userError.message}`);
+
+      const factionId = account.factionName ? requireId(factionIdByName, account.factionName, "faction") : null;
+      const { error: profileError } = await supabase.from("admin_profiles").insert({
+        user_id: created.user.id,
+        role: account.role,
+        faction_id: factionId,
+        display_name: account.displayName,
+      });
+      if (profileError) throw new Error(`Failed to insert admin profile ${account.email}: ${profileError.message}`);
+
+      plazaAuthors.set(account.email, {
+        userId: created.user.id,
+        displayName: account.displayName,
+        role: account.role,
+        factionDisplayName: account.factionName ? requireId(factionDisplayNameByName, account.factionName, "faction") : null,
+      });
+    }
+    console.log(`✅ Inserted ${plazaAuthors.size} plaza accounts`);
+
+    const plannedTopics = planPlazaTopicSeed({ fixtures: plazaTopicFixtures, authors: plazaAuthors, now: new Date() });
+    let topicConfigCount = 0;
+    let topicQuestionCount = 0;
+    for (const planned of plannedTopics) {
+      const { data: insertedTopic, error: topicError } = await supabase
+        .from("interview_topics")
+        .insert(planned.topic)
+        .select("id")
+        .single();
+      if (topicError) throw new Error(`Failed to insert interview topic "${planned.topic.title}": ${topicError.message}`);
+      if (!planned.interview) continue;
+
+      const { data: topicConfig, error: topicConfigError } = await supabase
+        .from("interview_configs")
+        .insert({ ...planned.interview.config, interview_topic_id: insertedTopic.id })
+        .select("id")
+        .single();
+      if (topicConfigError) throw new Error(`Failed to insert topic interview config: ${topicConfigError.message}`);
+      topicConfigCount++;
+
+      const { error: topicQuestionsError } = await supabase
+        .from("interview_questions")
+        .insert(planned.interview.questions.map((q) => ({ ...q, interview_config_id: topicConfig.id })));
+      if (topicQuestionsError) throw new Error(`Failed to insert topic interview questions: ${topicQuestionsError.message}`);
+      topicQuestionCount += planned.interview.questions.length;
+    }
+    console.log(`✅ Inserted ${plannedTopics.length} interview topics`);
+
     console.log("\n🎉 Database seeding completed successfully!");
     console.log("\n📊 Summary:");
     console.log(`  Council Sessions: ${councilSessionCount}`);
@@ -222,6 +287,8 @@ async function seedDatabase() {
     console.log(`  Bills-Tags Relations: ${billsTagsCount}`);
     console.log(`  Interview Config: ${interviewConfigData ? 1 : 0}`);
     console.log(`  Interview Questions: ${insertedQuestionsCount}`);
+    console.log(`  Plaza Accounts: ${plazaAuthors.size} (password: legislator123456 / candidate123456)`);
+    console.log(`  Interview Topics: ${plannedTopics.length} (with interview config: ${topicConfigCount}, questions: ${topicQuestionCount})`);
   } catch (error) {
     console.error("❌ Error seeding database:", error);
     process.exit(1);

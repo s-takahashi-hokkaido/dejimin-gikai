@@ -139,6 +139,15 @@ export async function duplicateInterviewConfig(
       };
     }
 
+    // 議題（AIインタビュー広場）の設定は議題ごとに1つなので複製しない
+    const billId = originalConfig.bill_id;
+    if (billId === null) {
+      return {
+        success: false,
+        error: "議案のインタビュー設定ではないため複製できません",
+      };
+    }
+
     // 元の質問を取得
     const originalQuestions = await findInterviewQuestionsByConfigId(configId);
 
@@ -146,7 +155,7 @@ export async function duplicateInterviewConfig(
     let newConfig: { id: string };
     try {
       newConfig = await createInterviewConfigRecord({
-        bill_id: originalConfig.bill_id,
+        bill_id: billId,
         name: `${originalConfig.name}（コピー）`,
         status: "closed" as const,
         mode: originalConfig.mode as "loop" | "bulk",

@@ -16,6 +16,7 @@ function makeVersion(
   return {
     id: "ver-1",
     bill_id: "bill-1",
+    interview_topic_id: null,
     version: 1,
     status: "completed",
     summary_md: null,

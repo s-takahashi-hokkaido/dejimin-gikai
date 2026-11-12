@@ -63,6 +63,7 @@ erDiagram
   timestamp_with_time_zone started_at
   timestamp_with_time_zone completed_at
   jsonb phase_data
+  uuid interview_topic_id FK
 }
 "public.interview_report" {
   uuid id

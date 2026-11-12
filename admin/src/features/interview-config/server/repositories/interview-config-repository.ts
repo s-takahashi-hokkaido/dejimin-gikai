@@ -40,6 +40,11 @@ export async function findInterviewConfigById(
   return data;
 }
 
+/**
+ * 議案のインタビュー設定の bill_id を取得する
+ *
+ * 議題（AIインタビュー広場）の設定は bill_id を持たないので、議案の設定でなければ例外にする。
+ */
 export async function findInterviewConfigBillId(
   configId: string
 ): Promise<{ bill_id: string }> {
@@ -54,7 +59,11 @@ export async function findInterviewConfigBillId(
     throw new Error(`Failed to fetch interview config: ${error.message}`);
   }
 
-  return data;
+  if (data.bill_id === null) {
+    throw new Error("議案のインタビュー設定ではありません");
+  }
+
+  return { bill_id: data.bill_id };
 }
 
 export async function findInterviewQuestionsByConfigId(

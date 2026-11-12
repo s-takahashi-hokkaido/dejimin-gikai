@@ -2285,7 +2285,7 @@
     {
       "name": "public.interview_configs",
       "type": "BASE TABLE",
-      "comment": "議案ごとのインタビュー設定を管理するテーブル",
+      "comment": "議案または議題ごとのインタビュー設定を管理するテーブル",
       "columns": [
         {
           "name": "id",
@@ -2296,8 +2296,8 @@
         {
           "name": "bill_id",
           "type": "uuid",
-          "nullable": false,
-          "comment": "対象議案ID（複数設定可、ただしpublicは1つのみ）"
+          "nullable": true,
+          "comment": "対象議案ID（議案の設定のとき。複数設定可、ただしpublicは1つのみ）"
         },
         {
           "name": "status",
@@ -2356,6 +2356,12 @@
           "type": "integer",
           "nullable": true,
           "comment": "目安所要時間(分・NULLはタイムマネジメントしない)"
+        },
+        {
+          "name": "interview_topic_id",
+          "type": "uuid",
+          "nullable": true,
+          "comment": "対象議題ID（議題の設定のとき。議題ごとに1つ。受付可否は議題の status で判定し、この表の status は使わない）"
         }
       ],
       "indexes": [
@@ -2390,9 +2396,28 @@
           "columns": [
             "status"
           ]
+        },
+        {
+          "name": "idx_interview_configs_interview_topic_id",
+          "def": "CREATE UNIQUE INDEX idx_interview_configs_interview_topic_id ON public.interview_configs USING btree (interview_topic_id) WHERE (interview_topic_id IS NOT NULL)",
+          "table": "public.interview_configs",
+          "columns": [
+            "interview_topic_id"
+          ]
         }
       ],
       "constraints": [
+        {
+          "name": "interview_configs_subject_exactly_one",
+          "type": "CHECK",
+          "def": "CHECK ((num_nonnulls(bill_id, interview_topic_id) = 1))",
+          "table": "public.interview_configs",
+          "referenced_table": "",
+          "columns": [
+            "bill_id",
+            "interview_topic_id"
+          ]
+        },
         {
           "name": "interview_configs_bill_id_fkey",
           "type": "FOREIGN KEY",
@@ -2413,6 +2438,19 @@
           "table": "public.interview_configs",
           "referenced_table": "",
           "columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "interview_configs_interview_topic_id_fkey",
+          "type": "FOREIGN KEY",
+          "def": "FOREIGN KEY (interview_topic_id) REFERENCES interview_topics(id) ON DELETE CASCADE",
+          "table": "public.interview_configs",
+          "referenced_table": "public.interview_topics",
+          "columns": [
+            "interview_topic_id"
+          ],
+          "referenced_columns": [
             "id"
           ]
         }
@@ -3865,7 +3903,7 @@
     {
       "name": "public.topic_analysis_versions",
       "type": "BASE TABLE",
-      "comment": "トピック解析のバージョン管理",
+      "comment": "トピック解析のバージョン管理（議案または議題ごと）",
       "columns": [
         {
           "name": "id",
@@ -3876,14 +3914,14 @@
         {
           "name": "bill_id",
           "type": "uuid",
-          "nullable": false,
-          "comment": "対象議案ID"
+          "nullable": true,
+          "comment": "対象議案ID（議案の分析のとき）"
         },
         {
           "name": "version",
           "type": "integer",
           "nullable": false,
-          "comment": "バージョン番号（議案ごとにインクリメント）"
+          "comment": "バージョン番号（議案・議題ごとにインクリメント）"
         },
         {
           "name": "status",
@@ -3945,6 +3983,12 @@
           "type": "jsonb",
           "nullable": true,
           "comment": "フェーズ間データ受け渡し用"
+        },
+        {
+          "name": "interview_topic_id",
+          "type": "uuid",
+          "nullable": true,
+          "comment": "対象議題ID（議題の分析のとき）"
         }
       ],
       "indexes": [
@@ -3972,6 +4016,15 @@
           "columns": [
             "bill_id"
           ]
+        },
+        {
+          "name": "topic_analysis_versions_interview_topic_id_version_key",
+          "def": "CREATE UNIQUE INDEX topic_analysis_versions_interview_topic_id_version_key ON public.topic_analysis_versions USING btree (interview_topic_id, version)",
+          "table": "public.topic_analysis_versions",
+          "columns": [
+            "interview_topic_id",
+            "version"
+          ]
         }
       ],
       "constraints": [
@@ -3983,6 +4036,17 @@
           "referenced_table": "",
           "columns": [
             "status"
+          ]
+        },
+        {
+          "name": "topic_analysis_versions_subject_exactly_one",
+          "type": "CHECK",
+          "def": "CHECK ((num_nonnulls(bill_id, interview_topic_id) = 1))",
+          "table": "public.topic_analysis_versions",
+          "referenced_table": "",
+          "columns": [
+            "bill_id",
+            "interview_topic_id"
           ]
         },
         {
@@ -4017,6 +4081,30 @@
           "referenced_table": "",
           "columns": [
             "id"
+          ]
+        },
+        {
+          "name": "topic_analysis_versions_interview_topic_id_fkey",
+          "type": "FOREIGN KEY",
+          "def": "FOREIGN KEY (interview_topic_id) REFERENCES interview_topics(id) ON DELETE CASCADE",
+          "table": "public.topic_analysis_versions",
+          "referenced_table": "public.interview_topics",
+          "columns": [
+            "interview_topic_id"
+          ],
+          "referenced_columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "topic_analysis_versions_interview_topic_id_version_key",
+          "type": "UNIQUE",
+          "def": "UNIQUE (interview_topic_id, version)",
+          "table": "public.topic_analysis_versions",
+          "referenced_table": "",
+          "columns": [
+            "interview_topic_id",
+            "version"
           ]
         }
       ],
@@ -4167,7 +4255,7 @@
     {
       "name": "public.admin_audit_logs",
       "type": "BASE TABLE",
-      "comment": "管理画面からの変更履歴（議案・議案コンテンツ・会派見解・付託委員会・管理画面のアカウント）",
+      "comment": "管理画面からの変更履歴（議案・議案コンテンツ・会派見解・付託委員会・管理画面のアカウント・議題）",
       "columns": [
         {
           "name": "id",
@@ -4866,6 +4954,312 @@
           ]
         }
       ]
+    },
+    {
+      "name": "public.interview_topics",
+      "type": "BASE TABLE",
+      "comment": "AIインタビュー広場の議題（議員・候補者が出す問い。議案には紐づかない）",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "nullable": false,
+          "default": "gen_random_uuid()"
+        },
+        {
+          "name": "author_user_id",
+          "type": "uuid",
+          "nullable": true,
+          "comment": "作成者のユーザーID（アカウント削除後は null。表示には author_* の写しを使う）"
+        },
+        {
+          "name": "title",
+          "type": "text",
+          "nullable": false,
+          "comment": "議題のタイトル"
+        },
+        {
+          "name": "body_md",
+          "type": "text",
+          "nullable": false,
+          "default": "''::text",
+          "comment": "議題の本文（Markdown）"
+        },
+        {
+          "name": "status",
+          "type": "text",
+          "nullable": false,
+          "default": "'draft'::text",
+          "comment": "状態(draft:下書き / open:オープン / closed:クローズ)。逆方向には戻れない"
+        },
+        {
+          "name": "opened_at",
+          "type": "timestamp with time zone",
+          "nullable": true,
+          "comment": "オープンした日時"
+        },
+        {
+          "name": "closes_at",
+          "type": "timestamp with time zone",
+          "nullable": true,
+          "comment": "自動クローズの期限（オープン日時 + 設定値の日数）"
+        },
+        {
+          "name": "closed_at",
+          "type": "timestamp with time zone",
+          "nullable": true,
+          "comment": "クローズした日時"
+        },
+        {
+          "name": "closed_reason",
+          "type": "text",
+          "nullable": true,
+          "comment": "クローズの理由(manual:作成者がクローズ / expired:期限切れで自動クローズ)"
+        },
+        {
+          "name": "author_display_name",
+          "type": "text",
+          "nullable": true,
+          "comment": "オープン時点の作成者の表示名（写し）"
+        },
+        {
+          "name": "author_role",
+          "type": "text",
+          "nullable": true,
+          "comment": "オープン時点の作成者のロール（写し。legislator:議員 / candidate:候補者）"
+        },
+        {
+          "name": "author_faction_name",
+          "type": "text",
+          "nullable": true,
+          "comment": "オープン時点の作成者の会派名（写し。候補者は null）"
+        },
+        {
+          "name": "withdrawn_at",
+          "type": "timestamp with time zone",
+          "nullable": true,
+          "comment": "運営者が取り下げた日時（null は取り下げていない）"
+        },
+        {
+          "name": "withdrawn_reason",
+          "type": "text",
+          "nullable": true,
+          "comment": "運営者が取り下げた理由"
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "nullable": false,
+          "default": "now()"
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "nullable": false,
+          "default": "now()"
+        }
+      ],
+      "indexes": [
+        {
+          "name": "interview_topics_pkey",
+          "def": "CREATE UNIQUE INDEX interview_topics_pkey ON public.interview_topics USING btree (id)",
+          "table": "public.interview_topics",
+          "columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "interview_topics_one_open_per_author",
+          "def": "CREATE UNIQUE INDEX interview_topics_one_open_per_author ON public.interview_topics USING btree (author_user_id) WHERE (status = 'open'::text)",
+          "table": "public.interview_topics",
+          "columns": [
+            "author_user_id"
+          ]
+        },
+        {
+          "name": "interview_topics_status_created_at_idx",
+          "def": "CREATE INDEX interview_topics_status_created_at_idx ON public.interview_topics USING btree (status, created_at DESC)",
+          "table": "public.interview_topics",
+          "columns": [
+            "status",
+            "created_at"
+          ]
+        },
+        {
+          "name": "interview_topics_author_created_at_idx",
+          "def": "CREATE INDEX interview_topics_author_created_at_idx ON public.interview_topics USING btree (author_user_id, created_at DESC)",
+          "table": "public.interview_topics",
+          "columns": [
+            "author_user_id",
+            "created_at"
+          ]
+        },
+        {
+          "name": "interview_topics_open_closes_at_idx",
+          "def": "CREATE INDEX interview_topics_open_closes_at_idx ON public.interview_topics USING btree (closes_at) WHERE (status = 'open'::text)",
+          "table": "public.interview_topics",
+          "columns": [
+            "closes_at"
+          ]
+        }
+      ],
+      "constraints": [
+        {
+          "name": "interview_topics_author_snapshot_role",
+          "type": "CHECK",
+          "def": "CHECK (((author_role IS NULL) OR ((author_role = 'legislator'::text) AND (author_faction_name IS NOT NULL)) OR ((author_role = 'candidate'::text) AND (author_faction_name IS NULL))))",
+          "table": "public.interview_topics",
+          "referenced_table": "",
+          "columns": [
+            "author_role",
+            "author_faction_name"
+          ]
+        },
+        {
+          "name": "interview_topics_closed_after_open",
+          "type": "CHECK",
+          "def": "CHECK (((closed_at IS NULL) OR (closed_at \u003e= opened_at)))",
+          "table": "public.interview_topics",
+          "referenced_table": "",
+          "columns": [
+            "closed_at",
+            "opened_at"
+          ]
+        },
+        {
+          "name": "interview_topics_closed_reason_check",
+          "type": "CHECK",
+          "def": "CHECK ((closed_reason = ANY (ARRAY['manual'::text, 'expired'::text])))",
+          "table": "public.interview_topics",
+          "referenced_table": "",
+          "columns": [
+            "closed_reason"
+          ]
+        },
+        {
+          "name": "interview_topics_closes_after_open",
+          "type": "CHECK",
+          "def": "CHECK (((closes_at IS NULL) OR (closes_at \u003e opened_at)))",
+          "table": "public.interview_topics",
+          "referenced_table": "",
+          "columns": [
+            "closes_at",
+            "opened_at"
+          ]
+        },
+        {
+          "name": "interview_topics_published_requires_author_snapshot",
+          "type": "CHECK",
+          "def": "CHECK (((status = 'draft'::text) OR ((author_display_name IS NOT NULL) AND (author_role IS NOT NULL))))",
+          "table": "public.interview_topics",
+          "referenced_table": "",
+          "columns": [
+            "status",
+            "author_display_name",
+            "author_role"
+          ]
+        },
+        {
+          "name": "interview_topics_published_requires_body",
+          "type": "CHECK",
+          "def": "CHECK (((status = 'draft'::text) OR (btrim(body_md) \u003c\u003e ''::text)))",
+          "table": "public.interview_topics",
+          "referenced_table": "",
+          "columns": [
+            "status",
+            "body_md"
+          ]
+        },
+        {
+          "name": "interview_topics_status_check",
+          "type": "CHECK",
+          "def": "CHECK ((status = ANY (ARRAY['draft'::text, 'open'::text, 'closed'::text])))",
+          "table": "public.interview_topics",
+          "referenced_table": "",
+          "columns": [
+            "status"
+          ]
+        },
+        {
+          "name": "interview_topics_status_timestamps",
+          "type": "CHECK",
+          "def": "CHECK ((((status = 'draft'::text) AND (opened_at IS NULL) AND (closes_at IS NULL) AND (closed_at IS NULL) AND (closed_reason IS NULL)) OR ((status = 'open'::text) AND (opened_at IS NOT NULL) AND (closes_at IS NOT NULL) AND (closed_at IS NULL) AND (closed_reason IS NULL)) OR ((status = 'closed'::text) AND (opened_at IS NOT NULL) AND (closes_at IS NOT NULL) AND (closed_at IS NOT NULL) AND (closed_reason IS NOT NULL))))",
+          "table": "public.interview_topics",
+          "referenced_table": "",
+          "columns": [
+            "status",
+            "opened_at",
+            "closes_at",
+            "closed_at",
+            "closed_reason"
+          ]
+        },
+        {
+          "name": "interview_topics_title_not_blank",
+          "type": "CHECK",
+          "def": "CHECK ((btrim(title) \u003c\u003e ''::text))",
+          "table": "public.interview_topics",
+          "referenced_table": "",
+          "columns": [
+            "title"
+          ]
+        },
+        {
+          "name": "interview_topics_withdrawal_not_draft",
+          "type": "CHECK",
+          "def": "CHECK (((withdrawn_at IS NULL) OR (status \u003c\u003e 'draft'::text)))",
+          "table": "public.interview_topics",
+          "referenced_table": "",
+          "columns": [
+            "withdrawn_at",
+            "status"
+          ]
+        },
+        {
+          "name": "interview_topics_withdrawal_pair",
+          "type": "CHECK",
+          "def": "CHECK ((((withdrawn_at IS NULL) AND (withdrawn_reason IS NULL)) OR ((withdrawn_at IS NOT NULL) AND (withdrawn_reason IS NOT NULL) AND (btrim(withdrawn_reason) \u003c\u003e ''::text))))",
+          "table": "public.interview_topics",
+          "referenced_table": "",
+          "columns": [
+            "withdrawn_at",
+            "withdrawn_reason"
+          ]
+        },
+        {
+          "name": "interview_topics_author_user_id_fkey",
+          "type": "FOREIGN KEY",
+          "def": "FOREIGN KEY (author_user_id) REFERENCES admin_profiles(user_id) ON DELETE SET NULL",
+          "table": "public.interview_topics",
+          "referenced_table": "public.admin_profiles",
+          "columns": [
+            "author_user_id"
+          ],
+          "referenced_columns": [
+            "user_id"
+          ]
+        },
+        {
+          "name": "interview_topics_pkey",
+          "type": "PRIMARY KEY",
+          "def": "PRIMARY KEY (id)",
+          "table": "public.interview_topics",
+          "referenced_table": "",
+          "columns": [
+            "id"
+          ]
+        }
+      ],
+      "triggers": [
+        {
+          "name": "update_interview_topics_updated_at",
+          "def": "CREATE TRIGGER update_interview_topics_updated_at BEFORE UPDATE ON public.interview_topics FOR EACH ROW EXECUTE FUNCTION update_updated_at_column()"
+        },
+        {
+          "name": "interview_topics_audit_log",
+          "def": "CREATE TRIGGER interview_topics_audit_log AFTER INSERT OR DELETE OR UPDATE ON public.interview_topics FOR EACH ROW EXECUTE FUNCTION record_admin_audit_log()"
+        }
+      ]
     }
   ],
   "relations": [
@@ -5048,8 +5442,21 @@
       "parent_columns": [
         "id"
       ],
-      "parent_cardinality": "exactly_one",
+      "parent_cardinality": "zero_or_one",
       "def": "FOREIGN KEY (bill_id) REFERENCES bills(id) ON DELETE CASCADE"
+    },
+    {
+      "table": "public.interview_configs",
+      "columns": [
+        "interview_topic_id"
+      ],
+      "cardinality": "zero_or_more",
+      "parent_table": "public.interview_topics",
+      "parent_columns": [
+        "id"
+      ],
+      "parent_cardinality": "zero_or_one",
+      "def": "FOREIGN KEY (interview_topic_id) REFERENCES interview_topics(id) ON DELETE CASCADE"
     },
     {
       "table": "public.interview_messages",
@@ -5217,8 +5624,21 @@
       "parent_columns": [
         "id"
       ],
-      "parent_cardinality": "exactly_one",
+      "parent_cardinality": "zero_or_one",
       "def": "FOREIGN KEY (bill_id) REFERENCES bills(id) ON DELETE CASCADE"
+    },
+    {
+      "table": "public.topic_analysis_versions",
+      "columns": [
+        "interview_topic_id"
+      ],
+      "cardinality": "zero_or_more",
+      "parent_table": "public.interview_topics",
+      "parent_columns": [
+        "id"
+      ],
+      "parent_cardinality": "zero_or_one",
+      "def": "FOREIGN KEY (interview_topic_id) REFERENCES interview_topics(id) ON DELETE CASCADE"
     },
     {
       "table": "public.admin_profiles",
@@ -5338,6 +5758,19 @@
       ],
       "parent_cardinality": "exactly_one",
       "def": "FOREIGN KEY (council_session_id) REFERENCES council_sessions(id) ON DELETE CASCADE"
+    },
+    {
+      "table": "public.interview_topics",
+      "columns": [
+        "author_user_id"
+      ],
+      "cardinality": "zero_or_more",
+      "parent_table": "public.admin_profiles",
+      "parent_columns": [
+        "user_id"
+      ],
+      "parent_cardinality": "zero_or_one",
+      "def": "FOREIGN KEY (author_user_id) REFERENCES admin_profiles(user_id) ON DELETE SET NULL"
     }
   ],
   "functions": [
@@ -5589,7 +6022,7 @@
   ],
   "driver": {
     "name": "postgres",
-    "database_version": "PostgreSQL 17.6 on x86_64-pc-linux-gnu, compiled by gcc (GCC) 15.2.0, 64-bit",
+    "database_version": "PostgreSQL 17.11 on x86_64-pc-linux-gnu, compiled by gcc (GCC) 15.2.0, 64-bit",
     "meta": {
       "current_schema": "public",
       "search_paths": [

@@ -20,7 +20,7 @@
 | [public.faction_stances](public.faction_stances.md) | 7 | 会派見解（1議案に複数会派の見解を登録可能） | BASE TABLE |
 | [public.factions](public.factions.md) | 9 | 会派マスター | BASE TABLE |
 | [public.general_questions](public.general_questions.md) | 14 | 一般質問 | BASE TABLE |
-| [public.interview_configs](public.interview_configs.md) | 11 | 議案ごとのインタビュー設定を管理するテーブル | BASE TABLE |
+| [public.interview_configs](public.interview_configs.md) | 12 | 議案または議題ごとのインタビュー設定を管理するテーブル | BASE TABLE |
 | [public.interview_messages](public.interview_messages.md) | 5 | インタビュー内の質問と回答を保存するテーブル | BASE TABLE |
 | [public.interview_questions](public.interview_questions.md) | 8 | 事前定義されたインタビュー質問を管理するテーブル | BASE TABLE |
 | [public.interview_report](public.interview_report.md) | 14 | インタビュー結果のレポートを保存するテーブル（AIが自動生成） | BASE TABLE |
@@ -33,14 +33,15 @@
 | [public.tags](public.tags.md) | 6 | Master table for tags | BASE TABLE |
 | [public.topic_analysis_classifications](public.topic_analysis_classifications.md) | 5 | 意見とトピックの分類（多対多） | BASE TABLE |
 | [public.topic_analysis_topics](public.topic_analysis_topics.md) | 7 | トピック解析で抽出されたトピック | BASE TABLE |
-| [public.topic_analysis_versions](public.topic_analysis_versions.md) | 13 | トピック解析のバージョン管理 | BASE TABLE |
+| [public.topic_analysis_versions](public.topic_analysis_versions.md) | 14 | トピック解析のバージョン管理（議案または議題ごと） | BASE TABLE |
 | [public.admin_profiles](public.admin_profiles.md) | 6 | 管理画面利用者のロールと所属会派 | BASE TABLE |
-| [public.admin_audit_logs](public.admin_audit_logs.md) | 12 | 管理画面からの変更履歴（議案・議案コンテンツ・会派見解・付託委員会・管理画面のアカウント） | BASE TABLE |
+| [public.admin_audit_logs](public.admin_audit_logs.md) | 12 | 管理画面からの変更履歴（議案・議案コンテンツ・会派見解・付託委員会・管理画面のアカウント・議題） | BASE TABLE |
 | [public.bill_committees](public.bill_committees.md) | 3 | 議案の付託委員会（1議案に複数の委員会を付託できる） | BASE TABLE |
 | [public.prompts](public.prompts.md) | 6 | AIチャットのシステムプロンプト | BASE TABLE |
 | [public.prompt_versions](public.prompt_versions.md) | 7 | プロンプトの版（追記のみ） | BASE TABLE |
 | [public.chat_logs](public.chat_logs.md) | 11 | AIチャットの会話ログ（保存期間90日。delete_expired_chat_logs で削除する） | BASE TABLE |
 | [public.general_question_overviews](public.general_question_overviews.md) | 5 | 定例会ごとの一般質問（代表質問）の3行まとめ。本文は AI の下書きをユーザーが確認してから登録する | BASE TABLE |
+| [public.interview_topics](public.interview_topics.md) | 16 | AIインタビュー広場の議題（議員・候補者が出す問い。議案には紐づかない） | BASE TABLE |
 
 ## Stored procedures and functions
 
@@ -103,7 +104,8 @@ erDiagram
 "public.faction_stances" }o--|| "public.bills" : "FOREIGN KEY (bill_id) REFERENCES bills(id) ON DELETE CASCADE"
 "public.faction_stances" }o--|| "public.factions" : "FOREIGN KEY (faction_id) REFERENCES factions(id) ON DELETE CASCADE"
 "public.general_questions" }o--|| "public.council_sessions" : "FOREIGN KEY (council_session_id) REFERENCES council_sessions(id) ON DELETE CASCADE"
-"public.interview_configs" }o--|| "public.bills" : "FOREIGN KEY (bill_id) REFERENCES bills(id) ON DELETE CASCADE"
+"public.interview_configs" }o--o| "public.bills" : "FOREIGN KEY (bill_id) REFERENCES bills(id) ON DELETE CASCADE"
+"public.interview_configs" }o--o| "public.interview_topics" : "FOREIGN KEY (interview_topic_id) REFERENCES interview_topics(id) ON DELETE CASCADE"
 "public.interview_messages" }o--|| "public.interview_sessions" : "FOREIGN KEY (interview_session_id) REFERENCES interview_sessions(id) ON DELETE CASCADE"
 "public.interview_questions" }o--|| "public.interview_configs" : "FOREIGN KEY (interview_config_id) REFERENCES interview_configs(id) ON DELETE CASCADE"
 "public.interview_report" |o--|| "public.interview_sessions" : "FOREIGN KEY (interview_session_id) REFERENCES interview_sessions(id) ON DELETE CASCADE"
@@ -116,7 +118,8 @@ erDiagram
 "public.topic_analysis_classifications" }o--|| "public.topic_analysis_topics" : "FOREIGN KEY (topic_id) REFERENCES topic_analysis_topics(id) ON DELETE CASCADE"
 "public.topic_analysis_classifications" }o--|| "public.topic_analysis_versions" : "FOREIGN KEY (version_id) REFERENCES topic_analysis_versions(id) ON DELETE CASCADE"
 "public.topic_analysis_topics" }o--|| "public.topic_analysis_versions" : "FOREIGN KEY (version_id) REFERENCES topic_analysis_versions(id) ON DELETE CASCADE"
-"public.topic_analysis_versions" }o--|| "public.bills" : "FOREIGN KEY (bill_id) REFERENCES bills(id) ON DELETE CASCADE"
+"public.topic_analysis_versions" }o--o| "public.bills" : "FOREIGN KEY (bill_id) REFERENCES bills(id) ON DELETE CASCADE"
+"public.topic_analysis_versions" }o--o| "public.interview_topics" : "FOREIGN KEY (interview_topic_id) REFERENCES interview_topics(id) ON DELETE CASCADE"
 "public.admin_profiles" |o--|| "auth.users" : "FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE"
 "public.admin_profiles" }o--o| "public.factions" : "FOREIGN KEY (faction_id) REFERENCES factions(id) ON DELETE RESTRICT"
 "public.bill_committees" }o--|| "public.bills" : "FOREIGN KEY (bill_id) REFERENCES bills(id) ON DELETE CASCADE"
@@ -126,6 +129,7 @@ erDiagram
 "public.prompt_versions" }o--|| "public.prompts" : "FOREIGN KEY (prompt_id) REFERENCES prompts(id) ON DELETE CASCADE"
 "public.chat_logs" }o--o| "public.prompt_versions" : "FOREIGN KEY (prompt_version_id) REFERENCES prompt_versions(id) ON DELETE SET NULL"
 "public.general_question_overviews" |o--|| "public.council_sessions" : "FOREIGN KEY (council_session_id) REFERENCES council_sessions(id) ON DELETE CASCADE"
+"public.interview_topics" }o--o| "public.admin_profiles" : "FOREIGN KEY (author_user_id) REFERENCES admin_profiles(user_id) ON DELETE SET NULL"
 
 "auth.users" {
   uuid instance_id
@@ -355,6 +359,7 @@ erDiagram
   interview_mode_enum mode
   text chat_model
   integer estimated_duration
+  uuid interview_topic_id FK
 }
 "public.interview_messages" {
   uuid id
@@ -482,6 +487,7 @@ erDiagram
   timestamp_with_time_zone started_at
   timestamp_with_time_zone completed_at
   jsonb phase_data
+  uuid interview_topic_id FK
 }
 "public.admin_profiles" {
   uuid user_id FK
@@ -544,6 +550,24 @@ erDiagram
   uuid council_session_id FK
   text__ lines
   jsonb theme_lines
+  timestamp_with_time_zone created_at
+  timestamp_with_time_zone updated_at
+}
+"public.interview_topics" {
+  uuid id
+  uuid author_user_id FK
+  text title
+  text body_md
+  text status
+  timestamp_with_time_zone opened_at
+  timestamp_with_time_zone closes_at
+  timestamp_with_time_zone closed_at
+  text closed_reason
+  text author_display_name
+  text author_role
+  text author_faction_name
+  timestamp_with_time_zone withdrawn_at
+  text withdrawn_reason
   timestamp_with_time_zone created_at
   timestamp_with_time_zone updated_at
 }

@@ -581,20 +581,24 @@ export async function findBillsWithPublicInterview(
  * `.in()` に並べると、議案が増えたときに URL が上限を超える。
  *
  * status="public" のみで判定する。受付を終えた設定は status="closed" になる。
+ * 議題（AIインタビュー広場）の設定は bill_id が null なので除く。
  */
 export async function findBillIdsWithPublicInterview(): Promise<Set<string>> {
   const supabase = createAdminClient();
   const { data, error } = await supabase
     .from("interview_configs")
     .select("bill_id")
-    .eq("status", "public");
+    .eq("status", "public")
+    .not("bill_id", "is", null);
 
   if (error) {
     console.error("Failed to fetch interview configs:", error);
     return new Set();
   }
 
-  return new Set(data.map((row) => row.bill_id));
+  return new Set(
+    data.flatMap((row) => (row.bill_id === null ? [] : [row.bill_id]))
+  );
 }
 
 // ============================================================

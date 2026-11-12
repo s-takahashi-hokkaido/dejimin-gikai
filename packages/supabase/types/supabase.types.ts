@@ -907,11 +907,12 @@ export type Database = {
       }
       interview_configs: {
         Row: {
-          bill_id: string
+          bill_id: string | null
           chat_model: string | null
           created_at: string
           estimated_duration: number | null
           id: string
+          interview_topic_id: string | null
           knowledge_source: string | null
           mode: Database["public"]["Enums"]["interview_mode_enum"]
           name: string
@@ -920,11 +921,12 @@ export type Database = {
           updated_at: string
         }
         Insert: {
-          bill_id: string
+          bill_id?: string | null
           chat_model?: string | null
           created_at?: string
           estimated_duration?: number | null
           id?: string
+          interview_topic_id?: string | null
           knowledge_source?: string | null
           mode?: Database["public"]["Enums"]["interview_mode_enum"]
           name: string
@@ -933,11 +935,12 @@ export type Database = {
           updated_at?: string
         }
         Update: {
-          bill_id?: string
+          bill_id?: string | null
           chat_model?: string | null
           created_at?: string
           estimated_duration?: number | null
           id?: string
+          interview_topic_id?: string | null
           knowledge_source?: string | null
           mode?: Database["public"]["Enums"]["interview_mode_enum"]
           name?: string
@@ -951,6 +954,13 @@ export type Database = {
             columns: ["bill_id"]
             isOneToOne: false
             referencedRelation: "bills"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "interview_configs_interview_topic_id_fkey"
+            columns: ["interview_topic_id"]
+            isOneToOne: false
+            referencedRelation: "interview_topics"
             referencedColumns: ["id"]
           },
         ]
@@ -1132,6 +1142,71 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "interview_configs"
             referencedColumns: ["id"]
+          },
+        ]
+      }
+      interview_topics: {
+        Row: {
+          author_display_name: string | null
+          author_faction_name: string | null
+          author_role: string | null
+          author_user_id: string | null
+          body_md: string
+          closed_at: string | null
+          closed_reason: string | null
+          closes_at: string | null
+          created_at: string
+          id: string
+          opened_at: string | null
+          status: string
+          title: string
+          updated_at: string
+          withdrawn_at: string | null
+          withdrawn_reason: string | null
+        }
+        Insert: {
+          author_display_name?: string | null
+          author_faction_name?: string | null
+          author_role?: string | null
+          author_user_id?: string | null
+          body_md?: string
+          closed_at?: string | null
+          closed_reason?: string | null
+          closes_at?: string | null
+          created_at?: string
+          id?: string
+          opened_at?: string | null
+          status?: string
+          title: string
+          updated_at?: string
+          withdrawn_at?: string | null
+          withdrawn_reason?: string | null
+        }
+        Update: {
+          author_display_name?: string | null
+          author_faction_name?: string | null
+          author_role?: string | null
+          author_user_id?: string | null
+          body_md?: string
+          closed_at?: string | null
+          closed_reason?: string | null
+          closes_at?: string | null
+          created_at?: string
+          id?: string
+          opened_at?: string | null
+          status?: string
+          title?: string
+          updated_at?: string
+          withdrawn_at?: string | null
+          withdrawn_reason?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "interview_topics_author_user_id_fkey"
+            columns: ["author_user_id"]
+            isOneToOne: false
+            referencedRelation: "admin_profiles"
+            referencedColumns: ["user_id"]
           },
         ]
       }
@@ -1500,13 +1575,14 @@ export type Database = {
       }
       topic_analysis_versions: {
         Row: {
-          bill_id: string
+          bill_id: string | null
           completed_at: string | null
           created_at: string
           current_step: string | null
           error_message: string | null
           id: string
           intermediate_results: Json | null
+          interview_topic_id: string | null
           phase_data: Json | null
           started_at: string | null
           status: string
@@ -1515,13 +1591,14 @@ export type Database = {
           version: number
         }
         Insert: {
-          bill_id: string
+          bill_id?: string | null
           completed_at?: string | null
           created_at?: string
           current_step?: string | null
           error_message?: string | null
           id?: string
           intermediate_results?: Json | null
+          interview_topic_id?: string | null
           phase_data?: Json | null
           started_at?: string | null
           status?: string
@@ -1530,13 +1607,14 @@ export type Database = {
           version: number
         }
         Update: {
-          bill_id?: string
+          bill_id?: string | null
           completed_at?: string | null
           created_at?: string
           current_step?: string | null
           error_message?: string | null
           id?: string
           intermediate_results?: Json | null
+          interview_topic_id?: string | null
           phase_data?: Json | null
           started_at?: string | null
           status?: string
@@ -1550,6 +1628,13 @@ export type Database = {
             columns: ["bill_id"]
             isOneToOne: false
             referencedRelation: "bills"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "topic_analysis_versions_interview_topic_id_fkey"
+            columns: ["interview_topic_id"]
+            isOneToOne: false
+            referencedRelation: "interview_topics"
             referencedColumns: ["id"]
           },
         ]

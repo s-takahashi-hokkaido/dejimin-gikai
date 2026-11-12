@@ -97,6 +97,7 @@ erDiagram
   interview_mode_enum mode
   text chat_model
   integer estimated_duration
+  uuid interview_topic_id FK
 }
 ```
 
