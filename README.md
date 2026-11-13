@@ -72,12 +72,26 @@ CLI の出力を Biome で整形しているので、CLI が出す「`npx oxfmt`
 
 ### Supabase CLI の版を上げる
 
+版の指定はルートの `package.json` の1か所だけです（CI の `.github/workflows/integration_test.yml` も `pnpm exec supabase` で同じ版を使います）。
+
 ```bash
 pnpm add -w -D --save-exact supabase@<版>
+
+# 新しい版のイメージで起動し直す（起動中のコンテナは古い版のまま）
+pnpm exec supabase stop && pnpm exec supabase start
+
+pnpm db:reset            # マイグレーション・型の作り直し（db:types:gen）・シードまで通るか
+pnpm typecheck           # 型ファイルに差分が出た時
+pnpm test:integration
+pnpm db:docs             # docs/schema に差分が出たら中身を確かめる
+pnpm exec supabase services   # ローカル・CI で使うイメージの版
 ```
 
-上げたら `pnpm db:reset`・`pnpm db:types:gen`・`pnpm test:integration` が通ることを確かめてください。
-CI（`.github/workflows/integration_test.yml`）も `pnpm exec supabase` で同じ版を使います。
+- CLI の版を上げると、ローカルと CI で使う Supabase のイメージ（Postgres・GoTrue・PostgREST・Storage）の版も変わります。
+  本番（`infra/compose.yml`）のイメージの版は別に指定しているので、`pnpm exec supabase services` と見比べて、
+  差が大きくなっていないか確かめてください。
+- GoTrue の版が本番と違うと、`pnpm db:docs` で `docs/schema` の `auth` の部分（`auth.factor_type` など）だけが変わることがあります。
+  マイグレーションによる変更でなければコミットに含めません。
 
 ## Adminユーザーの作成
 

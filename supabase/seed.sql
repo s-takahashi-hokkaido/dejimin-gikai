@@ -1,7 +1,7 @@
 -- Seed file for local development
 --
 -- To create an admin user:
--- 1. Run this seed file with: npx supabase db reset
+-- 1. Run this seed file with: pnpm db:reset (or pnpm exec supabase db reset)
 -- 2. The admin user will be created with email: admin@example.com
 -- 3. Password: admin123456
 
