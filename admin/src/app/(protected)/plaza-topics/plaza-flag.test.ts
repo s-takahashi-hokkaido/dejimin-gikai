@@ -30,11 +30,16 @@ describe("AIインタビュー広場のページの機能フラグ", () => {
     expect(pages.length).toBeGreaterThan(0);
   });
 
-  it.each(pages)("$page は最初に notFoundUnlessPlazaEnabled を呼ぶ", ({
+  it.each(
+    pages
+  )("$page は、認可やデータの取得より先に notFoundUnlessPlazaEnabled を呼ぶ", ({
     source,
   }) => {
-    expect(source).toMatch(
-      /export default async function \w+\([^)]*\)[^{]*\{\s+notFoundUnlessPlazaEnabled\(\);/
-    );
+    const body = source.slice(source.indexOf("export default async function"));
+    const flagCheck = body.indexOf("notFoundUnlessPlazaEnabled()");
+    const firstAwait = body.indexOf("await ");
+
+    expect(flagCheck).toBeGreaterThan(-1);
+    expect(firstAwait === -1 || flagCheck < firstAwait).toBe(true);
   });
 });

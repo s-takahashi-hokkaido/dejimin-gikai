@@ -5,7 +5,10 @@ import {
   buildTopicListSections,
   type TopicListSections,
 } from "../../shared/utils/build-topic-list";
-import { toPlazaTopic } from "../../shared/utils/to-plaza-topic";
+import {
+  toPlazaTopic,
+  toPlazaTopicSummary,
+} from "../../shared/utils/to-plaza-topic";
 import {
   canViewTopic,
   type TopicActor,
@@ -20,7 +23,7 @@ export async function loadTopicListSections(
   actor: TopicActor
 ): Promise<TopicListSections> {
   const rows = await findTopicsVisibleTo(actor);
-  return buildTopicListSections(actor, rows.map(toPlazaTopic));
+  return buildTopicListSections(actor, rows.map(toPlazaTopicSummary));
 }
 
 /**

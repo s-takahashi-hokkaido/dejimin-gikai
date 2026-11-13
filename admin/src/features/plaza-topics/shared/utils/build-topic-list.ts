@@ -1,4 +1,4 @@
-import type { PlazaTopic, TopicStatus } from "../types/plaza-topic";
+import type { PlazaTopicSummary, TopicStatus } from "../types/plaza-topic";
 import { canViewTopic, isOwnTopic, type TopicActor } from "./topic-permissions";
 
 /**
@@ -15,7 +15,7 @@ export const TOPIC_LIST_STATUS_ORDER: readonly TopicStatus[] = [
 
 export type TopicGroup = {
   status: TopicStatus;
-  topics: PlazaTopic[];
+  topics: PlazaTopicSummary[];
 };
 
 export type TopicListSections = {
@@ -26,7 +26,10 @@ export type TopicListSections = {
 };
 
 /** 更新の新しい順。同時刻は ID 順にして、開き直しても順序が変わらないようにする */
-function compareByUpdatedAtDesc(a: PlazaTopic, b: PlazaTopic): number {
+function compareByUpdatedAtDesc(
+  a: PlazaTopicSummary,
+  b: PlazaTopicSummary
+): number {
   const diff = Date.parse(b.updatedAt) - Date.parse(a.updatedAt);
   if (diff !== 0) {
     return diff;
@@ -35,7 +38,7 @@ function compareByUpdatedAtDesc(a: PlazaTopic, b: PlazaTopic): number {
 }
 
 /** 状態別に分け、それぞれを更新の新しい順に並べる。議題が無い状態は省く */
-export function groupTopicsByStatus(topics: PlazaTopic[]): TopicGroup[] {
+export function groupTopicsByStatus(topics: PlazaTopicSummary[]): TopicGroup[] {
   return TOPIC_LIST_STATUS_ORDER.map((status) => ({
     status,
     topics: topics
@@ -51,10 +54,10 @@ export function groupTopicsByStatus(topics: PlazaTopic[]): TopicGroup[] {
  */
 export function buildTopicListSections(
   actor: TopicActor,
-  topics: PlazaTopic[]
+  topics: PlazaTopicSummary[]
 ): TopicListSections {
-  const own: PlazaTopic[] = [];
-  const others: PlazaTopic[] = [];
+  const own: PlazaTopicSummary[] = [];
+  const others: PlazaTopicSummary[] = [];
 
   for (const topic of topics) {
     if (isOwnTopic(actor, topic)) {

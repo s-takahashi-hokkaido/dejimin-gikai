@@ -19,6 +19,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { TableCell, TableRow } from "@/components/ui/table";
 import { type AdminRole, ROLE_LABELS } from "@/features/auth/shared/utils/role";
+import { formatJstDateTime } from "@/lib/utils/format-jst-date-time";
 import { deleteAccount } from "../../server/actions/delete-account";
 import { resendInvitation } from "../../server/actions/resend-invitation";
 import { updateAccount } from "../../server/actions/update-account";
@@ -27,7 +28,6 @@ import type {
   AdminAccount,
   FactionOption,
 } from "../../shared/types";
-import { formatAccountDateTime } from "../../shared/utils/format-account-date-time";
 import { DISPLAY_NAME_MAX_LENGTH } from "../../shared/utils/validate-account";
 import { FactionSelect } from "./faction-select";
 import { RoleSelect } from "./role-select";
@@ -196,7 +196,7 @@ export function AccountItem({
           <div>
             <Badge variant="secondary">招待中</Badge>
             <p className="mt-1 text-xs text-gray-500">
-              送信: {formatAccountDateTime(account.invitedAt)}
+              送信: {formatJstDateTime(account.invitedAt)}
             </p>
           </div>
         ) : (
@@ -204,7 +204,7 @@ export function AccountItem({
         )}
       </TableCell>
       <TableCell className="text-gray-600">
-        {formatAccountDateTime(account.lastSignInAt)}
+        {formatJstDateTime(account.lastSignInAt)}
       </TableCell>
       <TableCell>
         <div className="flex gap-1">

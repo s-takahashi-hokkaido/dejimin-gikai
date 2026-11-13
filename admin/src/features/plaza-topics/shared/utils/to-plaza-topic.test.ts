@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest";
 import type { PlazaTopicRow } from "../types/plaza-topic";
-import { resolveTopicAuthor, toPlazaTopic } from "./to-plaza-topic";
+import {
+  resolveTopicAuthor,
+  toPlazaTopic,
+  toPlazaTopicSummary,
+} from "./to-plaza-topic";
 
 const LIVE_PROFILE = {
   display_name: "サンプル議員A（改名後）",
@@ -125,6 +129,27 @@ describe("toPlazaTopic", () => {
   it("未知の状態はエラーにする", () => {
     expect(() => toPlazaTopic(buildRow({ status: "withdrawn" }))).toThrow(
       "議題の状態が不正です: withdrawn"
+    );
+  });
+});
+
+describe("toPlazaTopicSummary", () => {
+  it("本文を持たない一覧の行を、本文なしの形にする", () => {
+    const { body_md: _body, ...summaryRow } = buildRow({ status: "draft" });
+    const summary = toPlazaTopicSummary(summaryRow);
+    expect(summary).not.toHaveProperty("bodyMd");
+    expect(summary).toMatchObject({
+      id: "11111111-1111-1111-1111-111111111111",
+      title: "冬の除雪について",
+      status: "draft",
+      author: { displayName: "サンプル議員A（改名後）" },
+    });
+  });
+
+  it("未知の状態はエラーにする", () => {
+    const { body_md: _body, ...summaryRow } = buildRow({ status: "unknown" });
+    expect(() => toPlazaTopicSummary(summaryRow)).toThrow(
+      "議題の状態が不正です: unknown"
     );
   });
 });

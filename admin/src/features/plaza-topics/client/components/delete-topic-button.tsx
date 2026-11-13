@@ -34,15 +34,16 @@ export function DeleteTopicButton({ topicId, title }: DeleteTopicButtonProps) {
       const result = await deleteTopic({ id: topicId });
       if ("error" in result) {
         toast.error(result.error);
+        setIsSubmitting(false);
         return;
       }
+      // 成功したら、一覧に切り替わるまでボタンを押せないままにする
       toast.success("議題を削除しました");
       router.push("/plaza-topics");
       router.refresh();
     } catch (error) {
       console.error("Delete topic error:", error);
       toast.error("通信中にエラーが発生しました。もう一度お試しください");
-    } finally {
       setIsSubmitting(false);
     }
   }

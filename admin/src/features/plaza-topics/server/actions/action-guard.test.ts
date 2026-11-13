@@ -11,6 +11,13 @@ import { describe, expect, it } from "vitest";
  */
 const ACTIONS_DIR = __dirname;
 
+/** export した Server Action の本体で、最初に await している式 */
+function firstAwaitedCall(source: string): string | null {
+  const body = source.slice(source.indexOf("export async function"));
+  const match = body.match(/await\s+([\w.]+)\(/);
+  return match ? match[1] : null;
+}
+
 const actions = readdirSync(ACTIONS_DIR)
   .filter((name) => name.endsWith(".ts") && !name.endsWith(".test.ts"))
   .map((name) => ({
@@ -29,11 +36,9 @@ describe("議題の Server Action のガード", () => {
     expect(source.startsWith('"use server";')).toBe(true);
   });
 
-  it.each(actions)("$name は try の直後に requirePlazaAuthor を呼ぶ", ({
+  it.each(actions)("$name は、ほかの処理より先に requirePlazaAuthor を待つ", ({
     source,
   }) => {
-    expect(source).toMatch(
-      /try \{\s+const actor = await requirePlazaAuthor\(\);/
-    );
+    expect(firstAwaitedCall(source)).toBe("requirePlazaAuthor");
   });
 });

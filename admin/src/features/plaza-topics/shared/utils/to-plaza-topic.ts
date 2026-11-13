@@ -2,6 +2,8 @@ import { isAdminRole } from "@/features/auth/shared/utils/role";
 import type {
   PlazaTopic,
   PlazaTopicRow,
+  PlazaTopicSummary,
+  PlazaTopicSummaryRow,
   TopicAuthor,
   TopicStatus,
 } from "../types/plaza-topic";
@@ -39,8 +41,10 @@ export function resolveTopicAuthor(
   return null;
 }
 
-/** DB の行を画面で扱う形にする。未知の状態は DB の CHECK 制約で起きないので、来たらエラーにする */
-export function toPlazaTopic(row: PlazaTopicRow): PlazaTopic {
+/** 一覧の行を画面で扱う形にする。未知の状態は DB の CHECK 制約で起きないので、来たらエラーにする */
+export function toPlazaTopicSummary(
+  row: PlazaTopicSummaryRow
+): PlazaTopicSummary {
   if (!isTopicStatus(row.status)) {
     throw new Error(`議題の状態が不正です: ${row.status}`);
   }
@@ -50,7 +54,6 @@ export function toPlazaTopic(row: PlazaTopicRow): PlazaTopic {
     id: row.id,
     authorUserId: row.author_user_id,
     title: row.title,
-    bodyMd: row.body_md,
     status,
     openedAt: row.opened_at,
     closesAt: row.closes_at,
@@ -60,4 +63,9 @@ export function toPlazaTopic(row: PlazaTopicRow): PlazaTopic {
     updatedAt: row.updated_at,
     author: resolveTopicAuthor({ ...row, status }),
   };
+}
+
+/** 詳細の行（本文つき）を画面で扱う形にする */
+export function toPlazaTopic(row: PlazaTopicRow): PlazaTopic {
+  return { ...toPlazaTopicSummary(row), bodyMd: row.body_md };
 }

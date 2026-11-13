@@ -61,6 +61,7 @@
 | public.get_admin_accounts | record |  | FUNCTION |
 | public.hook_before_user_created | jsonb | event jsonb | FUNCTION |
 | public.guard_interview_topic_update | trigger |  | FUNCTION |
+| public.delete_draft_interview_topics_of_author | trigger |  | FUNCTION |
 
 ## Enums
 

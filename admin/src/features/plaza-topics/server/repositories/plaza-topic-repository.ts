@@ -3,13 +3,22 @@ import { createAdminClient } from "@dejimin-gikai/supabase";
 import { createAuditedAdminClient } from "@/features/audit-logs/server/lib/create-audited-admin-client";
 import type { AuditActor } from "@/features/audit-logs/shared/utils/audit-actor";
 import { isUuid } from "@/lib/utils/is-uuid";
-import type { PlazaTopicRow } from "../../shared/types/plaza-topic";
+import type {
+  PlazaTopicRow,
+  PlazaTopicSummaryRow,
+} from "../../shared/types/plaza-topic";
 import type { TopicActor } from "../../shared/utils/topic-permissions";
 import type { NormalizedTopicInput } from "../../shared/utils/validate-topic-input";
 
-/** 議題の列と、作成者の現在のプロフィール（下書きの作成者の表示に使う） */
-const TOPIC_SELECT =
-  "*, author:admin_profiles(display_name, role, faction:factions(display_name))";
+/** 作成者の現在のプロフィール（下書きの作成者の表示に使う） */
+const AUTHOR_SELECT =
+  "author:admin_profiles(display_name, role, faction:factions(display_name))";
+
+/** 詳細で読む列（本文つき） */
+const TOPIC_SELECT = `*, ${AUTHOR_SELECT}`;
+
+/** 一覧で読む列。本文（最大2万字）は一覧に出さないので読まない */
+const TOPIC_SUMMARY_SELECT = `id, author_user_id, title, status, opened_at, closes_at, closed_at, closed_reason, author_display_name, author_role, author_faction_name, withdrawn_at, withdrawn_reason, created_at, updated_at, ${AUTHOR_SELECT}`;
 
 /**
  * その人が見てよい議題をすべて読む
@@ -19,9 +28,9 @@ const TOPIC_SELECT =
  */
 export async function findTopicsVisibleTo(
   actor: TopicActor
-): Promise<PlazaTopicRow[]> {
+): Promise<PlazaTopicSummaryRow[]> {
   const supabase = createAdminClient();
-  let query = supabase.from("interview_topics").select(TOPIC_SELECT);
+  let query = supabase.from("interview_topics").select(TOPIC_SUMMARY_SELECT);
 
   if (actor.role !== "admin") {
     // フィルタの文字列に埋め込むので、UUID の形であることを確かめておく
@@ -138,32 +147,4 @@ export async function deleteOwnDraftTopic(
     });
   }
   return (data ?? []).length > 0;
-}
-
-/**
- * ある人の下書きをすべて消す（アカウントを削除するときに使う。監査ログに実行者が残る）
- *
- * 作成者のアカウントを消すと author_user_id が null になり、下書きは誰も編集もオープンもできなくなる。
- * 公開していない本人の書きかけを残しておく理由も無いので、アカウントと一緒に消す。
- * オープン・クローズした議題は消さない（K7: 議題は残し、オープン時点の写しで表示する）。
- */
-export async function deleteDraftTopicsByAuthor(
-  actor: AuditActor,
-  authorUserId: string
-): Promise<number> {
-  const supabase = createAuditedAdminClient(actor);
-  const { data, error } = await supabase
-    .from("interview_topics")
-    .delete()
-    .eq("author_user_id", authorUserId)
-    .eq("status", "draft")
-    .select("id");
-
-  if (error) {
-    throw new Error(
-      `Failed to delete draft interview topics: ${error.message}`,
-      { cause: error }
-    );
-  }
-  return (data ?? []).length;
 }

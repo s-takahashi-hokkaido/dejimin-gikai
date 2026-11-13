@@ -1,3 +1,4 @@
+import { isUuid } from "@/lib/utils/is-uuid";
 import {
   AUDIT_TARGET_TABLES,
   type AuditLogFilters,
@@ -5,9 +6,6 @@ import {
 } from "../types";
 
 export const AUDIT_LOGS_PER_PAGE = 50;
-
-const UUID_PATTERN =
-  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 function isAuditTargetTable(value: string): value is AuditTargetTable {
   return (AUDIT_TARGET_TABLES as readonly string[]).includes(value);
@@ -21,8 +19,7 @@ export function parseAuditLogFilters(params: {
 }): AuditLogFilters {
   const table =
     params.table && isAuditTargetTable(params.table) ? params.table : null;
-  const billId =
-    params.billId && UUID_PATTERN.test(params.billId) ? params.billId : null;
+  const billId = isUuid(params.billId) ? params.billId : null;
   const page = Number(params.page);
 
   return {

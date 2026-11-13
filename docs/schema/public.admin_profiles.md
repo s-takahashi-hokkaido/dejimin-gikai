@@ -39,6 +39,7 @@
 | ---- | ---------- |
 | admin_profiles_audit_log | CREATE TRIGGER admin_profiles_audit_log AFTER INSERT OR DELETE OR UPDATE ON public.admin_profiles FOR EACH ROW EXECUTE FUNCTION record_admin_audit_log() |
 | update_admin_profiles_updated_at | CREATE TRIGGER update_admin_profiles_updated_at BEFORE UPDATE ON public.admin_profiles FOR EACH ROW EXECUTE FUNCTION update_updated_at_column() |
+| admin_profiles_delete_draft_interview_topics | CREATE TRIGGER admin_profiles_delete_draft_interview_topics BEFORE DELETE ON public.admin_profiles FOR EACH ROW EXECUTE FUNCTION delete_draft_interview_topics_of_author() |
 
 ## Relations
 

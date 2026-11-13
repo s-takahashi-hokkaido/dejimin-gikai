@@ -22,6 +22,9 @@ export type PlazaTopicRow = InterviewTopicRow & {
   } | null;
 };
 
+/** 一覧で読む行（本文は大きくなりうるので読まない） */
+export type PlazaTopicSummaryRow = Omit<PlazaTopicRow, "body_md">;
+
 /** 画面に出す作成者 */
 export type TopicAuthor = {
   displayName: string;
@@ -31,13 +34,12 @@ export type TopicAuthor = {
   factionName: string | null;
 };
 
-/** 管理画面で扱う議題 */
-export type PlazaTopic = {
+/** 管理画面の一覧で扱う議題（本文を除く） */
+export type PlazaTopicSummary = {
   id: string;
   /** 作成者のユーザーID。アカウントを削除すると null */
   authorUserId: string | null;
   title: string;
-  bodyMd: string;
   status: TopicStatus;
   openedAt: string | null;
   closesAt: string | null;
@@ -47,6 +49,12 @@ export type PlazaTopic = {
   updatedAt: string;
   /** 表示する作成者。null は作成者不明（アカウントを削除した人の下書き） */
   author: TopicAuthor | null;
+};
+
+/** 管理画面の詳細・編集で扱う議題 */
+export type PlazaTopic = PlazaTopicSummary & {
+  /** 本文（Markdown） */
+  bodyMd: string;
 };
 
 /** 議題の作成・編集フォームの入力（サーバーで確かめてから DB に入れる） */

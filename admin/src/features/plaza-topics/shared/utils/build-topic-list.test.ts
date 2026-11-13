@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { PlazaTopic, TopicStatus } from "../types/plaza-topic";
+import type { PlazaTopicSummary, TopicStatus } from "../types/plaza-topic";
 import {
   buildTopicListSections,
   groupTopicsByStatus,
@@ -24,12 +24,11 @@ function topic(
   status: TopicStatus,
   updatedAt: string,
   authorUserId: string | null = A.id
-): PlazaTopic {
+): PlazaTopicSummary {
   return {
     id,
     authorUserId,
     title: `議題${id}`,
-    bodyMd: "",
     status,
     openedAt: null,
     closesAt: null,
@@ -41,7 +40,7 @@ function topic(
   };
 }
 
-const ids = (groups: { status: TopicStatus; topics: PlazaTopic[] }[]) =>
+const ids = (groups: { status: TopicStatus; topics: PlazaTopicSummary[] }[]) =>
   groups.map((group) => ({
     status: group.status,
     ids: group.topics.map((t) => t.id),

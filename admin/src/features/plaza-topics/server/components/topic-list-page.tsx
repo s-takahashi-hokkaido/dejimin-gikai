@@ -4,7 +4,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { formatJstDateTime } from "@/lib/utils/format-jst-date-time";
 import { TopicStatusBadge } from "../../client/components/topic-status-badge";
-import type { PlazaTopic } from "../../shared/types/plaza-topic";
+import type { PlazaTopicSummary } from "../../shared/types/plaza-topic";
 import type { TopicGroup } from "../../shared/utils/build-topic-list";
 import { formatTopicAuthor } from "../../shared/utils/format-topic-author";
 import { TOPIC_STATUS_LABELS } from "../../shared/utils/topic-status";
@@ -15,7 +15,7 @@ import {
 import { loadTopicListSections } from "../loaders/load-plaza-topics";
 
 /** 一覧の1件に出す日時（状態ごとに、いちばん気にする日時） */
-function describeTopicDate(topic: PlazaTopic): string {
+function describeTopicDate(topic: PlazaTopicSummary): string {
   switch (topic.status) {
     case "open":
       return `自動クローズの期限: ${formatJstDateTime(topic.closesAt)}`;
@@ -30,7 +30,7 @@ function TopicListItem({
   topic,
   showAuthor,
 }: {
-  topic: PlazaTopic;
+  topic: PlazaTopicSummary;
   showAuthor: boolean;
 }) {
   return (

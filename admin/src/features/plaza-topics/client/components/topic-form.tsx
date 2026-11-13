@@ -65,16 +65,17 @@ export function TopicForm(props: TopicFormProps) {
       if ("error" in result) {
         setError(result.error);
         toast.error(initial ? "保存に失敗しました" : "作成に失敗しました");
+        setIsSubmitting(false);
         return;
       }
 
+      // 成功したら、画面が切り替わるまでボタンを押せないままにする（もう一度押して二重に作らないため）
       toast.success(initial ? "議題を保存しました" : "下書きを作成しました");
       router.push(`/plaza-topics/${result.id}`);
       router.refresh();
     } catch (submitError) {
       console.error("Topic form error:", submitError);
       setError("通信中にエラーが発生しました。もう一度お試しください");
-    } finally {
       setIsSubmitting(false);
     }
   }
