@@ -33,6 +33,13 @@ export const env = {
    * サーバー専用の変数のため、Client Component から参照すると常に false になる。
    */
   claudeCliEnabled: isFlagEnabled(process.env.ADMIN_ENABLE_CLAUDE_CLI),
+  /**
+   * AIインタビュー広場（議題の作成・管理）を有効にするか。
+   * ADMIN_ENABLE_PLAZA=true を明示したときだけ有効。未設定なら、ナビに出さず画面も開けない。
+   * 公開（実装タスク分割の P12）まで本番では設定しない。
+   * サーバー専用の変数のため、Client Component から参照すると常に false になる。
+   */
+  plazaEnabled: isFlagEnabled(process.env.ADMIN_ENABLE_PLAZA),
 } as const;
 
 // 型定義

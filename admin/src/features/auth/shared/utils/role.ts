@@ -12,6 +12,16 @@ export const ADMIN_ONLY: readonly AdminRole[] = ["admin"];
 /** 編集権を持つロール（運営者と議員） */
 export const EDITOR_ROLES: readonly AdminRole[] = ["admin", "legislator"];
 
+/**
+ * AIインタビュー広場で議題を出せるロール（議員と出馬者）
+ *
+ * 運営者は議題を出せない（機能設計 §5-2、K3）。運営者は全員の議題を閲覧だけできる。
+ */
+export const PLAZA_AUTHOR_ROLES: readonly AdminRole[] = [
+  "legislator",
+  "candidate",
+];
+
 /** DBから読んだ文字列が既知のロールかどうか */
 export function isAdminRole(
   value: string | null | undefined

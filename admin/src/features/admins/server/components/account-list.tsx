@@ -12,12 +12,15 @@ type AccountListProps = {
   accounts: AdminAccount[];
   currentAdminId: string;
   factionOptions: FactionOption[];
+  /** AIインタビュー広場が有効か（削除の確認に、下書きの議題も消えることを書くため） */
+  plazaEnabled: boolean;
 };
 
 export function AccountList({
   accounts,
   currentAdminId,
   factionOptions,
+  plazaEnabled,
 }: AccountListProps) {
   return (
     <div>
@@ -47,6 +50,7 @@ export function AccountList({
                   account={account}
                   isCurrentUser={account.id === currentAdminId}
                   factionOptions={factionOptions}
+                  plazaEnabled={plazaEnabled}
                 />
               ))}
             </TableBody>

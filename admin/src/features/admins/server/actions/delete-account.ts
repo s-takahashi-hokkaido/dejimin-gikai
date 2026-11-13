@@ -16,6 +16,10 @@ import {
  *
  * 監査ログに実行者を残すため、admin_profiles を先に消してから Auth ユーザーを消す。
  * 過去の変更履歴（admin_audit_logs）の実行者は、削除後も記録した時点のまま残る。
+ *
+ * AIインタビュー広場の議題は、公開した（オープン・クローズした）ものは残し、オープン時点の写しで表示する（K7）。
+ * 下書きは、admin_profiles を消すときに DB のトリガー（delete_draft_interview_topics_of_author）が
+ * 同じトランザクションで消す。監査ログの実行者もこの操作のものが残る。
  */
 export async function deleteAccount(
   input: AccountIdInput

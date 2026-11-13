@@ -1,9 +1,9 @@
 /**
- * アカウント一覧の日時（招待の送信日時・最終ログイン）を日本時間で表示する。無ければ "-"
+ * 日時を日本時間で「2026/11/13 09:00」の形にする。無ければ "-"
  *
  * タイムゾーンを固定するのは、サーバー（UTC）での描画とブラウザでの描画で表示がずれないようにするため。
  */
-export function formatAccountDateTime(dateString: string | null): string {
+export function formatJstDateTime(dateString: string | null): string {
   if (!dateString) {
     return "-";
   }

@@ -12,6 +12,7 @@ export const AUDIT_TARGET_TABLES = [
   "faction_stances",
   "bill_committees",
   "admin_profiles",
+  "interview_topics",
 ] as const;
 
 export type AuditTargetTable = (typeof AUDIT_TARGET_TABLES)[number];
@@ -29,4 +30,6 @@ export type AuditLogListItem = AuditLog & {
   committeeName: string | null;
   /** 管理画面のアカウント（admin_profiles）の履歴なら、その表示名 */
   accountName: string | null;
+  /** AIインタビュー広場の議題（interview_topics）の履歴なら、そのタイトル */
+  topicTitle: string | null;
 };

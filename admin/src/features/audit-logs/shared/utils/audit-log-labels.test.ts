@@ -16,6 +16,7 @@ describe("describeAuditAction", () => {
     ["bill_contents.insert", "議案コンテンツ", "作成"],
     ["faction_stances.delete", "会派見解", "削除"],
     ["admin_profiles.update", "アカウント", "更新"],
+    ["interview_topics.insert", "議題（AIインタビュー広場）", "作成"],
   ])("%s", (action, tableLabel, operationLabel) => {
     expect(describeAuditAction(action)).toEqual({ tableLabel, operationLabel });
   });
@@ -90,6 +91,12 @@ describe("formatAuditFieldValue", () => {
     expect(formatAuditFieldValue("role", "legislator", ROLE_LABELS)).toBe(
       "議員"
     );
+  });
+
+  it("議題の作成者のロール（写し）も表示名にする", () => {
+    expect(
+      formatAuditFieldValue("author_role", "legislator", ROLE_LABELS)
+    ).toBe("議員");
   });
 
   it("未知のロールはそのまま出す", () => {

@@ -4249,6 +4249,10 @@
         {
           "name": "update_admin_profiles_updated_at",
           "def": "CREATE TRIGGER update_admin_profiles_updated_at BEFORE UPDATE ON public.admin_profiles FOR EACH ROW EXECUTE FUNCTION update_updated_at_column()"
+        },
+        {
+          "name": "admin_profiles_delete_draft_interview_topics",
+          "def": "CREATE TRIGGER admin_profiles_delete_draft_interview_topics BEFORE DELETE ON public.admin_profiles FOR EACH ROW EXECUTE FUNCTION delete_draft_interview_topics_of_author()"
         }
       ]
     },
@@ -5880,6 +5884,12 @@
     },
     {
       "name": "public.guard_interview_topic_update",
+      "return_type": "trigger",
+      "arguments": "",
+      "type": "FUNCTION"
+    },
+    {
+      "name": "public.delete_draft_interview_topics_of_author",
       "return_type": "trigger",
       "arguments": "",
       "type": "FUNCTION"

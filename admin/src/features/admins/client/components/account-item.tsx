@@ -19,6 +19,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { TableCell, TableRow } from "@/components/ui/table";
 import { type AdminRole, ROLE_LABELS } from "@/features/auth/shared/utils/role";
+import { formatJstDateTime } from "@/lib/utils/format-jst-date-time";
 import { deleteAccount } from "../../server/actions/delete-account";
 import { resendInvitation } from "../../server/actions/resend-invitation";
 import { updateAccount } from "../../server/actions/update-account";
@@ -27,7 +28,6 @@ import type {
   AdminAccount,
   FactionOption,
 } from "../../shared/types";
-import { formatAccountDateTime } from "../../shared/utils/format-account-date-time";
 import { DISPLAY_NAME_MAX_LENGTH } from "../../shared/utils/validate-account";
 import { FactionSelect } from "./faction-select";
 import { RoleSelect } from "./role-select";
@@ -36,12 +36,14 @@ type AccountItemProps = {
   account: AdminAccount;
   isCurrentUser: boolean;
   factionOptions: FactionOption[];
+  plazaEnabled: boolean;
 };
 
 export function AccountItem({
   account,
   isCurrentUser,
   factionOptions,
+  plazaEnabled,
 }: AccountItemProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -194,7 +196,7 @@ export function AccountItem({
           <div>
             <Badge variant="secondary">招待中</Badge>
             <p className="mt-1 text-xs text-gray-500">
-              送信: {formatAccountDateTime(account.invitedAt)}
+              送信: {formatJstDateTime(account.invitedAt)}
             </p>
           </div>
         ) : (
@@ -202,7 +204,7 @@ export function AccountItem({
         )}
       </TableCell>
       <TableCell className="text-gray-600">
-        {formatAccountDateTime(account.lastSignInAt)}
+        {formatJstDateTime(account.lastSignInAt)}
       </TableCell>
       <TableCell>
         <div className="flex gap-1">
@@ -260,7 +262,10 @@ export function AccountItem({
                   <AlertDialogTitle>アカウントの削除</AlertDialogTitle>
                   <AlertDialogDescription>
                     「{account.displayName}（{account.email}
-                    ）」のアカウントを削除しますか？管理画面に入れなくなり、元に戻せません。これまでの変更履歴は削除後も残ります。閲覧だけにしたい場合は、削除の代わりにロールを出馬者に変えることもできます。
+                    ）」のアカウントを削除しますか？管理画面に入れなくなり、元に戻せません。これまでの変更履歴は削除後も残ります。
+                    {plazaEnabled &&
+                      "AIインタビュー広場の議題は、下書きは削除され、公開した議題は残ります。"}
+                    閲覧だけにしたい場合は、削除の代わりにロールを出馬者に変えることもできます。
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>

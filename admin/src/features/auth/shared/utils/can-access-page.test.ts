@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { canAccessPage, getVisibleNavItems } from "./can-access-page";
 
 const BILL_ID = "11111111-1111-1111-1111-111111111111";
+const TOPIC_ID = "22222222-2222-2222-2222-222222222222";
 
 describe("canAccessPage", () => {
   describe("運営者", () => {
@@ -81,6 +82,34 @@ describe("canAccessPage", () => {
     });
   });
 
+  describe("AIインタビュー広場の議題", () => {
+    it.each([
+      "legislator",
+      "candidate",
+    ] as const)("%s は一覧・作成・詳細・編集を開ける", (role) => {
+      expect(canAccessPage(role, "/plaza-topics")).toBe(true);
+      expect(canAccessPage(role, "/plaza-topics/new")).toBe(true);
+      expect(canAccessPage(role, `/plaza-topics/${TOPIC_ID}`)).toBe(true);
+      expect(canAccessPage(role, `/plaza-topics/${TOPIC_ID}/edit`)).toBe(true);
+    });
+
+    it("運営者は一覧と詳細だけ開ける（議題は出せない。K3）", () => {
+      expect(canAccessPage("admin", "/plaza-topics")).toBe(true);
+      expect(canAccessPage("admin", `/plaza-topics/${TOPIC_ID}`)).toBe(true);
+      expect(canAccessPage("admin", "/plaza-topics/new")).toBe(false);
+      expect(canAccessPage("admin", `/plaza-topics/${TOPIC_ID}/edit`)).toBe(
+        false
+      );
+    });
+
+    it("未定義の配下のパスは運営者のみ（deny by default）", () => {
+      const path = `/plaza-topics/${TOPIC_ID}/unknown`;
+      expect(canAccessPage("admin", path)).toBe(true);
+      expect(canAccessPage("legislator", path)).toBe(false);
+      expect(canAccessPage("candidate", path)).toBe(false);
+    });
+  });
+
   describe("未定義のパス", () => {
     it("運営者のみ許可する（deny by default）", () => {
       expect(canAccessPage("admin", "/unknown-page")).toBe(true);
@@ -101,17 +130,38 @@ describe("canAccessPage", () => {
 });
 
 describe("getVisibleNavItems", () => {
+  const PLAZA_ON = { plaza: true } as const;
+  const PLAZA_OFF = { plaza: false } as const;
+
   it("運営者にはすべての項目を出す", () => {
-    expect(getVisibleNavItems("admin")).toHaveLength(9);
+    expect(getVisibleNavItems("admin", PLAZA_ON)).toHaveLength(10);
   });
 
-  it("議員には議案管理のみ", () => {
-    const items = getVisibleNavItems("legislator");
-    expect(items.map((item) => item.href)).toEqual(["/bills"]);
+  it("議員には議案管理と広場", () => {
+    const items = getVisibleNavItems("legislator", PLAZA_ON);
+    expect(items.map((item) => item.href)).toEqual(["/bills", "/plaza-topics"]);
   });
 
-  it("出馬者にも議案管理のみ", () => {
-    const items = getVisibleNavItems("candidate");
-    expect(items.map((item) => item.href)).toEqual(["/bills"]);
+  it("出馬者にも議案管理と広場", () => {
+    const items = getVisibleNavItems("candidate", PLAZA_ON);
+    expect(items.map((item) => item.href)).toEqual(["/bills", "/plaza-topics"]);
+  });
+
+  describe("広場の機能フラグがオフ", () => {
+    it.each([
+      "admin",
+      "legislator",
+      "candidate",
+    ] as const)("%s にも広場を出さない", (role) => {
+      const hrefs = getVisibleNavItems(role, PLAZA_OFF).map(
+        (item) => item.href
+      );
+      expect(hrefs).not.toContain("/plaza-topics");
+    });
+
+    it("フラグを渡さなければオフとして扱う", () => {
+      const hrefs = getVisibleNavItems("legislator").map((item) => item.href);
+      expect(hrefs).toEqual(["/bills"]);
+    });
   });
 });

@@ -7,6 +7,7 @@ import { LogoutButton } from "@/features/auth/client/components/logout-button";
 import { requireRoleOrRedirect } from "@/features/auth/server/lib/auth-server";
 import { UPDATE_PASSWORD_PATH } from "@/features/auth/shared/utils/auth-paths";
 import { ALL_ROLES, ROLE_LABELS } from "@/features/auth/shared/utils/role";
+import { env } from "@/lib/env";
 import { NavigationLinks } from "./layout/navigation-links";
 
 export default async function MainLayout({
@@ -65,7 +66,10 @@ export default async function MainLayout({
           </div>
 
           {/* Navigation */}
-          <NavigationLinks role={admin.role} />
+          <NavigationLinks
+            role={admin.role}
+            enabledFeatures={{ plaza: env.plazaEnabled }}
+          />
         </div>
       </header>
 
