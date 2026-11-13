@@ -6,6 +6,7 @@ export const AUDIT_TABLE_LABELS: Record<AuditTargetTable, string> = {
   faction_stances: "会派見解",
   bill_committees: "付託委員会",
   admin_profiles: "アカウント",
+  interview_topics: "議題（AIインタビュー広場）",
 };
 
 const OPERATION_LABELS: Record<string, string> = {
@@ -48,7 +49,22 @@ const FIELD_LABELS: Record<string, string> = {
   user_id: "ユーザーID",
   role: "ロール",
   display_name: "表示名",
+  // interview_topics（title・status は上の表示名を使う）
+  author_user_id: "作成者",
+  body_md: "本文（Markdown）",
+  opened_at: "オープン日時",
+  closes_at: "自動クローズの期限",
+  closed_at: "クローズ日時",
+  closed_reason: "クローズの理由",
+  author_display_name: "作成者の表示名（オープン時点）",
+  author_role: "作成者のロール（オープン時点）",
+  author_faction_name: "作成者の会派名（オープン時点）",
+  withdrawn_at: "取り下げ日時",
+  withdrawn_reason: "取り下げの理由",
 };
+
+/** ロールを値に持つ列（表示名に変えて出す） */
+const ROLE_FIELDS = new Set(["role", "author_role"]);
 
 const DIFFICULTY_LABELS: Record<string, string> = {
   normal: "ふつう",
@@ -111,13 +127,13 @@ export function formatAuditValue(value: AuditJson | undefined): string {
   return JSON.stringify(value, null, 2);
 }
 
-/** 列の値を表示用の文字列にする。アカウントのロールは表示名にする */
+/** 列の値を表示用の文字列にする。アカウント・議題の作成者のロールは表示名にする */
 export function formatAuditFieldValue(
   field: string,
   value: AuditJson | undefined,
   roleLabels: Record<string, string>
 ): string {
-  if (field === "role" && typeof value === "string") {
+  if (ROLE_FIELDS.has(field) && typeof value === "string") {
     return roleLabels[value] ?? value;
   }
   return formatAuditValue(value);

@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { requireAdmin } from "@/features/auth/server/lib/auth-server";
 import { findAdminProfileByUserId } from "@/features/auth/server/repositories/admin-profile-repository";
+import { deleteDraftTopicsByAuthor } from "@/features/plaza-topics/server/repositories/plaza-topic-repository";
 import { getErrorMessage } from "@/lib/utils/get-error-message";
 import type { AccountActionResult, AccountIdInput } from "../../shared/types";
 import { validateAccountDeletion } from "../../shared/utils/account-rules";
@@ -16,6 +17,10 @@ import {
  *
  * 監査ログに実行者を残すため、admin_profiles を先に消してから Auth ユーザーを消す。
  * 過去の変更履歴（admin_audit_logs）の実行者は、削除後も記録した時点のまま残る。
+ *
+ * AIインタビュー広場の議題は、公開した（オープン・クローズした）ものは残し、オープン時点の写しで表示する（K7）。
+ * 下書きは、作成者が消えると誰も編集もオープンもできなくなるので、プロフィールより先に消す
+ * （プロフィールを消すと author_user_id が null になり、誰の下書きか分からなくなるため）。
  */
 export async function deleteAccount(
   input: AccountIdInput
@@ -34,6 +39,8 @@ export async function deleteAccount(
     if (ruleError) {
       return { error: ruleError };
     }
+
+    await deleteDraftTopicsByAuthor(admin, target.user_id);
 
     // ここで管理画面の利用資格が無くなる（以降の操作は次のリクエストから弾かれる）
     await deleteAdminProfile(admin, target.user_id);

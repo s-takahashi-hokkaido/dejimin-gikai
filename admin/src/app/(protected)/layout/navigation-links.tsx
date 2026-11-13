@@ -2,13 +2,23 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { getVisibleNavItems } from "@/features/auth/shared/utils/can-access-page";
+import {
+  type EnabledNavFeatures,
+  getVisibleNavItems,
+} from "@/features/auth/shared/utils/can-access-page";
 import type { AdminRole } from "@/features/auth/shared/utils/role";
 import { cn } from "@/lib/utils";
 
-export function NavigationLinks({ role }: { role: AdminRole }) {
+export function NavigationLinks({
+  role,
+  enabledFeatures,
+}: {
+  role: AdminRole;
+  /** 機能フラグ。環境変数はサーバーでしか読めないので、レイアウトから渡す */
+  enabledFeatures: EnabledNavFeatures;
+}) {
   const pathname = usePathname();
-  const navigationLinks = getVisibleNavItems(role);
+  const navigationLinks = getVisibleNavItems(role, enabledFeatures);
 
   return (
     <nav>

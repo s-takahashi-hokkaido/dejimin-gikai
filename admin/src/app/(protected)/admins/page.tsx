@@ -5,6 +5,7 @@ import {
   loadFactionOptions,
 } from "@/features/admins/server/loaders/load-accounts";
 import { requirePageAccess } from "@/features/auth/server/lib/auth-server";
+import { env } from "@/lib/env";
 
 export default async function AdminsPage() {
   const currentAdmin = await requirePageAccess("/admins");
@@ -33,6 +34,7 @@ export default async function AdminsPage() {
           accounts={accounts}
           currentAdminId={currentAdmin.id}
           factionOptions={factionOptions}
+          plazaEnabled={env.plazaEnabled}
         />
       </section>
     </div>

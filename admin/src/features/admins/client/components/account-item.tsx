@@ -36,12 +36,14 @@ type AccountItemProps = {
   account: AdminAccount;
   isCurrentUser: boolean;
   factionOptions: FactionOption[];
+  plazaEnabled: boolean;
 };
 
 export function AccountItem({
   account,
   isCurrentUser,
   factionOptions,
+  plazaEnabled,
 }: AccountItemProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -260,7 +262,10 @@ export function AccountItem({
                   <AlertDialogTitle>アカウントの削除</AlertDialogTitle>
                   <AlertDialogDescription>
                     「{account.displayName}（{account.email}
-                    ）」のアカウントを削除しますか？管理画面に入れなくなり、元に戻せません。これまでの変更履歴は削除後も残ります。閲覧だけにしたい場合は、削除の代わりにロールを出馬者に変えることもできます。
+                    ）」のアカウントを削除しますか？管理画面に入れなくなり、元に戻せません。これまでの変更履歴は削除後も残ります。
+                    {plazaEnabled &&
+                      "AIインタビュー広場の議題は、下書きは削除され、公開した議題は残ります。"}
+                    閲覧だけにしたい場合は、削除の代わりにロールを出馬者に変えることもできます。
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>

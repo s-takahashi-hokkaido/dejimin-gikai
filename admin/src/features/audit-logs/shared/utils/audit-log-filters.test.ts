@@ -32,6 +32,12 @@ describe("parseAuditLogFilters", () => {
     );
   });
 
+  it("議題（AIインタビュー広場）の履歴で絞り込める", () => {
+    expect(parseAuditLogFilters({ table: "interview_topics" }).table).toBe(
+      "interview_topics"
+    );
+  });
+
   it("UUID でない議案IDは無視する（クエリへの混入を防ぐ）", () => {
     expect(
       parseAuditLogFilters({ billId: "x,target_id.is.null" }).billId

@@ -43,6 +43,7 @@ export function collectReferencedIds(logs: AuditLog[]): {
  *
  * 議案が削除済みで引けない場合、議案マスタの履歴なら記録した行の議案名を使う。
  * アカウントの履歴は、ロールだけ変えた時も誰の変更か分かるよう、記録した行の表示名を付ける。
+ * 議題の履歴は、本文だけ変えた時もどの議題か分かるよう、記録した行のタイトルを付ける。
  */
 export function toAuditLogListItems(
   logs: AuditLog[],
@@ -67,6 +68,10 @@ export function toAuditLogListItems(
       accountName:
         log.target_table === "admin_profiles"
           ? readLogField(log, "display_name")
+          : null,
+      topicTitle:
+        log.target_table === "interview_topics"
+          ? readLogField(log, "title")
           : null,
     };
   });

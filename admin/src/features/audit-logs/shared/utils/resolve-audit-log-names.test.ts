@@ -158,6 +158,50 @@ describe("toAuditLogListItems", () => {
     expect(item.accountName).toBe("退任した議員");
   });
 
+  it("議題の履歴にタイトルを付ける（削除した議題は変更前のタイトル）", () => {
+    const [created, deleted] = toAuditLogListItems(
+      [
+        makeLog({
+          action: "interview_topics.insert",
+          target_table: "interview_topics",
+          bill_id: null,
+          after_data: { title: "冬の除雪について", status: "draft" },
+        }),
+        makeLog({
+          action: "interview_topics.delete",
+          target_table: "interview_topics",
+          bill_id: null,
+          before_data: { title: "消した下書き", status: "draft" },
+        }),
+      ],
+      new Map(),
+      new Map(),
+      new Map()
+    );
+
+    expect(created.topicTitle).toBe("冬の除雪について");
+    expect(deleted.topicTitle).toBe("消した下書き");
+    expect(created.billName).toBeNull();
+    expect(created.accountName).toBeNull();
+  });
+
+  it("議題以外の履歴にはタイトルを付けない", () => {
+    const [item] = toAuditLogListItems(
+      [
+        makeLog({
+          action: "bill_contents.update",
+          target_table: "bill_contents",
+          after_data: { title: "議案コンテンツのタイトル" },
+        }),
+      ],
+      new Map(),
+      new Map(),
+      new Map()
+    );
+
+    expect(item.topicTitle).toBeNull();
+  });
+
   it("アカウント以外の履歴には表示名を付けない", () => {
     const [item] = toAuditLogListItems(
       [stanceLog],
