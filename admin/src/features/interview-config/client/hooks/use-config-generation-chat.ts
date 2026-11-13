@@ -7,6 +7,10 @@ import {
   configGenerationResponseSchema,
 } from "../../shared/schemas";
 import type { InterviewQuestionInput } from "../../shared/types";
+import {
+  type InterviewSubjectRef,
+  SUBJECT_LABELS,
+} from "../../shared/utils/interview-subject-ref";
 
 interface ChatMessage {
   id: string;
@@ -17,7 +21,8 @@ interface ChatMessage {
 }
 
 interface UseConfigGenerationChatProps {
-  billId: string;
+  /** 生成の対象（議案か、AIインタビュー広場の議題か） */
+  subject: InterviewSubjectRef;
   configId?: string;
   existingThemes?: string[];
   existingQuestions?: InterviewQuestionInput[];
@@ -26,13 +31,14 @@ interface UseConfigGenerationChatProps {
 }
 
 export function useConfigGenerationChat({
-  billId,
+  subject: { kind: subjectKind, id: subjectId },
   configId,
   existingThemes,
   existingQuestions,
   onThemesConfirmed,
   onQuestionsConfirmed,
 }: UseConfigGenerationChatProps) {
+  const subjectLabel = SUBJECT_LABELS[subjectKind];
   const hasExistingThemes = (existingThemes?.length ?? 0) > 0;
   const hasExistingQuestions = (existingQuestions?.length ?? 0) > 0;
   const [input, setInput] = useState("");
@@ -101,7 +107,7 @@ export function useConfigGenerationChat({
 
       submit({
         messages: apiMessages,
-        billId,
+        subject: { kind: subjectKind, id: subjectId },
         configId,
         stage: apiStage,
         confirmedThemes:
@@ -118,7 +124,8 @@ export function useConfigGenerationChat({
     },
     [
       messages,
-      billId,
+      subjectKind,
+      subjectId,
       configId,
       stage,
       confirmedThemes,
@@ -164,25 +171,26 @@ export function useConfigGenerationChat({
         {
           id: "greeting",
           role: "assistant",
-          content:
-            "インタビュー設定アシスタントです。法案内容を分析して、テーマと質問を提案します。まずはテーマから始めますね。",
+          content: `インタビュー設定アシスタントです。${subjectLabel}内容を分析して、テーマと質問を提案します。まずはテーマから始めますね。`,
         },
       ]);
       submit({
         messages: [],
-        billId,
+        subject: { kind: subjectKind, id: subjectId },
         configId,
         stage: "theme_proposal",
       });
     }
   }, [
-    billId,
+    subjectKind,
+    subjectId,
     configId,
     submit,
     hasExistingThemes,
     hasExistingQuestions,
     existingThemes,
     existingQuestions,
+    subjectLabel,
   ]);
 
   const confirmThemes = useCallback(
@@ -212,7 +220,7 @@ export function useConfigGenerationChat({
             content: m.content,
           })),
         ],
-        billId,
+        subject: { kind: subjectKind, id: subjectId },
         configId,
         stage: "question_proposal",
         confirmedThemes: themes,
@@ -220,7 +228,8 @@ export function useConfigGenerationChat({
       });
     },
     [
-      billId,
+      subjectKind,
+      subjectId,
       configId,
       messages,
       onThemesConfirmed,
@@ -253,13 +262,13 @@ export function useConfigGenerationChat({
         content:
           themes.length > 0
             ? "質問提案に移ります。フォームのテーマを使用します。"
-            : "質問提案に移ります。法案内容から質問を提案します。",
+            : `質問提案に移ります。${subjectLabel}内容から質問を提案します。`,
       };
       setMessages((prev) => [...prev, skipMessage]);
 
       submit({
         messages: [],
-        billId,
+        subject: { kind: subjectKind, id: subjectId },
         configId,
         stage: "question_proposal",
         confirmedThemes: themes.length > 0 ? themes : undefined,
@@ -267,13 +276,15 @@ export function useConfigGenerationChat({
       });
     },
     [
-      billId,
+      subjectKind,
+      subjectId,
       configId,
       isLoading,
       stop,
       submit,
       hasExistingQuestions,
       existingQuestions,
+      subjectLabel,
     ]
   );
 
@@ -288,25 +299,28 @@ export function useConfigGenerationChat({
     const switchMessage: ChatMessage = {
       id: `system-${Date.now()}`,
       role: "assistant",
-      content: "テーマ提案に戻ります。法案内容を分析してテーマを提案します。",
+      content: `テーマ提案に戻ります。${subjectLabel}内容を分析してテーマを提案します。`,
     };
     setMessages((prev) => [...prev, switchMessage]);
 
     submit({
       messages: [],
-      billId,
+      subjectKind,
+      subjectId,
       configId,
       stage: "theme_proposal",
       existingThemes: hasExistingThemes ? existingThemes : undefined,
     });
   }, [
-    billId,
+    subjectKind,
+    subjectId,
     configId,
     isLoading,
     stop,
     submit,
     hasExistingThemes,
     existingThemes,
+    subjectLabel,
   ]);
 
   return {

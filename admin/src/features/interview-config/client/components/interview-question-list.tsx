@@ -4,22 +4,27 @@ import { useCallback, useEffect, useState, useTransition } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { saveInterviewQuestions } from "../../server/actions/save-interview-questions";
 import type {
   InterviewQuestion,
   InterviewQuestionInput,
 } from "../../shared/types";
 import { InterviewQuestionForm } from "./interview-question-form";
 
+/** 質問の一覧を保存する。失敗したら画面に出すメッセージを返す */
+export type SaveQuestionsHandler = (
+  questions: InterviewQuestionInput[]
+) => Promise<{ success: true } | { success: false; error?: string }>;
+
 interface InterviewQuestionListProps {
-  interviewConfigId: string;
+  /** 保存先（議案の設定か、議題の設定か）は呼び出し側で決める */
+  onSave: SaveQuestionsHandler;
   questions: InterviewQuestion[];
   aiGeneratedQuestions?: InterviewQuestionInput[] | null;
   onAiQuestionsApplied?: () => void;
 }
 
 export function InterviewQuestionList({
-  interviewConfigId,
+  onSave,
   questions: initialQuestions,
   aiGeneratedQuestions,
   onAiQuestionsApplied,
@@ -37,17 +42,14 @@ export function InterviewQuestionList({
   const saveQuestions = useCallback(
     (questionsToSave: InterviewQuestionInput[]) => {
       startTransition(async () => {
-        const result = await saveInterviewQuestions(
-          interviewConfigId,
-          questionsToSave
-        );
+        const result = await onSave(questionsToSave);
 
         if (!result.success) {
           toast.error(result.error || "質問の保存に失敗しました");
         }
       });
     },
-    [interviewConfigId]
+    [onSave]
   );
 
   // AI生成質問の反映

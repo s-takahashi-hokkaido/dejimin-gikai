@@ -16,7 +16,10 @@ import type {
 } from "../../shared/types";
 import { ConfigGenerationChat } from "./config-generation-chat";
 import { InterviewConfigForm } from "./interview-config-form";
-import { InterviewQuestionList } from "./interview-question-list";
+import {
+  InterviewQuestionList,
+  type SaveQuestionsHandler,
+} from "./interview-question-list";
 
 interface InterviewConfigEditClientProps {
   billId: string;
@@ -52,6 +55,15 @@ export function InterviewConfigEditClient({
       })
     | null
   >(null);
+
+  // 質問一覧の保存先（議案の設定）。設定ができてから一覧を出すので configId はある
+  const handleSaveQuestions = useCallback<SaveQuestionsHandler>(
+    async (questionsToSave) =>
+      configId
+        ? saveInterviewQuestions(configId, questionsToSave)
+        : { success: false, error: "インタビュー設定がまだありません" },
+    [configId]
+  );
 
   const getFormThemes = useCallback(
     () => getFormValuesRef.current?.().themes ?? [],
@@ -148,7 +160,7 @@ export function InterviewConfigEditClient({
         />
         {configId ? (
           <InterviewQuestionList
-            interviewConfigId={configId}
+            onSave={handleSaveQuestions}
             questions={questions}
             aiGeneratedQuestions={aiGeneratedQuestions}
             onAiQuestionsApplied={() => setAiGeneratedQuestions(null)}
@@ -164,7 +176,7 @@ export function InterviewConfigEditClient({
       {/* 右カラム: AIチャット */}
       <div>
         <ConfigGenerationChat
-          billId={billId}
+          subject={{ kind: "bill", id: billId }}
           configId={configId}
           existingThemes={initialConfig?.themes ?? undefined}
           existingQuestions={questions.map((q) => ({

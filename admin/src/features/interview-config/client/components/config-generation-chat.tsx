@@ -7,10 +7,15 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import type { InterviewQuestionInput } from "../../shared/types";
+import {
+  type InterviewSubjectRef,
+  SUBJECT_LABELS,
+} from "../../shared/utils/interview-subject-ref";
 import { useConfigGenerationChat } from "../hooks/use-config-generation-chat";
 
 interface ConfigGenerationChatProps {
-  billId: string;
+  /** 生成の対象（議案か、AIインタビュー広場の議題か） */
+  subject: InterviewSubjectRef;
   configId?: string;
   existingThemes?: string[];
   existingQuestions?: InterviewQuestionInput[];
@@ -20,7 +25,7 @@ interface ConfigGenerationChatProps {
 }
 
 export function ConfigGenerationChat({
-  billId,
+  subject,
   configId,
   existingThemes,
   existingQuestions,
@@ -45,7 +50,7 @@ export function ConfigGenerationChat({
     skipToQuestions,
     switchToThemes,
   } = useConfigGenerationChat({
-    billId,
+    subject,
     configId,
     existingThemes,
     existingQuestions,
@@ -86,7 +91,7 @@ export function ConfigGenerationChat({
           AIで設定を生成
         </CardTitle>
         <p className="text-sm text-muted-foreground">
-          法案内容に基づいてテーマと質問を提案します
+          {SUBJECT_LABELS[subject.kind]}内容に基づいてテーマと質問を提案します
         </p>
         {/* ステージ表示（クリックで切替可能） */}
         <div className="flex gap-2 pt-1">
@@ -154,7 +159,10 @@ export function ConfigGenerationChat({
 
         {error && (
           <div className="text-sm text-red-600 bg-red-50 p-3 rounded">
-            エラーが発生しました。もう一度お試しください。
+            {/* 議題では、利用上限などの理由を API が日本語で返すのでそのまま出す */}
+            {subject.kind === "topic" && error.message
+              ? error.message
+              : "エラーが発生しました。もう一度お試しください。"}
           </div>
         )}
       </CardContent>

@@ -11,6 +11,10 @@
       "types": "./src/ai/models.ts",
       "default": "./src/ai/models.ts"
     },
+    "./ai/cost": {
+      "types": "./src/ai/cost.ts",
+      "default": "./src/ai/cost.ts"
+    },
     "./stream/inject-json-fields": {
       "types": "./src/stream/inject-json-fields.ts",
       "default": "./src/stream/inject-json-fields.ts"

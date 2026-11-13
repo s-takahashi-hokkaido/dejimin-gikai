@@ -1,5 +1,5 @@
 import "server-only";
-import { ArrowLeft, Pencil } from "lucide-react";
+import { ArrowLeft, MessagesSquare, Pencil } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -15,6 +15,23 @@ import {
   type TopicActor,
 } from "../../shared/utils/topic-permissions";
 import { loadViewableTopic } from "../loaders/load-plaza-topics";
+import {
+  loadTopicInterviewConfigSummary,
+  type TopicInterviewConfigSummary,
+} from "../loaders/load-topic-interview-config-summary";
+
+function describeInterviewConfig(
+  summary: TopicInterviewConfigSummary | null
+): string {
+  if (!summary) {
+    return "まだありません。オープンするには、インタビューの質問が必要です。";
+  }
+  const duration =
+    summary.estimatedDuration !== null
+      ? `・目安 ${summary.estimatedDuration}分`
+      : "";
+  return `テーマ ${summary.themesCount}件・質問 ${summary.questionsCount}件${duration}`;
+}
 
 /** 議題の詳細。見てはいけない議題（ほかの人の下書き）は、無い議題と同じく 404 にする */
 export async function TopicDetailPage({
@@ -29,7 +46,11 @@ export async function TopicDetailPage({
     notFound();
   }
 
+  const interviewConfig = await loadTopicInterviewConfigSummary(topic.id);
   const canEdit = canEditTopic(actor, topic);
+  // 設定の画面と Server Action でも同じ判定をする。ここは導線を出すかどうかだけ
+  const canEditInterviewConfig =
+    canEdit && !(interviewConfig?.hasResponses ?? false);
   const canDelete = canDeleteTopic(actor, topic);
   const isOwnDraft = topic.status === "draft" && isOwnTopic(actor, topic);
 
@@ -88,6 +109,25 @@ export async function TopicDetailPage({
           </div>
         ))}
       </dl>
+
+      <section className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-lg border bg-white p-4">
+        <div className="min-w-0">
+          <h2 className="font-semibold text-gray-900">インタビュー設定</h2>
+          <p className="mt-1 text-sm text-gray-600">
+            {describeInterviewConfig(interviewConfig)}
+          </p>
+        </div>
+        {canEditInterviewConfig && (
+          <Button asChild variant="outline" size="sm">
+            <Link href={`/plaza-topics/${topic.id}/interview`}>
+              <MessagesSquare className="h-4 w-4" />
+              {interviewConfig
+                ? "インタビュー設定を編集"
+                : "インタビュー設定を作る"}
+            </Link>
+          </Button>
+        )}
+      </section>
 
       <section
         aria-label="本文"
