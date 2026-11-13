@@ -112,6 +112,8 @@ function getPlazaTopicsAllowedRoles(
   switch (third) {
     // /plaza-topics/[id]/edit
     case "edit":
+    // /plaza-topics/[id]/interview（インタビュー設定。作成者本人かは画面と Server Action で確かめる）
+    case "interview":
       return PLAZA_AUTHOR_ROLES;
     // 未定義は運営者のみ（deny by default）。画面を足すタスクでここに足す
     default:

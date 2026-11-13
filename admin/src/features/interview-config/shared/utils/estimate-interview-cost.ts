@@ -6,46 +6,21 @@
  * - 1インタビューあたり出力トークン: 約3,000（AI応答の合計）
  */
 
-import { AI_MODELS } from "@/lib/ai/models";
-
-type ModelPricing = {
-  inputPerMillion: number;
-  outputPerMillion: number;
-};
+import { calculateTokenCostUsd } from "@dejimin-gikai/shared/ai/cost";
 
 /** 1インタビューあたりの推定トークン使用量 */
 const ESTIMATED_INPUT_TOKENS = 85_000;
 const ESTIMATED_OUTPUT_TOKENS = 3_000;
 
 /**
- * モデルごとの料金（USD / 1Mトークン）
- * web/src/lib/ai/calculate-ai-cost.ts の modelPricing と同じ値
- */
-const MODEL_PRICING: Record<string, ModelPricing> = {
-  [AI_MODELS.gpt4o_mini]: { inputPerMillion: 0.15, outputPerMillion: 0.6 },
-  [AI_MODELS.gpt5]: { inputPerMillion: 1.25, outputPerMillion: 10 },
-  [AI_MODELS.gpt5_mini]: { inputPerMillion: 0.25, outputPerMillion: 2 },
-  [AI_MODELS.gpt5_nano]: { inputPerMillion: 0.05, outputPerMillion: 0.4 },
-  [AI_MODELS.gpt5_chat]: { inputPerMillion: 1.25, outputPerMillion: 10 },
-  [AI_MODELS.gpt5_1_chat]: { inputPerMillion: 1.25, outputPerMillion: 10 },
-  [AI_MODELS.gpt5_1]: { inputPerMillion: 1.25, outputPerMillion: 10 },
-  [AI_MODELS.gpt5_2]: { inputPerMillion: 1.75, outputPerMillion: 14 },
-};
-
-/**
  * モデルIDから1インタビューあたりの推定コスト（USD）を算出する
  * @returns 推定コスト（USD）。不明なモデルの場合は null
  */
 export function estimateInterviewCostUsd(modelId: string): number | null {
-  const pricing = MODEL_PRICING[modelId];
-  if (!pricing) return null;
-
-  const inputCost =
-    (pricing.inputPerMillion * ESTIMATED_INPUT_TOKENS) / 1_000_000;
-  const outputCost =
-    (pricing.outputPerMillion * ESTIMATED_OUTPUT_TOKENS) / 1_000_000;
-
-  return inputCost + outputCost;
+  return calculateTokenCostUsd(modelId, {
+    inputTokens: ESTIMATED_INPUT_TOKENS,
+    outputTokens: ESTIMATED_OUTPUT_TOKENS,
+  });
 }
 
 /** USD→JPY換算レート */

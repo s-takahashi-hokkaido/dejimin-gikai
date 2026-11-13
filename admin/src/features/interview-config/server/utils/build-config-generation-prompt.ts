@@ -1,12 +1,11 @@
 import "server-only";
 
 import type { ConfigGenerationStage } from "../../shared/schemas";
-
-interface ExistingQuestion {
-  question: string;
-  follow_up_guide?: string | null;
-  quick_replies?: string[] | null;
-}
+import {
+  type ExistingQuestion,
+  formatExistingQuestionList,
+  formatThemeList,
+} from "./config-generation-prompt-parts";
 
 interface BuildPromptParams {
   billName: string;
@@ -51,7 +50,7 @@ ${billContent}`;
   if (stage === "theme_proposal") {
     const existingThemesSection =
       existingThemes && existingThemes.length > 0
-        ? `\n## 現在設定されているテーマ\n${existingThemes.map((t) => `- ${t}`).join("\n")}\n\n管理者は既存のテーマのブラッシュアップを希望しています。既存テーマを踏まえて改善提案をしてください。`
+        ? `\n## 現在設定されているテーマ\n${formatThemeList(existingThemes)}\n\n管理者は既存のテーマのブラッシュアップを希望しています。既存テーマを踏まえて改善提案をしてください。`
         : "";
 
     return `${baseRole}
@@ -78,12 +77,12 @@ ${knowledgeSection}${existingThemesSection}
 
   if (stage === "question_proposal") {
     const themesSection = confirmedThemes
-      ? `## 確定テーマ\n${confirmedThemes.map((t) => `- ${t}`).join("\n")}`
+      ? `## 確定テーマ\n${formatThemeList(confirmedThemes)}`
       : "## テーマ\n（テーマ未設定）";
 
     const existingQuestionsSection =
       existingQuestions && existingQuestions.length > 0
-        ? `\n## 現在設定されている質問\n${existingQuestions.map((q, i) => `${i + 1}. ${q.question}${q.follow_up_guide ? `\n   フォローアップ指針: ${q.follow_up_guide}` : ""}${q.quick_replies?.length ? `\n   選択肢: ${q.quick_replies.join(", ")}` : ""}`).join("\n")}\n\n管理者は既存の質問のブラッシュアップを希望しています。既存質問を踏まえて改善提案をしてください。`
+        ? `\n## 現在設定されている質問\n${formatExistingQuestionList(existingQuestions)}\n\n管理者は既存の質問のブラッシュアップを希望しています。既存質問を踏まえて改善提案をしてください。`
         : "";
 
     return `${baseRole}

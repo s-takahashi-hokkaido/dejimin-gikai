@@ -199,3 +199,156 @@ export async function deleteInterviewQuestionsByConfigId(
     throw new Error(`Failed to delete interview questions: ${error.message}`);
   }
 }
+
+// ---------------------------------------------------------------------------
+// 議題（AIインタビュー広場）のインタビュー設定。議題ごとに1つだけ持つ
+// ---------------------------------------------------------------------------
+
+/** 議題の設定に入れる値（作成者が触れない項目は固定。plaza-topics の buildTopicInterviewConfigRecord で作る） */
+export type TopicInterviewConfigRecord = {
+  name: string;
+  status: "public" | "closed";
+  mode: "loop" | "bulk";
+  themes: string[] | null;
+  knowledge_source: string | null;
+  chat_model: string | null;
+  estimated_duration: number | null;
+};
+
+const UNIQUE_VIOLATION = "23505";
+
+/** 議題のインタビュー設定を読む。無ければ null */
+export async function findInterviewConfigByTopicId(
+  topicId: string
+): Promise<InterviewConfig | null> {
+  const supabase = createAdminClient();
+  const { data, error } = await supabase
+    .from("interview_configs")
+    .select("*")
+    .eq("interview_topic_id", topicId)
+    .maybeSingle();
+
+  if (error) {
+    throw new Error(`Failed to fetch topic interview config: ${error.message}`);
+  }
+
+  return data;
+}
+
+/** その設定でインタビューが始まっているか（セッションが1件でもあるか。やり直しでアーカイブされたものも数える） */
+export async function hasInterviewSessionsByConfigId(
+  configId: string
+): Promise<boolean> {
+  const supabase = createAdminClient();
+  const { count, error } = await supabase
+    .from("interview_sessions")
+    .select("id", { count: "exact", head: true })
+    .eq("interview_config_id", configId);
+
+  if (error) {
+    throw new Error(`Failed to count interview sessions: ${error.message}`);
+  }
+
+  return (count ?? 0) > 0;
+}
+
+/**
+ * 議題のインタビュー設定を作るか、あれば更新し、設定の ID を返す
+ *
+ * 同時に2回作ろうとした場合は、議題ごとに1つのユニーク制約で後の作成が失敗するので、
+ * そのときは先にできた設定を更新する。
+ */
+export async function upsertTopicInterviewConfigRecord(
+  topicId: string,
+  record: TopicInterviewConfigRecord
+): Promise<{ id: string }> {
+  const supabase = createAdminClient();
+  const existing = await findInterviewConfigByTopicId(topicId);
+
+  if (!existing) {
+    const { data, error } = await supabase
+      .from("interview_configs")
+      .insert({ ...record, interview_topic_id: topicId })
+      .select("id")
+      .single();
+
+    if (!error) {
+      return data;
+    }
+    if (error.code !== UNIQUE_VIOLATION) {
+      throw new Error(
+        `Failed to create topic interview config: ${error.message}`
+      );
+    }
+  }
+
+  const { data, error } = await supabase
+    .from("interview_configs")
+    .update({ ...record, updated_at: new Date().toISOString() })
+    .eq("interview_topic_id", topicId)
+    .select("id")
+    .single();
+
+  if (error) {
+    throw new Error(
+      `Failed to update topic interview config: ${error.message}`
+    );
+  }
+
+  return data;
+}
+
+/**
+ * 議題のインタビュー設定が無ければ作り、設定の ID を返す（あれば何も変えずにその ID を返す）
+ *
+ * 質問を先に保存するときに使う。同時にテーマの保存で設定ができても、そちらの値を上書きしない。
+ */
+export async function ensureTopicInterviewConfigRecord(
+  topicId: string,
+  defaults: TopicInterviewConfigRecord
+): Promise<{ id: string }> {
+  const existing = await findInterviewConfigByTopicId(topicId);
+  if (existing) {
+    return { id: existing.id };
+  }
+
+  const supabase = createAdminClient();
+  const { data, error } = await supabase
+    .from("interview_configs")
+    .insert({ ...defaults, interview_topic_id: topicId })
+    .select("id")
+    .single();
+
+  if (!error) {
+    return data;
+  }
+  if (error.code !== UNIQUE_VIOLATION) {
+    throw new Error(
+      `Failed to create topic interview config: ${error.message}`
+    );
+  }
+
+  // 同時に作られていたら、そちらを使う
+  const created = await findInterviewConfigByTopicId(topicId);
+  if (!created) {
+    throw new Error("Failed to find topic interview config after conflict");
+  }
+  return { id: created.id };
+}
+
+/** 設定の質問の数 */
+export async function countInterviewQuestionsByConfigId(
+  configId: string
+): Promise<number> {
+  const supabase = createAdminClient();
+  const { count, error } = await supabase
+    .from("interview_questions")
+    .select("id", { count: "exact", head: true })
+    .eq("interview_config_id", configId);
+
+  if (error) {
+    throw new Error(`Failed to count interview questions: ${error.message}`);
+  }
+
+  return count ?? 0;
+}

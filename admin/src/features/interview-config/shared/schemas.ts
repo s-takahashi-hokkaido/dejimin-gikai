@@ -68,3 +68,39 @@ export const configGenerationResponseSchema = z.object({
 export type ConfigGenerationResponse = z.infer<
   typeof configGenerationResponseSchema
 >;
+
+/**
+ * AI 設定生成の API（/api/interview-config/generate）のリクエスト
+ *
+ * クライアントはこの型で送り、API はこのスキーマで確かめる。
+ * 会話の role は user / assistant だけを受け付ける（system を混ぜてプロンプトを上書きさせない）。
+ */
+export const configGenerationRequestSchema = z.object({
+  messages: z.array(
+    z.object({
+      role: z.enum(["user", "assistant"]),
+      content: z.string(),
+    })
+  ),
+  subject: z.object({
+    kind: z.enum(["bill", "topic"]),
+    id: z.string(),
+  }),
+  configId: z.string().optional(),
+  stage: z.enum(["theme_proposal", "question_proposal"]),
+  confirmedThemes: z.array(z.string()).optional(),
+  existingThemes: z.array(z.string()).optional(),
+  existingQuestions: z
+    .array(
+      z.object({
+        question: z.string(),
+        follow_up_guide: z.string().nullable().optional(),
+        quick_replies: z.array(z.string()).nullable().optional(),
+      })
+    )
+    .optional(),
+});
+
+export type ConfigGenerationRequest = z.infer<
+  typeof configGenerationRequestSchema
+>;

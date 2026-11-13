@@ -1,3 +1,4 @@
+import { parseCostLimitUsd } from "@dejimin-gikai/shared/ai/cost";
 import { isFlagEnabled } from "./utils/is-flag-enabled";
 
 /**
@@ -12,6 +13,21 @@ if (!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
   throw new Error(
     "環境変数 NEXT_PUBLIC_SUPABASE_ANON_KEY が設定されていません"
   );
+}
+
+/**
+ * コスト上限の環境変数を読み取る。不正値ならアプリを起動させない（web/src/lib/env.ts と同じ扱い）
+ */
+function readCostLimitUsd(
+  raw: string | undefined,
+  fallbackUsd: number,
+  name: string
+): number {
+  const value = parseCostLimitUsd(raw, fallbackUsd);
+  if (value === null) {
+    throw new Error(`環境変数 ${name} は正の数値で指定してください`);
+  }
+  return value;
 }
 
 export const env = {
@@ -40,6 +56,15 @@ export const env = {
    * サーバー専用の変数のため、Client Component から参照すると常に false になる。
    */
   plazaEnabled: isFlagEnabled(process.env.ADMIN_ENABLE_PLAZA),
+  /**
+   * AIインタビュー広場で、議題の作成者1人がインタビュー設定の AI 生成に1日（JST）に使える金額（USD）。
+   * 未設定なら 1。運営者の議案での AI 生成には上限をかけない
+   */
+  plazaConfigGenerationDailyCostLimitUsd: readCostLimitUsd(
+    process.env.ADMIN_PLAZA_CONFIG_GENERATION_DAILY_COST_LIMIT_USD,
+    1,
+    "ADMIN_PLAZA_CONFIG_GENERATION_DAILY_COST_LIMIT_USD"
+  ),
 } as const;
 
 // 型定義

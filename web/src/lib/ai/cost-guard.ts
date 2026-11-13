@@ -46,52 +46,8 @@ export function evaluateCostGuard({
   return { allowed: true };
 }
 
-/**
- * JST基準の1日の時間範囲を取得（UTCのISO文字列で返す）
- *
- * @param now 基準時刻。省略時は現在時刻
- */
-export function getJstDayRange(now: Date = new Date()): {
-  from: string;
-  to: string;
-} {
-  const jstOffsetMs = 9 * 60 * 60 * 1000;
-  const jstNow = new Date(now.getTime() + jstOffsetMs);
-
-  const startOfJstDay = new Date(
-    Date.UTC(
-      jstNow.getUTCFullYear(),
-      jstNow.getUTCMonth(),
-      jstNow.getUTCDate(),
-      0,
-      0,
-      0,
-      0
-    )
-  );
-
-  const startUtc = new Date(startOfJstDay.getTime() - jstOffsetMs);
-  const endUtc = new Date(startUtc.getTime() + 24 * 60 * 60 * 1000);
-
-  return { from: startUtc.toISOString(), to: endUtc.toISOString() };
-}
-
-/**
- * 環境変数の値をコスト上限(USD)としてパースする
- *
- * 未設定・空文字の場合はフォールバック値を使う。
- * 数値として不正、または0以下の場合は null を返す（呼び出し側でエラーにする）。
- */
-export function parseCostLimitUsd(
-  raw: string | undefined,
-  fallbackUsd: number
-): number | null {
-  const source = raw !== undefined && raw.trim() !== "" ? raw : null;
-  const value = source === null ? fallbackUsd : Number(source);
-
-  if (!Number.isFinite(value) || value <= 0) {
-    return null;
-  }
-
-  return value;
-}
+// JST の1日の範囲と、コスト上限の環境変数のパースは admin でも使うので packages/shared に置いている
+export {
+  getJstDayRange,
+  parseCostLimitUsd,
+} from "@dejimin-gikai/shared/ai/cost";

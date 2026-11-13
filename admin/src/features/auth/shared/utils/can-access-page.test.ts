@@ -86,11 +86,14 @@ describe("canAccessPage", () => {
     it.each([
       "legislator",
       "candidate",
-    ] as const)("%s は一覧・作成・詳細・編集を開ける", (role) => {
+    ] as const)("%s は一覧・作成・詳細・編集・インタビュー設定を開ける", (role) => {
       expect(canAccessPage(role, "/plaza-topics")).toBe(true);
       expect(canAccessPage(role, "/plaza-topics/new")).toBe(true);
       expect(canAccessPage(role, `/plaza-topics/${TOPIC_ID}`)).toBe(true);
       expect(canAccessPage(role, `/plaza-topics/${TOPIC_ID}/edit`)).toBe(true);
+      expect(canAccessPage(role, `/plaza-topics/${TOPIC_ID}/interview`)).toBe(
+        true
+      );
     });
 
     it("運営者は一覧と詳細だけ開ける（議題は出せない。K3）", () => {
@@ -100,6 +103,9 @@ describe("canAccessPage", () => {
       expect(canAccessPage("admin", `/plaza-topics/${TOPIC_ID}/edit`)).toBe(
         false
       );
+      expect(
+        canAccessPage("admin", `/plaza-topics/${TOPIC_ID}/interview`)
+      ).toBe(false);
     });
 
     it("未定義の配下のパスは運営者のみ（deny by default）", () => {
