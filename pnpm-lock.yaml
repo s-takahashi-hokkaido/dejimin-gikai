@@ -1805,19 +1805,9 @@ packages:
     cpu: [x64]
     os: [darwin]
 
-  '@supabase/cli-linux-arm64-musl@3.1.0':
-    resolution: {integrity: sha512-x/btGSaL7zlFyk2bvjJL8qfGJ1GY8jfh5D4bWl0mINeyNPlMyLz6oAw4ICRl05p3TU5SeHsiPptcBaohig7OOQ==}
-    cpu: [arm64]
-    os: [linux]
-
   '@supabase/cli-linux-arm64@3.1.0':
     resolution: {integrity: sha512-ZNip2P1/RiXBfWsspAdK594//HM5258RPb6/4tzybrzGUx7TNDwrLhfRw6G50/sXVWkVgaw/L38YtWLpUYRM/A==}
     cpu: [arm64]
-    os: [linux]
-
-  '@supabase/cli-linux-x64-musl@3.1.0':
-    resolution: {integrity: sha512-dWs2FsUv7iBz9OLbhpgI9fyrvft1S5oh1uqeuhus3Mndlxu4cpMq+qaAt6PcnaC6bjw37q60HUkISgmjs/3z+g==}
-    cpu: [x64]
     os: [linux]
 
   '@supabase/cli-linux-x64@3.1.0':
@@ -4197,6 +4187,10 @@ packages:
   zwitch@2.0.4:
     resolution: {integrity: sha512-bXE4cR/kVZhKZX/RjPEflHaKVhUVl85noU3v6b8apfQEc1x4A+zBxjZ4lN8LqGd6WZ3dl98pY4o717VFmoPp+A==}
 
+ignoredOptionalDependencies:
+  - '@supabase/cli-linux-arm64-musl'
+  - '@supabase/cli-linux-x64-musl'
+
 snapshots:
 
   '@acemir/cssom@0.9.31': {}
@@ -5360,13 +5354,7 @@ snapshots:
   '@supabase/cli-darwin-x64@3.1.0':
     optional: true
 
-  '@supabase/cli-linux-arm64-musl@3.1.0':
-    optional: true
-
   '@supabase/cli-linux-arm64@3.1.0':
-    optional: true
-
-  '@supabase/cli-linux-x64-musl@3.1.0':
     optional: true
 
   '@supabase/cli-linux-x64@3.1.0':
@@ -7887,9 +7875,7 @@ snapshots:
       '@supabase/cli-darwin-arm64': 3.1.0
       '@supabase/cli-darwin-x64': 3.1.0
       '@supabase/cli-linux-arm64': 3.1.0
-      '@supabase/cli-linux-arm64-musl': 3.1.0
       '@supabase/cli-linux-x64': 3.1.0
-      '@supabase/cli-linux-x64-musl': 3.1.0
       '@supabase/cli-windows-arm64': 3.1.0
       '@supabase/cli-windows-x64': 3.1.0
 

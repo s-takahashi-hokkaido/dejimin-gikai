@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "db:types:gen": "supabase gen types typescript > packages/supabase/types/supabase.types.ts && biome format --write packages/supabase/types/supabase.types.ts",
+    "db:types:gen": "supabase gen types typescript > node_modules/.supabase.types.ts && mv node_modules/.supabase.types.ts packages/supabase/types/supabase.types.ts && biome format --write packages/supabase/types/supabase.types.ts",
     "db:docs": "docker run --rm --add-host=host.docker.internal:host-gateway -u \"$(id -u):$(id -g)\" -v \"$PWD\":/work -w /work ghcr.io/k1low/tbls:v1.96.0 doc --rm-dist",
     "db:migrate": "supabase migration up --include-all && pnpm run db:types:gen && pnpm run db:docs",
     "db:reset": "dotenv -e .env -- supabase db reset && pnpm db:types:gen && pnpm seed",

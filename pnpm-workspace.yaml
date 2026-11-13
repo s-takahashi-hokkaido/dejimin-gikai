@@ -8,3 +8,9 @@ allowBuilds:
   protobufjs: false
   sharp: false
   simple-git-hooks: false
+# Supabase CLI（devDependencies の supabase）は OS ごとのバイナリを optionalDependencies で持つ。
+# Linux では glibc 版と musl 版の両方が入って 1 つ 130MB 前後あるので、使わない musl 版（Alpine 向け）を入れない。
+# 開発機（macOS・glibc の Linux）と CI（ubuntu）は glibc 版を使う
+ignoredOptionalDependencies:
+  - "@supabase/cli-linux-x64-musl"
+  - "@supabase/cli-linux-arm64-musl"
