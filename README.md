@@ -23,15 +23,19 @@
 Node.js は **22**（`.node-version` に記載。CI のビルドと VPS の実行環境に合わせています）、
 パッケージマネージャは pnpm 10 を使います。
 
+Supabase CLI はルートの `devDependencies`（`supabase`）で版を固定しているので、`pnpm install` で入ります。
+`npx supabase` は最新版を取ってくるため版がずれます。必ず `pnpm exec supabase ...` で実行してください
+（`pnpm db:reset` などの scripts と CI も同じ版を使います）。
+
 ```bash
+# パッケージインストール（Supabase CLI もここで入る）
+pnpm install
+
 # Supabaseの起動
-npx supabase start
+pnpm exec supabase start
 
 # 環境変数の設定（必要に応じて.envの内容を変更してください）
 cp .env.example .env
-
-# パッケージインストール
-pnpm install
 
 # SupabaseのDB初期化, 開発用シードデータのセットアップ
 pnpm db:reset
@@ -46,10 +50,10 @@ Supabase の `project_id` を `mirai-gikai-hokkaido` から `dejimin-gikai` に�
 
 ```bash
 # 旧名称のコンテナを停止（--no-backup を付けると旧ボリュームも削除される）
-npx supabase stop --project-id mirai-gikai-hokkaido
+pnpm exec supabase stop --project-id mirai-gikai-hokkaido
 
 # 新しい名称で起動し、DB を初期化
-npx supabase start
+pnpm exec supabase start
 pnpm db:reset
 ```
 
@@ -57,11 +61,23 @@ pnpm db:reset
 
 ```bash
 # マイグレーションファイル生成
-npx supabase migration new マイグレーション名
+pnpm exec supabase migration new マイグレーション名
 
 # マイグレーション実行 & 型ファイル更新
 pnpm db:migrate
 ```
+
+型ファイル（`packages/supabase/types/supabase.types.ts`）は `pnpm db:types:gen` で作り直せます。
+CLI の出力を Biome で整形しているので、CLI が出す「`npx oxfmt` で整形せよ」という案内は無視して構いません。
+
+### Supabase CLI の版を上げる
+
+```bash
+pnpm add -w -D --save-exact supabase@<版>
+```
+
+上げたら `pnpm db:reset`・`pnpm db:types:gen`・`pnpm test:integration` が通ることを確かめてください。
+CI（`.github/workflows/integration_test.yml`）も `pnpm exec supabase` で同じ版を使います。
 
 ## Adminユーザーの作成
 

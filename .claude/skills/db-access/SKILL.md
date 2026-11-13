@@ -13,7 +13,7 @@ description: 本番DB・ローカルDB接続の規約。DBデータを参照・�
 
 ## ローカルDB
 
-- `.env` の `SUPABASE_URL` はローカル Supabase（`http://127.0.0.1:...`）。`npx supabase start` で起動する
+- `.env` の `SUPABASE_URL` はローカル Supabase（`http://127.0.0.1:...`）。`pnpm exec supabase start` で起動する（CLI はルートの devDependencies で版を固定している。`npx supabase` は版がずれるので使わない）
 - データ投入の試しと web での表示確認はローカルで行う
 
 ## DBを操作する際のルール
