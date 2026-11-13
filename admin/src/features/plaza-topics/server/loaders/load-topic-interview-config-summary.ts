@@ -1,17 +1,10 @@
 import "server-only";
 import {
+  countInterviewQuestionsByConfigId,
   findInterviewConfigByTopicId,
-  findInterviewQuestionsByConfigId,
   hasInterviewSessionsByConfigId,
 } from "@/features/interview-config/server/repositories/interview-config-repository";
-
-export type TopicInterviewConfigSummary = {
-  themesCount: number;
-  questionsCount: number;
-  estimatedDuration: number | null;
-  /** 回答が始まっているか（始まっていれば設定は変更できない） */
-  hasResponses: boolean;
-};
+import type { TopicInterviewConfigSummary } from "../../shared/utils/describe-topic-interview-config";
 
 /** 議題の詳細に出すインタビュー設定の要約。設定がまだ無ければ null */
 export async function loadTopicInterviewConfigSummary(
@@ -21,14 +14,14 @@ export async function loadTopicInterviewConfigSummary(
   if (!config) {
     return null;
   }
-  const [questions, hasResponses] = await Promise.all([
-    findInterviewQuestionsByConfigId(config.id),
+  const [questionsCount, hasResponses] = await Promise.all([
+    countInterviewQuestionsByConfigId(config.id),
     hasInterviewSessionsByConfigId(config.id),
   ]);
   return {
     hasResponses,
     themesCount: config.themes?.length ?? 0,
-    questionsCount: questions.length,
+    questionsCount,
     estimatedDuration: config.estimated_duration,
   };
 }

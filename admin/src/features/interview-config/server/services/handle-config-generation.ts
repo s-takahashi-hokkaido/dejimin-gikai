@@ -18,6 +18,7 @@ import {
 } from "../../shared/schemas";
 import { getInterviewConfigById } from "../loaders/get-interview-config";
 import { buildConfigGenerationPrompt } from "../utils/build-config-generation-prompt";
+import type { ExistingQuestion } from "../utils/config-generation-prompt-parts";
 import { buildTopicConfigGenerationPrompt } from "../utils/build-topic-config-generation-prompt";
 
 /** 設定の AI 生成に使うモデル（利用量のコスト計算にも使う） */
@@ -36,12 +37,6 @@ export type ConfigGenerationUsage = {
   inputTokens: number;
   outputTokens: number;
 };
-
-interface ExistingQuestion {
-  question: string;
-  follow_up_guide?: string | null;
-  quick_replies?: string[] | null;
-}
 
 interface HandleConfigGenerationParams {
   messages: Array<{ role: string; content: string }>;
@@ -186,6 +181,16 @@ export async function handleConfigGeneration({
         });
 
   // ストリームにstageを注入
+  // 利用量を記録するときは、画面が途中で止めても（stop・切断）最後まで生成させて onFinish を必ず呼ぶ。
+  // 呼ばないと、トークンを使ったのに記録が残らず、作成者ごとの上限が効かなくなる
+  if (onUsage) {
+    void result.consumeStream({
+      onError: (error) => {
+        console.error("LLM generation error:", error);
+      },
+    });
+  }
+
   const transformedStream = injectJsonFields(result.textStream, {
     stage,
   });

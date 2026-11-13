@@ -15,23 +15,8 @@ import {
   type TopicActor,
 } from "../../shared/utils/topic-permissions";
 import { loadViewableTopic } from "../loaders/load-plaza-topics";
-import {
-  loadTopicInterviewConfigSummary,
-  type TopicInterviewConfigSummary,
-} from "../loaders/load-topic-interview-config-summary";
-
-function describeInterviewConfig(
-  summary: TopicInterviewConfigSummary | null
-): string {
-  if (!summary) {
-    return "まだありません。オープンするには、インタビューの質問が必要です。";
-  }
-  const duration =
-    summary.estimatedDuration !== null
-      ? `・目安 ${summary.estimatedDuration}分`
-      : "";
-  return `テーマ ${summary.themesCount}件・質問 ${summary.questionsCount}件${duration}`;
-}
+import { describeTopicInterviewConfig } from "../../shared/utils/describe-topic-interview-config";
+import { loadTopicInterviewConfigSummary } from "../loaders/load-topic-interview-config-summary";
 
 /** 議題の詳細。見てはいけない議題（ほかの人の下書き）は、無い議題と同じく 404 にする */
 export async function TopicDetailPage({
@@ -114,7 +99,7 @@ export async function TopicDetailPage({
         <div className="min-w-0">
           <h2 className="font-semibold text-gray-900">インタビュー設定</h2>
           <p className="mt-1 text-sm text-gray-600">
-            {describeInterviewConfig(interviewConfig)}
+            {describeTopicInterviewConfig(interviewConfig)}
           </p>
         </div>
         {canEditInterviewConfig && (

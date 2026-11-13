@@ -297,3 +297,58 @@ export async function upsertTopicInterviewConfigRecord(
 
   return data;
 }
+
+/**
+ * 議題のインタビュー設定が無ければ作り、設定の ID を返す（あれば何も変えずにその ID を返す）
+ *
+ * 質問を先に保存するときに使う。同時にテーマの保存で設定ができても、そちらの値を上書きしない。
+ */
+export async function ensureTopicInterviewConfigRecord(
+  topicId: string,
+  defaults: TopicInterviewConfigRecord
+): Promise<{ id: string }> {
+  const existing = await findInterviewConfigByTopicId(topicId);
+  if (existing) {
+    return { id: existing.id };
+  }
+
+  const supabase = createAdminClient();
+  const { data, error } = await supabase
+    .from("interview_configs")
+    .insert({ ...defaults, interview_topic_id: topicId })
+    .select("id")
+    .single();
+
+  if (!error) {
+    return data;
+  }
+  if (error.code !== UNIQUE_VIOLATION) {
+    throw new Error(
+      `Failed to create topic interview config: ${error.message}`
+    );
+  }
+
+  // 同時に作られていたら、そちらを使う
+  const created = await findInterviewConfigByTopicId(topicId);
+  if (!created) {
+    throw new Error("Failed to find topic interview config after conflict");
+  }
+  return { id: created.id };
+}
+
+/** 設定の質問の数 */
+export async function countInterviewQuestionsByConfigId(
+  configId: string
+): Promise<number> {
+  const supabase = createAdminClient();
+  const { count, error } = await supabase
+    .from("interview_questions")
+    .select("id", { count: "exact", head: true })
+    .eq("interview_config_id", configId);
+
+  if (error) {
+    throw new Error(`Failed to count interview questions: ${error.message}`);
+  }
+
+  return count ?? 0;
+}

@@ -117,6 +117,20 @@ describe("handleConfigGeneration（議題）", () => {
     });
   });
 
+  it("画面が途中で止めても（本文を読まずに切断しても）利用量を渡す", async () => {
+    const onUsage = vi.fn(async () => {});
+    const response = await handleConfigGeneration({
+      messages: [],
+      target,
+      stage: "theme_proposal",
+      model: createStreamModel(THEMES_JSON),
+      onUsage,
+    });
+    await response.body?.cancel();
+
+    await vi.waitFor(() => expect(onUsage).toHaveBeenCalledTimes(1));
+  });
+
   it("利用量の記録に失敗しても、生成した結果は返す", async () => {
     const consoleError = vi
       .spyOn(console, "error")

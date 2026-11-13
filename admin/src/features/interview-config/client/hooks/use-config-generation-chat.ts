@@ -3,6 +3,7 @@
 import { experimental_useObject as useObject } from "@ai-sdk/react";
 import { useCallback, useState } from "react";
 import {
+  type ConfigGenerationRequest,
   type ConfigGenerationStage,
   configGenerationResponseSchema,
 } from "../../shared/schemas";
@@ -78,6 +79,19 @@ export function useConfigGenerationChat({
     },
   });
 
+  /** API に送る。対象（subject）と設定 ID はここで必ず付ける */
+  const submitRequest = useCallback(
+    (request: Omit<ConfigGenerationRequest, "subject" | "configId">) => {
+      const body: ConfigGenerationRequest = {
+        ...request,
+        subject: { kind: subjectKind, id: subjectId },
+        configId,
+      };
+      submit(body);
+    },
+    [submit, subjectKind, subjectId, configId]
+  );
+
   const handleSubmit = useCallback(
     (text: string) => {
       if (!text.trim() || isLoading) return;
@@ -105,10 +119,8 @@ export function useConfigGenerationChat({
           ? "question_proposal"
           : "theme_proposal";
 
-      submit({
+      submitRequest({
         messages: apiMessages,
-        subject: { kind: subjectKind, id: subjectId },
-        configId,
         stage: apiStage,
         confirmedThemes:
           apiStage === "question_proposal" ? confirmedThemes : undefined,
@@ -124,17 +136,14 @@ export function useConfigGenerationChat({
     },
     [
       messages,
-      subjectKind,
-      subjectId,
-      configId,
       stage,
       confirmedThemes,
       isLoading,
-      submit,
       hasExistingThemes,
       existingThemes,
       hasExistingQuestions,
       existingQuestions,
+      submitRequest,
     ]
   );
 
@@ -174,23 +183,18 @@ export function useConfigGenerationChat({
           content: `インタビュー設定アシスタントです。${subjectLabel}内容を分析して、テーマと質問を提案します。まずはテーマから始めますね。`,
         },
       ]);
-      submit({
+      submitRequest({
         messages: [],
-        subject: { kind: subjectKind, id: subjectId },
-        configId,
         stage: "theme_proposal",
       });
     }
   }, [
-    subjectKind,
-    subjectId,
-    configId,
-    submit,
     hasExistingThemes,
     hasExistingQuestions,
     existingThemes,
     existingQuestions,
     subjectLabel,
+    submitRequest,
   ]);
 
   const confirmThemes = useCallback(
@@ -213,29 +217,24 @@ export function useConfigGenerationChat({
       // 質問提案フェーズへ移行
       setStage("question_proposal");
 
-      submit({
+      submitRequest({
         messages: [
           ...messages.map((m) => ({
             role: m.role,
             content: m.content,
           })),
         ],
-        subject: { kind: subjectKind, id: subjectId },
-        configId,
         stage: "question_proposal",
         confirmedThemes: themes,
         existingQuestions: hasExistingQuestions ? existingQuestions : undefined,
       });
     },
     [
-      subjectKind,
-      subjectId,
-      configId,
       messages,
       onThemesConfirmed,
-      submit,
       hasExistingQuestions,
       existingQuestions,
+      submitRequest,
     ]
   );
 
@@ -266,25 +265,20 @@ export function useConfigGenerationChat({
       };
       setMessages((prev) => [...prev, skipMessage]);
 
-      submit({
+      submitRequest({
         messages: [],
-        subject: { kind: subjectKind, id: subjectId },
-        configId,
         stage: "question_proposal",
         confirmedThemes: themes.length > 0 ? themes : undefined,
         existingQuestions: hasExistingQuestions ? existingQuestions : undefined,
       });
     },
     [
-      subjectKind,
-      subjectId,
-      configId,
       isLoading,
       stop,
-      submit,
       hasExistingQuestions,
       existingQuestions,
       subjectLabel,
+      submitRequest,
     ]
   );
 
@@ -303,24 +297,18 @@ export function useConfigGenerationChat({
     };
     setMessages((prev) => [...prev, switchMessage]);
 
-    submit({
+    submitRequest({
       messages: [],
-      subjectKind,
-      subjectId,
-      configId,
       stage: "theme_proposal",
       existingThemes: hasExistingThemes ? existingThemes : undefined,
     });
   }, [
-    subjectKind,
-    subjectId,
-    configId,
     isLoading,
     stop,
-    submit,
     hasExistingThemes,
     existingThemes,
     subjectLabel,
+    submitRequest,
   ]);
 
   return {

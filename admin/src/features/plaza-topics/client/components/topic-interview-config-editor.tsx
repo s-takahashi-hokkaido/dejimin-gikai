@@ -24,6 +24,7 @@ import { saveTopicInterviewQuestions } from "../../server/actions/save-topic-int
 import { saveTopicInterviewSettings } from "../../server/actions/save-topic-interview-settings";
 import {
   TOPIC_INTERVIEW_DURATION,
+  TOPIC_INTERVIEW_QUESTIONS_MAX,
   TOPIC_INTERVIEW_THEMES_MAX,
 } from "../../shared/utils/topic-interview-config";
 
@@ -178,6 +179,7 @@ export function TopicInterviewConfigEditor({
           questions={questions}
           aiGeneratedQuestions={aiGeneratedQuestions}
           onAiQuestionsApplied={() => setAiGeneratedQuestions(null)}
+          maxQuestions={TOPIC_INTERVIEW_QUESTIONS_MAX}
         />
       </div>
 

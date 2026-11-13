@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import {
   createInterviewQuestions,
   deleteInterviewQuestionsByConfigId,
-  upsertTopicInterviewConfigRecord,
+  ensureTopicInterviewConfigRecord,
 } from "@/features/interview-config/server/repositories/interview-config-repository";
 import {
   type InterviewQuestionsInput,
@@ -58,10 +58,11 @@ export async function saveTopicInterviewQuestions(input: {
       };
     }
 
+    // 設定が無ければ既定の値で作る。あれば（同時に作られていても）その値は変えない
     const configId =
       access.config?.id ??
       (
-        await upsertTopicInterviewConfigRecord(
+        await ensureTopicInterviewConfigRecord(
           access.topic.id,
           buildTopicInterviewConfigRecord({
             themes: [],

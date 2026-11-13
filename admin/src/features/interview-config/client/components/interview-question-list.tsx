@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState, useTransition } from "react";
+import { useCallback, useEffect, useRef, useState, useTransition } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -21,6 +21,8 @@ interface InterviewQuestionListProps {
   questions: InterviewQuestion[];
   aiGeneratedQuestions?: InterviewQuestionInput[] | null;
   onAiQuestionsApplied?: () => void;
+  /** 質問の数の上限。指定すると、上限に達したら追加の欄を出さない */
+  maxQuestions?: number;
 }
 
 export function InterviewQuestionList({
@@ -28,6 +30,7 @@ export function InterviewQuestionList({
   questions: initialQuestions,
   aiGeneratedQuestions,
   onAiQuestionsApplied,
+  maxQuestions,
 }: InterviewQuestionListProps) {
   const [questions, setQuestions] = useState<InterviewQuestionInput[]>(
     initialQuestions.map((q) => ({
@@ -38,15 +41,23 @@ export function InterviewQuestionList({
   );
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [isPending, startTransition] = useTransition();
+  // 最後に保存できた一覧。保存に失敗したら画面をこれに戻し、DB と食い違わないようにする
+  const savedQuestionsRef = useRef(questions);
 
+  /** 画面に先に反映してから保存する。失敗したら元に戻し、成功したときだけ成功のメッセージを出す */
   const saveQuestions = useCallback(
-    (questionsToSave: InterviewQuestionInput[]) => {
+    (questionsToSave: InterviewQuestionInput[], successMessage: string) => {
+      setQuestions(questionsToSave);
       startTransition(async () => {
         const result = await onSave(questionsToSave);
 
         if (!result.success) {
+          setQuestions(savedQuestionsRef.current);
           toast.error(result.error || "質問の保存に失敗しました");
+          return;
         }
+        savedQuestionsRef.current = questionsToSave;
+        toast.success(successMessage);
       });
     },
     [onSave]
@@ -55,18 +66,18 @@ export function InterviewQuestionList({
   // AI生成質問の反映
   useEffect(() => {
     if (aiGeneratedQuestions && aiGeneratedQuestions.length > 0) {
-      setQuestions(aiGeneratedQuestions);
-      saveQuestions(aiGeneratedQuestions);
+      saveQuestions(
+        aiGeneratedQuestions,
+        `AIが${aiGeneratedQuestions.length}件の質問を生成しました`
+      );
       onAiQuestionsApplied?.();
-      toast.success(`AIが${aiGeneratedQuestions.length}件の質問を生成しました`);
     }
   }, [aiGeneratedQuestions, saveQuestions, onAiQuestionsApplied]);
 
+  const canAdd = maxQuestions === undefined || questions.length < maxQuestions;
+
   const handleAdd = (newQuestion: InterviewQuestionInput) => {
-    const newQuestions = [...questions, newQuestion];
-    setQuestions(newQuestions);
-    saveQuestions(newQuestions);
-    toast.success("質問を追加しました");
+    saveQuestions([...questions, newQuestion], "質問を追加しました");
   };
 
   const handleUpdate = (
@@ -75,19 +86,15 @@ export function InterviewQuestionList({
   ) => {
     const newQuestions = [...questions];
     newQuestions[index] = updatedQuestion;
-    setQuestions(newQuestions);
     setEditingIndex(null);
-    saveQuestions(newQuestions);
-    toast.success("質問を更新しました");
+    saveQuestions(newQuestions, "質問を更新しました");
   };
 
   const handleDelete = (index: number) => {
     if (confirm("この質問を削除してもよろしいですか？")) {
       const newQuestions = questions.filter((_, i) => i !== index);
-      setQuestions(newQuestions);
       setEditingIndex(null);
-      saveQuestions(newQuestions);
-      toast.success("質問を削除しました");
+      saveQuestions(newQuestions, "質問を削除しました");
     }
   };
 
@@ -182,7 +189,14 @@ export function InterviewQuestionList({
 
         <div>
           <h3 className="font-bold mb-4">質問を追加</h3>
-          <InterviewQuestionForm onSubmit={handleAdd} />
+          {canAdd ? (
+            <InterviewQuestionForm onSubmit={handleAdd} />
+          ) : (
+            <p className="text-sm text-gray-500">
+              質問は{maxQuestions}
+              個までです。追加するには、どれかを削除してください。
+            </p>
+          )}
         </div>
       </CardContent>
     </Card>
