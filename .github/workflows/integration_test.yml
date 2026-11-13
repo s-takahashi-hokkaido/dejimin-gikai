@@ -30,15 +30,11 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Setup Supabase CLI
-        uses: supabase/setup-cli@b60b5899c73b63a2d2d651b1e90db8d4c9392f51 # v1.6.0
-        with:
-          # v3 は supabase/config.toml の [inbucket] を読めず起動できないため、v2 に固定する。
-          # v3 に上げるときは config.toml を [local_smtp] に移し、下の -x の inbucket を mailpit に変える
-          version: 2.122.1
-
+      # Supabase CLI は package.json の devDependencies（supabase）で版を固定し、手元と同じものを使う。
+      # setup-cli で別に入れると版の指定が2か所に分かれるので使わない。
+      # -x の名前は CLI v3 のもの（メールの検証サーバーは inbucket ではなく mailpit）
       - name: Start Supabase
-        run: supabase start -x studio,imgproxy,logflare,vector,realtime,edge-runtime,supavisor,inbucket
+        run: pnpm exec supabase start -x studio,imgproxy,logflare,vector,realtime,edge-runtime,supavisor,mailpit
 
       - name: Run Integration Tests with Coverage
         run: pnpm test:integration:coverage

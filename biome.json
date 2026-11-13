@@ -50,6 +50,11 @@
     "useIgnoreFile": true
   },
   "files": {
-    "includes": ["web/src/**/*", "admin/src/**/*", "tests/**/*"]
+    "includes": [
+      "web/src/**/*",
+      "admin/src/**/*",
+      "tests/**/*",
+      "packages/supabase/types/**/*"
+    ]
   }
 }
