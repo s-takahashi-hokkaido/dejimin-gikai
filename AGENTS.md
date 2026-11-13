@@ -137,7 +137,10 @@ Repository レイヤーの詳細は [docs/repository-layer.md](docs/repository-l
      ```
 
 ## Supabase & Environment Notes
-- ローカル開発前に `npx supabase start` を実行し、`.env.example` を `.env` にコピーして値を整えます。
+- ローカル開発前に `pnpm exec supabase start` を実行し、`.env.example` を `.env` にコピーして値を整えます。
+- **Supabase CLI はルートの `devDependencies`（`supabase`）で版を固定しています**。`npx supabase` やグローバルの `supabase` は版がずれる（`npx` は最新版を取ってくる）ので使わず、必ず `pnpm exec supabase ...` で実行してください。`package.json` の scripts と CI（`.github/workflows/integration_test.yml`）も同じ版を使います。版の上げ方は README の「Supabase CLI の版を上げる」を参照。
+- 型の生成（`pnpm db:types:gen`）は CLI の出力を Biome で整形します。CLI が出す「`npx oxfmt` で整形せよ」という案内は無視して構いません。
+- `pnpm db:docs`（`pnpm db:migrate` の最後にも流れる）で `docs/schema` の `auth.factor_type` に `recovery_code` が加わるのは、ローカルの GoTrue（CLI 3.1.0 では v2.197.0）が本番（`infra/compose.yml` の v2.196.0）より新しいためです。マイグレーションによる変更ではないので、コミットに含めず戻してください。
 - スキーマ変更時は `supabase/migrations` のマイグレーションと `packages/supabase/types/supabase.types.ts` の再生成ファイル、`docs/schema/`（`pnpm db:docs`）をセットでコミットします。`docs/schema/` は生成物のため手で編集せず、`YYYYMMDD_HHMM_` の命名ルールの対象外です。
 - `pnpm seed` は `admin@example.com / admin123456` を含む検証データを投入するため、開発用途に限定してください。
 - **RLSとアクセスパターン**: マイグレーションでは必ず `alter table <テーブル名> enable row level security;` を記述してRLSを有効化すること。ただし **ポリシーは定義しない**（デフォルト全拒否）。データアクセスはすべて `createAdminClient()`（Service Role Key）経由で行い、認可ロジックはアプリケーション層（Server Actions / Loaders）で実装する。

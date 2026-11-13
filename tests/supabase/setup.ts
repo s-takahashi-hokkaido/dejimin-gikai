@@ -13,7 +13,7 @@ export async function setup() {
     throw new Error(
       [
         "Supabase への接続に失敗しました。",
-        "ローカル Supabase が起動しているか確認してください: npx supabase start",
+        "ローカル Supabase が起動しているか確認してください: pnpm exec supabase start",
         `エラー: ${error.message}`,
       ].join("\n")
     );

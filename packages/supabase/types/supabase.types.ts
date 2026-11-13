@@ -4,1728 +4,1767 @@ export type Json =
   | boolean
   | null
   | { [key: string]: Json | undefined }
-  | Json[]
+  | Json[];
 
 export type Database = {
   graphql_public: {
     Tables: {
-      [_ in never]: never
-    }
+      [_ in never]: never;
+    };
     Views: {
-      [_ in never]: never
-    }
+      [_ in never]: never;
+    };
     Functions: {
       graphql: {
         Args: {
-          extensions?: Json
-          operationName?: string
-          query?: string
-          variables?: Json
-        }
-        Returns: Json
-      }
-    }
+          extensions?: Json;
+          operationName?: string;
+          query?: string;
+          variables?: Json;
+        };
+        Returns: Json;
+      };
+    };
     Enums: {
-      [_ in never]: never
-    }
+      [_ in never]: never;
+    };
     CompositeTypes: {
-      [_ in never]: never
-    }
-  }
+      [_ in never]: never;
+    };
+  };
   public: {
     Tables: {
       admin_audit_logs: {
         Row: {
-          action: string
-          actor_email: string | null
-          actor_faction_id: string | null
-          actor_role: string | null
-          actor_user_id: string | null
-          after_data: Json | null
-          before_data: Json | null
-          bill_id: string | null
-          created_at: string
-          id: string
-          target_id: string | null
-          target_table: string
-        }
+          action: string;
+          actor_email: string | null;
+          actor_faction_id: string | null;
+          actor_role: string | null;
+          actor_user_id: string | null;
+          after_data: Json | null;
+          before_data: Json | null;
+          bill_id: string | null;
+          created_at: string;
+          id: string;
+          target_id: string | null;
+          target_table: string;
+        };
+        ComputedFields: never;
         Insert: {
-          action: string
-          actor_email?: string | null
-          actor_faction_id?: string | null
-          actor_role?: string | null
-          actor_user_id?: string | null
-          after_data?: Json | null
-          before_data?: Json | null
-          bill_id?: string | null
-          created_at?: string
-          id?: string
-          target_id?: string | null
-          target_table: string
-        }
+          action: string;
+          actor_email?: string | null;
+          actor_faction_id?: string | null;
+          actor_role?: string | null;
+          actor_user_id?: string | null;
+          after_data?: Json | null;
+          before_data?: Json | null;
+          bill_id?: never;
+          created_at?: string;
+          id?: string;
+          target_id?: string | null;
+          target_table: string;
+        };
         Update: {
-          action?: string
-          actor_email?: string | null
-          actor_faction_id?: string | null
-          actor_role?: string | null
-          actor_user_id?: string | null
-          after_data?: Json | null
-          before_data?: Json | null
-          bill_id?: string | null
-          created_at?: string
-          id?: string
-          target_id?: string | null
-          target_table?: string
-        }
-        Relationships: []
-      }
+          action?: string;
+          actor_email?: string | null;
+          actor_faction_id?: string | null;
+          actor_role?: string | null;
+          actor_user_id?: string | null;
+          after_data?: Json | null;
+          before_data?: Json | null;
+          bill_id?: never;
+          created_at?: string;
+          id?: string;
+          target_id?: string | null;
+          target_table?: string;
+        };
+        Relationships: [];
+      };
       admin_profiles: {
         Row: {
-          created_at: string
-          display_name: string
-          faction_id: string | null
-          role: string
-          updated_at: string
-          user_id: string
-        }
+          created_at: string;
+          display_name: string;
+          faction_id: string | null;
+          role: string;
+          updated_at: string;
+          user_id: string;
+        };
+        ComputedFields: never;
         Insert: {
-          created_at?: string
-          display_name: string
-          faction_id?: string | null
-          role: string
-          updated_at?: string
-          user_id: string
-        }
+          created_at?: string;
+          display_name: string;
+          faction_id?: string | null;
+          role: string;
+          updated_at?: string;
+          user_id: string;
+        };
         Update: {
-          created_at?: string
-          display_name?: string
-          faction_id?: string | null
-          role?: string
-          updated_at?: string
-          user_id?: string
-        }
+          created_at?: string;
+          display_name?: string;
+          faction_id?: string | null;
+          role?: string;
+          updated_at?: string;
+          user_id?: string;
+        };
         Relationships: [
           {
-            foreignKeyName: "admin_profiles_faction_id_fkey"
-            columns: ["faction_id"]
-            isOneToOne: false
-            referencedRelation: "factions"
-            referencedColumns: ["id"]
+            foreignKeyName: "admin_profiles_faction_id_fkey";
+            columns: ["faction_id"];
+            isOneToOne: false;
+            referencedRelation: "factions";
+            referencedColumns: ["id"];
           },
-        ]
-      }
+        ];
+      };
       bill_committees: {
         Row: {
-          bill_id: string
-          committee_id: string
-          created_at: string
-        }
+          bill_id: string;
+          committee_id: string;
+          created_at: string;
+        };
+        ComputedFields: never;
         Insert: {
-          bill_id: string
-          committee_id: string
-          created_at?: string
-        }
+          bill_id: string;
+          committee_id: string;
+          created_at?: string;
+        };
         Update: {
-          bill_id?: string
-          committee_id?: string
-          created_at?: string
-        }
+          bill_id?: string;
+          committee_id?: string;
+          created_at?: string;
+        };
         Relationships: [
           {
-            foreignKeyName: "bill_committees_bill_id_fkey"
-            columns: ["bill_id"]
-            isOneToOne: false
-            referencedRelation: "bills"
-            referencedColumns: ["id"]
+            foreignKeyName: "bill_committees_bill_id_fkey";
+            columns: ["bill_id"];
+            isOneToOne: false;
+            referencedRelation: "bills";
+            referencedColumns: ["id"];
           },
           {
-            foreignKeyName: "bill_committees_committee_id_fkey"
-            columns: ["committee_id"]
-            isOneToOne: false
-            referencedRelation: "committees"
-            referencedColumns: ["id"]
+            foreignKeyName: "bill_committees_committee_id_fkey";
+            columns: ["committee_id"];
+            isOneToOne: false;
+            referencedRelation: "committees";
+            referencedColumns: ["id"];
           },
-        ]
-      }
+        ];
+      };
       bill_contents: {
         Row: {
-          bill_id: string
-          content: string
-          created_at: string
-          difficulty_level: Database["public"]["Enums"]["difficulty_level_enum"]
-          id: string
-          summary: string
-          title: string
-          updated_at: string
-        }
+          bill_id: string;
+          content: string;
+          created_at: string;
+          difficulty_level: Database["public"]["Enums"]["difficulty_level_enum"];
+          id: string;
+          summary: string;
+          title: string;
+          updated_at: string;
+        };
+        ComputedFields: never;
         Insert: {
-          bill_id: string
-          content: string
-          created_at?: string
-          difficulty_level: Database["public"]["Enums"]["difficulty_level_enum"]
-          id?: string
-          summary: string
-          title: string
-          updated_at?: string
-        }
+          bill_id: string;
+          content: string;
+          created_at?: string;
+          difficulty_level: Database["public"]["Enums"]["difficulty_level_enum"];
+          id?: string;
+          summary: string;
+          title: string;
+          updated_at?: string;
+        };
         Update: {
-          bill_id?: string
-          content?: string
-          created_at?: string
-          difficulty_level?: Database["public"]["Enums"]["difficulty_level_enum"]
-          id?: string
-          summary?: string
-          title?: string
-          updated_at?: string
-        }
+          bill_id?: string;
+          content?: string;
+          created_at?: string;
+          difficulty_level?: Database["public"]["Enums"]["difficulty_level_enum"];
+          id?: string;
+          summary?: string;
+          title?: string;
+          updated_at?: string;
+        };
         Relationships: [
           {
-            foreignKeyName: "bill_contents_bill_id_fkey"
-            columns: ["bill_id"]
-            isOneToOne: false
-            referencedRelation: "bills"
-            referencedColumns: ["id"]
+            foreignKeyName: "bill_contents_bill_id_fkey";
+            columns: ["bill_id"];
+            isOneToOne: false;
+            referencedRelation: "bills";
+            referencedColumns: ["id"];
           },
-        ]
-      }
+        ];
+      };
       bill_discussions: {
         Row: {
-          answer_raw: string | null
-          answer_summary: string | null
-          answerer_name: string | null
-          answerer_role: string | null
-          bill_id: string
-          created_at: string
-          exchange_count: number
-          id: string
-          question_raw: string | null
-          question_summary: string | null
-          questioner_name: string
-          questioner_number: string | null
-          questioner_party: string | null
-          session_day: number
-        }
+          answer_raw: string | null;
+          answer_summary: string | null;
+          answerer_name: string | null;
+          answerer_role: string | null;
+          bill_id: string;
+          created_at: string;
+          exchange_count: number;
+          id: string;
+          question_raw: string | null;
+          question_summary: string | null;
+          questioner_name: string;
+          questioner_number: string | null;
+          questioner_party: string | null;
+          session_day: number;
+        };
+        ComputedFields: never;
         Insert: {
-          answer_raw?: string | null
-          answer_summary?: string | null
-          answerer_name?: string | null
-          answerer_role?: string | null
-          bill_id: string
-          created_at?: string
-          exchange_count?: number
-          id?: string
-          question_raw?: string | null
-          question_summary?: string | null
-          questioner_name: string
-          questioner_number?: string | null
-          questioner_party?: string | null
-          session_day: number
-        }
+          answer_raw?: string | null;
+          answer_summary?: string | null;
+          answerer_name?: string | null;
+          answerer_role?: string | null;
+          bill_id: string;
+          created_at?: string;
+          exchange_count?: number;
+          id?: string;
+          question_raw?: string | null;
+          question_summary?: string | null;
+          questioner_name: string;
+          questioner_number?: string | null;
+          questioner_party?: string | null;
+          session_day: number;
+        };
         Update: {
-          answer_raw?: string | null
-          answer_summary?: string | null
-          answerer_name?: string | null
-          answerer_role?: string | null
-          bill_id?: string
-          created_at?: string
-          exchange_count?: number
-          id?: string
-          question_raw?: string | null
-          question_summary?: string | null
-          questioner_name?: string
-          questioner_number?: string | null
-          questioner_party?: string | null
-          session_day?: number
-        }
+          answer_raw?: string | null;
+          answer_summary?: string | null;
+          answerer_name?: string | null;
+          answerer_role?: string | null;
+          bill_id?: string;
+          created_at?: string;
+          exchange_count?: number;
+          id?: string;
+          question_raw?: string | null;
+          question_summary?: string | null;
+          questioner_name?: string;
+          questioner_number?: string | null;
+          questioner_party?: string | null;
+          session_day?: number;
+        };
         Relationships: [
           {
-            foreignKeyName: "bill_discussions_bill_id_fkey"
-            columns: ["bill_id"]
-            isOneToOne: false
-            referencedRelation: "bills"
-            referencedColumns: ["id"]
+            foreignKeyName: "bill_discussions_bill_id_fkey";
+            columns: ["bill_id"];
+            isOneToOne: false;
+            referencedRelation: "bills";
+            referencedColumns: ["id"];
           },
-        ]
-      }
+        ];
+      };
       bills: {
         Row: {
-          bill_number: string
-          bill_type: string
-          council_session_id: string | null
-          created_at: string
-          decided_date: string | null
-          discussion_overview_points: string[]
-          id: string
-          is_featured: boolean
-          is_review_completed: boolean
-          name: string
-          publish_status: Database["public"]["Enums"]["bill_publish_status"]
-          publish_status_order: number | null
-          published_at: string | null
-          share_thumbnail_url: string | null
-          source_url: string | null
-          status: Database["public"]["Enums"]["bill_status_enum"]
-          status_note: string | null
-          status_order: number | null
-          submitted_date: string | null
-          submitted_on: string | null
-          thumbnail_url: string | null
-          updated_at: string
-        }
+          bill_number: string;
+          bill_type: string;
+          council_session_id: string | null;
+          created_at: string;
+          decided_date: string | null;
+          discussion_overview_points: string[];
+          id: string;
+          is_featured: boolean;
+          is_review_completed: boolean;
+          name: string;
+          publish_status: Database["public"]["Enums"]["bill_publish_status"];
+          publish_status_order: number | null;
+          published_at: string | null;
+          share_thumbnail_url: string | null;
+          source_url: string | null;
+          status: Database["public"]["Enums"]["bill_status_enum"];
+          status_note: string | null;
+          status_order: number | null;
+          submitted_date: string | null;
+          submitted_on: string | null;
+          thumbnail_url: string | null;
+          updated_at: string;
+        };
+        ComputedFields: never;
         Insert: {
-          bill_number?: string
-          bill_type?: string
-          council_session_id?: string | null
-          created_at?: string
-          decided_date?: string | null
-          discussion_overview_points?: string[]
-          id?: string
-          is_featured?: boolean
-          is_review_completed?: boolean
-          name: string
-          publish_status?: Database["public"]["Enums"]["bill_publish_status"]
-          publish_status_order?: number | null
-          published_at?: string | null
-          share_thumbnail_url?: string | null
-          source_url?: string | null
-          status: Database["public"]["Enums"]["bill_status_enum"]
-          status_note?: string | null
-          status_order?: number | null
-          submitted_date?: string | null
-          submitted_on?: string | null
-          thumbnail_url?: string | null
-          updated_at?: string
-        }
+          bill_number?: string;
+          bill_type?: string;
+          council_session_id?: string | null;
+          created_at?: string;
+          decided_date?: string | null;
+          discussion_overview_points?: string[];
+          id?: string;
+          is_featured?: boolean;
+          is_review_completed?: boolean;
+          name: string;
+          publish_status?: Database["public"]["Enums"]["bill_publish_status"];
+          publish_status_order?: never;
+          published_at?: string | null;
+          share_thumbnail_url?: string | null;
+          source_url?: string | null;
+          status: Database["public"]["Enums"]["bill_status_enum"];
+          status_note?: string | null;
+          status_order?: never;
+          submitted_date?: string | null;
+          submitted_on?: never;
+          thumbnail_url?: string | null;
+          updated_at?: string;
+        };
         Update: {
-          bill_number?: string
-          bill_type?: string
-          council_session_id?: string | null
-          created_at?: string
-          decided_date?: string | null
-          discussion_overview_points?: string[]
-          id?: string
-          is_featured?: boolean
-          is_review_completed?: boolean
-          name?: string
-          publish_status?: Database["public"]["Enums"]["bill_publish_status"]
-          publish_status_order?: number | null
-          published_at?: string | null
-          share_thumbnail_url?: string | null
-          source_url?: string | null
-          status?: Database["public"]["Enums"]["bill_status_enum"]
-          status_note?: string | null
-          status_order?: number | null
-          submitted_date?: string | null
-          submitted_on?: string | null
-          thumbnail_url?: string | null
-          updated_at?: string
-        }
+          bill_number?: string;
+          bill_type?: string;
+          council_session_id?: string | null;
+          created_at?: string;
+          decided_date?: string | null;
+          discussion_overview_points?: string[];
+          id?: string;
+          is_featured?: boolean;
+          is_review_completed?: boolean;
+          name?: string;
+          publish_status?: Database["public"]["Enums"]["bill_publish_status"];
+          publish_status_order?: never;
+          published_at?: string | null;
+          share_thumbnail_url?: string | null;
+          source_url?: string | null;
+          status?: Database["public"]["Enums"]["bill_status_enum"];
+          status_note?: string | null;
+          status_order?: never;
+          submitted_date?: string | null;
+          submitted_on?: never;
+          thumbnail_url?: string | null;
+          updated_at?: string;
+        };
         Relationships: [
           {
-            foreignKeyName: "bills_council_session_id_fkey"
-            columns: ["council_session_id"]
-            isOneToOne: false
-            referencedRelation: "council_sessions"
-            referencedColumns: ["id"]
+            foreignKeyName: "bills_council_session_id_fkey";
+            columns: ["council_session_id"];
+            isOneToOne: false;
+            referencedRelation: "council_sessions";
+            referencedColumns: ["id"];
           },
-        ]
-      }
+        ];
+      };
       bills_tags: {
         Row: {
-          bill_id: string
-          created_at: string
-          tag_id: string
-        }
+          bill_id: string;
+          created_at: string;
+          tag_id: string;
+        };
+        ComputedFields: never;
         Insert: {
-          bill_id: string
-          created_at?: string
-          tag_id: string
-        }
+          bill_id: string;
+          created_at?: string;
+          tag_id: string;
+        };
         Update: {
-          bill_id?: string
-          created_at?: string
-          tag_id?: string
-        }
+          bill_id?: string;
+          created_at?: string;
+          tag_id?: string;
+        };
         Relationships: [
           {
-            foreignKeyName: "bills_tags_bill_id_fkey"
-            columns: ["bill_id"]
-            isOneToOne: false
-            referencedRelation: "bills"
-            referencedColumns: ["id"]
+            foreignKeyName: "bills_tags_bill_id_fkey";
+            columns: ["bill_id"];
+            isOneToOne: false;
+            referencedRelation: "bills";
+            referencedColumns: ["id"];
           },
           {
-            foreignKeyName: "bills_tags_tag_id_fkey"
-            columns: ["tag_id"]
-            isOneToOne: false
-            referencedRelation: "tags"
-            referencedColumns: ["id"]
+            foreignKeyName: "bills_tags_tag_id_fkey";
+            columns: ["tag_id"];
+            isOneToOne: false;
+            referencedRelation: "tags";
+            referencedColumns: ["id"];
           },
-        ]
-      }
+        ];
+      };
       budget_initiatives: {
         Row: {
-          badge: string | null
-          budget_amount: number | null
-          created_at: string
-          description: string | null
-          id: string
-          sort_order: number
-          theme_id: string
-          title: string
-          updated_at: string
-        }
+          badge: string | null;
+          budget_amount: number | null;
+          created_at: string;
+          description: string | null;
+          id: string;
+          sort_order: number;
+          theme_id: string;
+          title: string;
+          updated_at: string;
+        };
+        ComputedFields: never;
         Insert: {
-          badge?: string | null
-          budget_amount?: number | null
-          created_at?: string
-          description?: string | null
-          id?: string
-          sort_order?: number
-          theme_id: string
-          title: string
-          updated_at?: string
-        }
+          badge?: string | null;
+          budget_amount?: number | null;
+          created_at?: string;
+          description?: string | null;
+          id?: string;
+          sort_order?: number;
+          theme_id: string;
+          title: string;
+          updated_at?: string;
+        };
         Update: {
-          badge?: string | null
-          budget_amount?: number | null
-          created_at?: string
-          description?: string | null
-          id?: string
-          sort_order?: number
-          theme_id?: string
-          title?: string
-          updated_at?: string
-        }
+          badge?: string | null;
+          budget_amount?: number | null;
+          created_at?: string;
+          description?: string | null;
+          id?: string;
+          sort_order?: number;
+          theme_id?: string;
+          title?: string;
+          updated_at?: string;
+        };
         Relationships: [
           {
-            foreignKeyName: "budget_initiatives_theme_id_fkey"
-            columns: ["theme_id"]
-            isOneToOne: false
-            referencedRelation: "budget_themes"
-            referencedColumns: ["id"]
+            foreignKeyName: "budget_initiatives_theme_id_fkey";
+            columns: ["theme_id"];
+            isOneToOne: false;
+            referencedRelation: "budget_themes";
+            referencedColumns: ["id"];
           },
-        ]
-      }
+        ];
+      };
       budget_overviews: {
         Row: {
-          council_session_id: string
-          created_at: string
-          department_name: string
-          department_slug: string
-          direction: string | null
-          id: string
-          prev_budget: number | null
-          publish_status: string
-          sort_order: number
-          source_url: string | null
-          total_budget: number | null
-          updated_at: string
-        }
+          council_session_id: string;
+          created_at: string;
+          department_name: string;
+          department_slug: string;
+          direction: string | null;
+          id: string;
+          prev_budget: number | null;
+          publish_status: string;
+          sort_order: number;
+          source_url: string | null;
+          total_budget: number | null;
+          updated_at: string;
+        };
+        ComputedFields: never;
         Insert: {
-          council_session_id: string
-          created_at?: string
-          department_name: string
-          department_slug: string
-          direction?: string | null
-          id?: string
-          prev_budget?: number | null
-          publish_status?: string
-          sort_order?: number
-          source_url?: string | null
-          total_budget?: number | null
-          updated_at?: string
-        }
+          council_session_id: string;
+          created_at?: string;
+          department_name: string;
+          department_slug: string;
+          direction?: string | null;
+          id?: string;
+          prev_budget?: number | null;
+          publish_status?: string;
+          sort_order?: number;
+          source_url?: string | null;
+          total_budget?: number | null;
+          updated_at?: string;
+        };
         Update: {
-          council_session_id?: string
-          created_at?: string
-          department_name?: string
-          department_slug?: string
-          direction?: string | null
-          id?: string
-          prev_budget?: number | null
-          publish_status?: string
-          sort_order?: number
-          source_url?: string | null
-          total_budget?: number | null
-          updated_at?: string
-        }
+          council_session_id?: string;
+          created_at?: string;
+          department_name?: string;
+          department_slug?: string;
+          direction?: string | null;
+          id?: string;
+          prev_budget?: number | null;
+          publish_status?: string;
+          sort_order?: number;
+          source_url?: string | null;
+          total_budget?: number | null;
+          updated_at?: string;
+        };
         Relationships: [
           {
-            foreignKeyName: "budget_overviews_council_session_id_fkey"
-            columns: ["council_session_id"]
-            isOneToOne: false
-            referencedRelation: "council_sessions"
-            referencedColumns: ["id"]
+            foreignKeyName: "budget_overviews_council_session_id_fkey";
+            columns: ["council_session_id"];
+            isOneToOne: false;
+            referencedRelation: "council_sessions";
+            referencedColumns: ["id"];
           },
-        ]
-      }
+        ];
+      };
       budget_themes: {
         Row: {
-          ai_summary: string | null
-          budget_amount: number | null
-          created_at: string
-          id: string
-          overview_id: string
-          sort_order: number
-          title: string
-          updated_at: string
-        }
+          ai_summary: string | null;
+          budget_amount: number | null;
+          created_at: string;
+          id: string;
+          overview_id: string;
+          sort_order: number;
+          title: string;
+          updated_at: string;
+        };
+        ComputedFields: never;
         Insert: {
-          ai_summary?: string | null
-          budget_amount?: number | null
-          created_at?: string
-          id?: string
-          overview_id: string
-          sort_order?: number
-          title: string
-          updated_at?: string
-        }
+          ai_summary?: string | null;
+          budget_amount?: number | null;
+          created_at?: string;
+          id?: string;
+          overview_id: string;
+          sort_order?: number;
+          title: string;
+          updated_at?: string;
+        };
         Update: {
-          ai_summary?: string | null
-          budget_amount?: number | null
-          created_at?: string
-          id?: string
-          overview_id?: string
-          sort_order?: number
-          title?: string
-          updated_at?: string
-        }
+          ai_summary?: string | null;
+          budget_amount?: number | null;
+          created_at?: string;
+          id?: string;
+          overview_id?: string;
+          sort_order?: number;
+          title?: string;
+          updated_at?: string;
+        };
         Relationships: [
           {
-            foreignKeyName: "budget_themes_overview_id_fkey"
-            columns: ["overview_id"]
-            isOneToOne: false
-            referencedRelation: "budget_overviews"
-            referencedColumns: ["id"]
+            foreignKeyName: "budget_themes_overview_id_fkey";
+            columns: ["overview_id"];
+            isOneToOne: false;
+            referencedRelation: "budget_overviews";
+            referencedColumns: ["id"];
           },
-        ]
-      }
+        ];
+      };
       chat_logs: {
         Row: {
-          bill_id: string | null
-          created_at: string
-          id: string
-          message: string
-          model: string | null
-          page_type: string
-          prompt_name: string
-          prompt_version_id: string | null
-          role: Database["public"]["Enums"]["chat_role_enum"]
-          session_id: string | null
-          user_id: string
-        }
+          bill_id: string | null;
+          created_at: string;
+          id: string;
+          message: string;
+          model: string | null;
+          page_type: string;
+          prompt_name: string;
+          prompt_version_id: string | null;
+          role: Database["public"]["Enums"]["chat_role_enum"];
+          session_id: string | null;
+          user_id: string;
+        };
+        ComputedFields: never;
         Insert: {
-          bill_id?: string | null
-          created_at?: string
-          id?: string
-          message: string
-          model?: string | null
-          page_type: string
-          prompt_name: string
-          prompt_version_id?: string | null
-          role: Database["public"]["Enums"]["chat_role_enum"]
-          session_id?: string | null
-          user_id: string
-        }
+          bill_id?: string | null;
+          created_at?: string;
+          id?: string;
+          message: string;
+          model?: string | null;
+          page_type: string;
+          prompt_name: string;
+          prompt_version_id?: string | null;
+          role: Database["public"]["Enums"]["chat_role_enum"];
+          session_id?: string | null;
+          user_id: string;
+        };
         Update: {
-          bill_id?: string | null
-          created_at?: string
-          id?: string
-          message?: string
-          model?: string | null
-          page_type?: string
-          prompt_name?: string
-          prompt_version_id?: string | null
-          role?: Database["public"]["Enums"]["chat_role_enum"]
-          session_id?: string | null
-          user_id?: string
-        }
+          bill_id?: string | null;
+          created_at?: string;
+          id?: string;
+          message?: string;
+          model?: string | null;
+          page_type?: string;
+          prompt_name?: string;
+          prompt_version_id?: string | null;
+          role?: Database["public"]["Enums"]["chat_role_enum"];
+          session_id?: string | null;
+          user_id?: string;
+        };
         Relationships: [
           {
-            foreignKeyName: "chat_logs_prompt_version_id_fkey"
-            columns: ["prompt_version_id"]
-            isOneToOne: false
-            referencedRelation: "prompt_versions"
-            referencedColumns: ["id"]
+            foreignKeyName: "chat_logs_prompt_version_id_fkey";
+            columns: ["prompt_version_id"];
+            isOneToOne: false;
+            referencedRelation: "prompt_versions";
+            referencedColumns: ["id"];
           },
-        ]
-      }
+        ];
+      };
       chat_usage_events: {
         Row: {
-          cost_usd: number
-          created_at: string
-          id: string
-          input_tokens: number
-          metadata: Json | null
-          model: string
-          occurred_at: string
-          output_tokens: number
-          prompt_name: string | null
-          session_id: string | null
-          total_tokens: number
-          user_id: string
-        }
+          cost_usd: number;
+          created_at: string;
+          id: string;
+          input_tokens: number;
+          metadata: Json | null;
+          model: string;
+          occurred_at: string;
+          output_tokens: number;
+          prompt_name: string | null;
+          session_id: string | null;
+          total_tokens: number;
+          user_id: string;
+        };
+        ComputedFields: never;
         Insert: {
-          cost_usd?: number
-          created_at?: string
-          id?: string
-          input_tokens?: number
-          metadata?: Json | null
-          model: string
-          occurred_at?: string
-          output_tokens?: number
-          prompt_name?: string | null
-          session_id?: string | null
-          total_tokens?: number
-          user_id: string
-        }
+          cost_usd?: number;
+          created_at?: string;
+          id?: string;
+          input_tokens?: number;
+          metadata?: Json | null;
+          model: string;
+          occurred_at?: string;
+          output_tokens?: number;
+          prompt_name?: string | null;
+          session_id?: string | null;
+          total_tokens?: number;
+          user_id: string;
+        };
         Update: {
-          cost_usd?: number
-          created_at?: string
-          id?: string
-          input_tokens?: number
-          metadata?: Json | null
-          model?: string
-          occurred_at?: string
-          output_tokens?: number
-          prompt_name?: string | null
-          session_id?: string | null
-          total_tokens?: number
-          user_id?: string
-        }
-        Relationships: []
-      }
+          cost_usd?: number;
+          created_at?: string;
+          id?: string;
+          input_tokens?: number;
+          metadata?: Json | null;
+          model?: string;
+          occurred_at?: string;
+          output_tokens?: number;
+          prompt_name?: string | null;
+          session_id?: string | null;
+          total_tokens?: number;
+          user_id?: string;
+        };
+        Relationships: [];
+      };
       chats: {
         Row: {
-          bill_id: string
-          created_at: string
-          id: string
-          message: string
-          role: Database["public"]["Enums"]["chat_role_enum"]
-          updated_at: string
-          user_id: string | null
-        }
+          bill_id: string;
+          created_at: string;
+          id: string;
+          message: string;
+          role: Database["public"]["Enums"]["chat_role_enum"];
+          updated_at: string;
+          user_id: string | null;
+        };
+        ComputedFields: never;
         Insert: {
-          bill_id: string
-          created_at?: string
-          id?: string
-          message: string
-          role: Database["public"]["Enums"]["chat_role_enum"]
-          updated_at?: string
-          user_id?: string | null
-        }
+          bill_id: string;
+          created_at?: string;
+          id?: string;
+          message: string;
+          role: Database["public"]["Enums"]["chat_role_enum"];
+          updated_at?: string;
+          user_id?: string | null;
+        };
         Update: {
-          bill_id?: string
-          created_at?: string
-          id?: string
-          message?: string
-          role?: Database["public"]["Enums"]["chat_role_enum"]
-          updated_at?: string
-          user_id?: string | null
-        }
+          bill_id?: string;
+          created_at?: string;
+          id?: string;
+          message?: string;
+          role?: Database["public"]["Enums"]["chat_role_enum"];
+          updated_at?: string;
+          user_id?: string | null;
+        };
         Relationships: [
           {
-            foreignKeyName: "chats_bill_id_fkey"
-            columns: ["bill_id"]
-            isOneToOne: false
-            referencedRelation: "bills"
-            referencedColumns: ["id"]
+            foreignKeyName: "chats_bill_id_fkey";
+            columns: ["bill_id"];
+            isOneToOne: false;
+            referencedRelation: "bills";
+            referencedColumns: ["id"];
           },
-        ]
-      }
+        ];
+      };
       committees: {
         Row: {
-          committee_type: Database["public"]["Enums"]["committee_type_enum"]
-          created_at: string
-          description: string | null
-          id: string
-          is_active: boolean
-          name: string
-          sort_order: number
-          updated_at: string
-        }
+          committee_type: Database["public"]["Enums"]["committee_type_enum"];
+          created_at: string;
+          description: string | null;
+          id: string;
+          is_active: boolean;
+          name: string;
+          sort_order: number;
+          updated_at: string;
+        };
+        ComputedFields: never;
         Insert: {
-          committee_type?: Database["public"]["Enums"]["committee_type_enum"]
-          created_at?: string
-          description?: string | null
-          id?: string
-          is_active?: boolean
-          name: string
-          sort_order?: number
-          updated_at?: string
-        }
+          committee_type?: Database["public"]["Enums"]["committee_type_enum"];
+          created_at?: string;
+          description?: string | null;
+          id?: string;
+          is_active?: boolean;
+          name: string;
+          sort_order?: number;
+          updated_at?: string;
+        };
         Update: {
-          committee_type?: Database["public"]["Enums"]["committee_type_enum"]
-          created_at?: string
-          description?: string | null
-          id?: string
-          is_active?: boolean
-          name?: string
-          sort_order?: number
-          updated_at?: string
-        }
-        Relationships: []
-      }
+          committee_type?: Database["public"]["Enums"]["committee_type_enum"];
+          created_at?: string;
+          description?: string | null;
+          id?: string;
+          is_active?: boolean;
+          name?: string;
+          sort_order?: number;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
       council_sessions: {
         Row: {
-          council_url: string | null
-          created_at: string
-          end_date: string | null
-          id: string
-          is_active: boolean
-          name: string
-          slug: string | null
-          start_date: string
-          updated_at: string
-        }
+          council_url: string | null;
+          created_at: string;
+          end_date: string | null;
+          id: string;
+          is_active: boolean;
+          name: string;
+          slug: string | null;
+          start_date: string;
+          updated_at: string;
+        };
+        ComputedFields: never;
         Insert: {
-          council_url?: string | null
-          created_at?: string
-          end_date?: string | null
-          id?: string
-          is_active?: boolean
-          name: string
-          slug?: string | null
-          start_date: string
-          updated_at?: string
-        }
+          council_url?: string | null;
+          created_at?: string;
+          end_date?: string | null;
+          id?: string;
+          is_active?: boolean;
+          name: string;
+          slug?: string | null;
+          start_date: string;
+          updated_at?: string;
+        };
         Update: {
-          council_url?: string | null
-          created_at?: string
-          end_date?: string | null
-          id?: string
-          is_active?: boolean
-          name?: string
-          slug?: string | null
-          start_date?: string
-          updated_at?: string
-        }
-        Relationships: []
-      }
+          council_url?: string | null;
+          created_at?: string;
+          end_date?: string | null;
+          id?: string;
+          is_active?: boolean;
+          name?: string;
+          slug?: string | null;
+          start_date?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
       expert_registrations: {
         Row: {
-          affiliation: string
-          created_at: string
-          email: string
-          id: string
-          name: string
-          updated_at: string
-          user_id: string
-        }
+          affiliation: string;
+          created_at: string;
+          email: string;
+          id: string;
+          name: string;
+          updated_at: string;
+          user_id: string;
+        };
+        ComputedFields: never;
         Insert: {
-          affiliation: string
-          created_at?: string
-          email: string
-          id?: string
-          name: string
-          updated_at?: string
-          user_id: string
-        }
+          affiliation: string;
+          created_at?: string;
+          email: string;
+          id?: string;
+          name: string;
+          updated_at?: string;
+          user_id: string;
+        };
         Update: {
-          affiliation?: string
-          created_at?: string
-          email?: string
-          id?: string
-          name?: string
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: []
-      }
+          affiliation?: string;
+          created_at?: string;
+          email?: string;
+          id?: string;
+          name?: string;
+          updated_at?: string;
+          user_id?: string;
+        };
+        Relationships: [];
+      };
       faction_stances: {
         Row: {
-          bill_id: string
-          comment: string | null
-          created_at: string
-          faction_id: string
-          id: string
-          type: Database["public"]["Enums"]["stance_type_enum"]
-          updated_at: string
-        }
+          bill_id: string;
+          comment: string | null;
+          created_at: string;
+          faction_id: string;
+          id: string;
+          type: Database["public"]["Enums"]["stance_type_enum"];
+          updated_at: string;
+        };
+        ComputedFields: never;
         Insert: {
-          bill_id: string
-          comment?: string | null
-          created_at?: string
-          faction_id: string
-          id?: string
-          type: Database["public"]["Enums"]["stance_type_enum"]
-          updated_at?: string
-        }
+          bill_id: string;
+          comment?: string | null;
+          created_at?: string;
+          faction_id: string;
+          id?: string;
+          type: Database["public"]["Enums"]["stance_type_enum"];
+          updated_at?: string;
+        };
         Update: {
-          bill_id?: string
-          comment?: string | null
-          created_at?: string
-          faction_id?: string
-          id?: string
-          type?: Database["public"]["Enums"]["stance_type_enum"]
-          updated_at?: string
-        }
+          bill_id?: string;
+          comment?: string | null;
+          created_at?: string;
+          faction_id?: string;
+          id?: string;
+          type?: Database["public"]["Enums"]["stance_type_enum"];
+          updated_at?: string;
+        };
         Relationships: [
           {
-            foreignKeyName: "faction_stances_bill_id_fkey"
-            columns: ["bill_id"]
-            isOneToOne: false
-            referencedRelation: "bills"
-            referencedColumns: ["id"]
+            foreignKeyName: "faction_stances_bill_id_fkey";
+            columns: ["bill_id"];
+            isOneToOne: false;
+            referencedRelation: "bills";
+            referencedColumns: ["id"];
           },
           {
-            foreignKeyName: "faction_stances_faction_id_fkey"
-            columns: ["faction_id"]
-            isOneToOne: false
-            referencedRelation: "factions"
-            referencedColumns: ["id"]
+            foreignKeyName: "faction_stances_faction_id_fkey";
+            columns: ["faction_id"];
+            isOneToOne: false;
+            referencedRelation: "factions";
+            referencedColumns: ["id"];
           },
-        ]
-      }
+        ];
+      };
       factions: {
         Row: {
-          alternative_names: string[]
-          created_at: string
-          display_name: string
-          id: string
-          is_active: boolean
-          logo_url: string | null
-          name: string
-          sort_order: number
-          updated_at: string
-        }
+          alternative_names: string[];
+          created_at: string;
+          display_name: string;
+          id: string;
+          is_active: boolean;
+          logo_url: string | null;
+          name: string;
+          sort_order: number;
+          updated_at: string;
+        };
+        ComputedFields: never;
         Insert: {
-          alternative_names?: string[]
-          created_at?: string
-          display_name: string
-          id?: string
-          is_active?: boolean
-          logo_url?: string | null
-          name: string
-          sort_order?: number
-          updated_at?: string
-        }
+          alternative_names?: string[];
+          created_at?: string;
+          display_name: string;
+          id?: string;
+          is_active?: boolean;
+          logo_url?: string | null;
+          name: string;
+          sort_order?: number;
+          updated_at?: string;
+        };
         Update: {
-          alternative_names?: string[]
-          created_at?: string
-          display_name?: string
-          id?: string
-          is_active?: boolean
-          logo_url?: string | null
-          name?: string
-          sort_order?: number
-          updated_at?: string
-        }
-        Relationships: []
-      }
+          alternative_names?: string[];
+          created_at?: string;
+          display_name?: string;
+          id?: string;
+          is_active?: boolean;
+          logo_url?: string | null;
+          name?: string;
+          sort_order?: number;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
       general_question_overviews: {
         Row: {
-          council_session_id: string
-          created_at: string
-          lines: string[]
-          theme_lines: Json
-          updated_at: string
-        }
+          council_session_id: string;
+          created_at: string;
+          lines: string[];
+          theme_lines: NonNullable<Json>;
+          updated_at: string;
+        };
+        ComputedFields: never;
         Insert: {
-          council_session_id: string
-          created_at?: string
-          lines?: string[]
-          theme_lines?: Json
-          updated_at?: string
-        }
+          council_session_id: string;
+          created_at?: string;
+          lines?: string[];
+          theme_lines?: NonNullable<Json>;
+          updated_at?: string;
+        };
         Update: {
-          council_session_id?: string
-          created_at?: string
-          lines?: string[]
-          theme_lines?: Json
-          updated_at?: string
-        }
+          council_session_id?: string;
+          created_at?: string;
+          lines?: string[];
+          theme_lines?: NonNullable<Json>;
+          updated_at?: string;
+        };
         Relationships: [
           {
-            foreignKeyName: "general_question_overviews_council_session_id_fkey"
-            columns: ["council_session_id"]
-            isOneToOne: true
-            referencedRelation: "council_sessions"
-            referencedColumns: ["id"]
+            foreignKeyName: "general_question_overviews_council_session_id_fkey";
+            columns: ["council_session_id"];
+            isOneToOne: true;
+            referencedRelation: "council_sessions";
+            referencedColumns: ["id"];
           },
-        ]
-      }
+        ];
+      };
       general_questions: {
         Row: {
-          council_session_id: string
-          created_at: string | null
-          id: string
-          publish_status: string
-          question_order: number
-          questioner_name: string
-          questioner_number: number | null
-          questioner_party: string | null
-          raw_text: string | null
-          session_day: number
-          source_url: string | null
-          summary: string | null
-          topics: Json
-          updated_at: string | null
-        }
+          council_session_id: string;
+          created_at: string | null;
+          id: string;
+          publish_status: string;
+          question_order: number;
+          questioner_name: string;
+          questioner_number: number | null;
+          questioner_party: string | null;
+          raw_text: string | null;
+          session_day: number;
+          source_url: string | null;
+          summary: string | null;
+          topics: NonNullable<Json>;
+          updated_at: string | null;
+        };
+        ComputedFields: never;
         Insert: {
-          council_session_id: string
-          created_at?: string | null
-          id?: string
-          publish_status?: string
-          question_order?: number
-          questioner_name: string
-          questioner_number?: number | null
-          questioner_party?: string | null
-          raw_text?: string | null
-          session_day?: number
-          source_url?: string | null
-          summary?: string | null
-          topics?: Json
-          updated_at?: string | null
-        }
+          council_session_id: string;
+          created_at?: string | null;
+          id?: string;
+          publish_status?: string;
+          question_order?: number;
+          questioner_name: string;
+          questioner_number?: number | null;
+          questioner_party?: string | null;
+          raw_text?: string | null;
+          session_day?: number;
+          source_url?: string | null;
+          summary?: string | null;
+          topics?: NonNullable<Json>;
+          updated_at?: string | null;
+        };
         Update: {
-          council_session_id?: string
-          created_at?: string | null
-          id?: string
-          publish_status?: string
-          question_order?: number
-          questioner_name?: string
-          questioner_number?: number | null
-          questioner_party?: string | null
-          raw_text?: string | null
-          session_day?: number
-          source_url?: string | null
-          summary?: string | null
-          topics?: Json
-          updated_at?: string | null
-        }
+          council_session_id?: string;
+          created_at?: string | null;
+          id?: string;
+          publish_status?: string;
+          question_order?: number;
+          questioner_name?: string;
+          questioner_number?: number | null;
+          questioner_party?: string | null;
+          raw_text?: string | null;
+          session_day?: number;
+          source_url?: string | null;
+          summary?: string | null;
+          topics?: NonNullable<Json>;
+          updated_at?: string | null;
+        };
         Relationships: [
           {
-            foreignKeyName: "general_questions_council_session_id_fkey"
-            columns: ["council_session_id"]
-            isOneToOne: false
-            referencedRelation: "council_sessions"
-            referencedColumns: ["id"]
+            foreignKeyName: "general_questions_council_session_id_fkey";
+            columns: ["council_session_id"];
+            isOneToOne: false;
+            referencedRelation: "council_sessions";
+            referencedColumns: ["id"];
           },
-        ]
-      }
+        ];
+      };
       interview_configs: {
         Row: {
-          bill_id: string | null
-          chat_model: string | null
-          created_at: string
-          estimated_duration: number | null
-          id: string
-          interview_topic_id: string | null
-          knowledge_source: string | null
-          mode: Database["public"]["Enums"]["interview_mode_enum"]
-          name: string
-          status: Database["public"]["Enums"]["interview_config_status_enum"]
-          themes: string[] | null
-          updated_at: string
-        }
+          bill_id: string | null;
+          chat_model: string | null;
+          created_at: string;
+          estimated_duration: number | null;
+          id: string;
+          interview_topic_id: string | null;
+          knowledge_source: string | null;
+          mode: Database["public"]["Enums"]["interview_mode_enum"];
+          name: string;
+          status: Database["public"]["Enums"]["interview_config_status_enum"];
+          themes: string[] | null;
+          updated_at: string;
+        };
+        ComputedFields: never;
         Insert: {
-          bill_id?: string | null
-          chat_model?: string | null
-          created_at?: string
-          estimated_duration?: number | null
-          id?: string
-          interview_topic_id?: string | null
-          knowledge_source?: string | null
-          mode?: Database["public"]["Enums"]["interview_mode_enum"]
-          name: string
-          status?: Database["public"]["Enums"]["interview_config_status_enum"]
-          themes?: string[] | null
-          updated_at?: string
-        }
+          bill_id?: string | null;
+          chat_model?: string | null;
+          created_at?: string;
+          estimated_duration?: number | null;
+          id?: string;
+          interview_topic_id?: string | null;
+          knowledge_source?: string | null;
+          mode?: Database["public"]["Enums"]["interview_mode_enum"];
+          name: string;
+          status?: Database["public"]["Enums"]["interview_config_status_enum"];
+          themes?: string[] | null;
+          updated_at?: string;
+        };
         Update: {
-          bill_id?: string | null
-          chat_model?: string | null
-          created_at?: string
-          estimated_duration?: number | null
-          id?: string
-          interview_topic_id?: string | null
-          knowledge_source?: string | null
-          mode?: Database["public"]["Enums"]["interview_mode_enum"]
-          name?: string
-          status?: Database["public"]["Enums"]["interview_config_status_enum"]
-          themes?: string[] | null
-          updated_at?: string
-        }
+          bill_id?: string | null;
+          chat_model?: string | null;
+          created_at?: string;
+          estimated_duration?: number | null;
+          id?: string;
+          interview_topic_id?: string | null;
+          knowledge_source?: string | null;
+          mode?: Database["public"]["Enums"]["interview_mode_enum"];
+          name?: string;
+          status?: Database["public"]["Enums"]["interview_config_status_enum"];
+          themes?: string[] | null;
+          updated_at?: string;
+        };
         Relationships: [
           {
-            foreignKeyName: "interview_configs_bill_id_fkey"
-            columns: ["bill_id"]
-            isOneToOne: false
-            referencedRelation: "bills"
-            referencedColumns: ["id"]
+            foreignKeyName: "interview_configs_bill_id_fkey";
+            columns: ["bill_id"];
+            isOneToOne: false;
+            referencedRelation: "bills";
+            referencedColumns: ["id"];
           },
           {
-            foreignKeyName: "interview_configs_interview_topic_id_fkey"
-            columns: ["interview_topic_id"]
-            isOneToOne: false
-            referencedRelation: "interview_topics"
-            referencedColumns: ["id"]
+            foreignKeyName: "interview_configs_interview_topic_id_fkey";
+            columns: ["interview_topic_id"];
+            isOneToOne: false;
+            referencedRelation: "interview_topics";
+            referencedColumns: ["id"];
           },
-        ]
-      }
+        ];
+      };
       interview_messages: {
         Row: {
-          content: string
-          created_at: string
-          id: string
-          interview_session_id: string
-          role: Database["public"]["Enums"]["interview_role_enum"]
-        }
+          content: string;
+          created_at: string;
+          id: string;
+          interview_session_id: string;
+          role: Database["public"]["Enums"]["interview_role_enum"];
+        };
+        ComputedFields: never;
         Insert: {
-          content: string
-          created_at?: string
-          id?: string
-          interview_session_id: string
-          role: Database["public"]["Enums"]["interview_role_enum"]
-        }
+          content: string;
+          created_at?: string;
+          id?: string;
+          interview_session_id: string;
+          role: Database["public"]["Enums"]["interview_role_enum"];
+        };
         Update: {
-          content?: string
-          created_at?: string
-          id?: string
-          interview_session_id?: string
-          role?: Database["public"]["Enums"]["interview_role_enum"]
-        }
+          content?: string;
+          created_at?: string;
+          id?: string;
+          interview_session_id?: string;
+          role?: Database["public"]["Enums"]["interview_role_enum"];
+        };
         Relationships: [
           {
-            foreignKeyName: "interview_messages_interview_session_id_fkey"
-            columns: ["interview_session_id"]
-            isOneToOne: false
-            referencedRelation: "interview_sessions"
-            referencedColumns: ["id"]
+            foreignKeyName: "interview_messages_interview_session_id_fkey";
+            columns: ["interview_session_id"];
+            isOneToOne: false;
+            referencedRelation: "interview_sessions";
+            referencedColumns: ["id"];
           },
-        ]
-      }
+        ];
+      };
       interview_questions: {
         Row: {
-          created_at: string
-          follow_up_guide: string | null
-          id: string
-          interview_config_id: string
-          question: string
-          question_order: number
-          quick_replies: string[] | null
-          updated_at: string
-        }
+          created_at: string;
+          follow_up_guide: string | null;
+          id: string;
+          interview_config_id: string;
+          question: string;
+          question_order: number;
+          quick_replies: string[] | null;
+          updated_at: string;
+        };
+        ComputedFields: never;
         Insert: {
-          created_at?: string
-          follow_up_guide?: string | null
-          id?: string
-          interview_config_id: string
-          question: string
-          question_order: number
-          quick_replies?: string[] | null
-          updated_at?: string
-        }
+          created_at?: string;
+          follow_up_guide?: string | null;
+          id?: string;
+          interview_config_id: string;
+          question: string;
+          question_order: number;
+          quick_replies?: string[] | null;
+          updated_at?: string;
+        };
         Update: {
-          created_at?: string
-          follow_up_guide?: string | null
-          id?: string
-          interview_config_id?: string
-          question?: string
-          question_order?: number
-          quick_replies?: string[] | null
-          updated_at?: string
-        }
+          created_at?: string;
+          follow_up_guide?: string | null;
+          id?: string;
+          interview_config_id?: string;
+          question?: string;
+          question_order?: number;
+          quick_replies?: string[] | null;
+          updated_at?: string;
+        };
         Relationships: [
           {
-            foreignKeyName: "interview_questions_interview_config_id_fkey"
-            columns: ["interview_config_id"]
-            isOneToOne: false
-            referencedRelation: "interview_configs"
-            referencedColumns: ["id"]
+            foreignKeyName: "interview_questions_interview_config_id_fkey";
+            columns: ["interview_config_id"];
+            isOneToOne: false;
+            referencedRelation: "interview_configs";
+            referencedColumns: ["id"];
           },
-        ]
-      }
+        ];
+      };
       interview_report: {
         Row: {
-          created_at: string
-          id: string
-          interview_session_id: string
-          is_public_by_admin: boolean
-          is_public_by_user: boolean
-          opinions: Json | null
-          role: Database["public"]["Enums"]["interview_report_role_enum"] | null
-          role_description: string | null
-          role_title: string | null
-          scores: Json | null
-          stance: Database["public"]["Enums"]["stance_type_enum"] | null
-          summary: string | null
-          total_score: number | null
-          updated_at: string
-        }
+          created_at: string;
+          id: string;
+          interview_session_id: string;
+          is_public_by_admin: boolean;
+          is_public_by_user: boolean;
+          opinions: Json | null;
+          role:
+            | Database["public"]["Enums"]["interview_report_role_enum"]
+            | null;
+          role_description: string | null;
+          role_title: string | null;
+          scores: Json | null;
+          stance: Database["public"]["Enums"]["stance_type_enum"] | null;
+          summary: string | null;
+          total_score: number | null;
+          updated_at: string;
+        };
+        ComputedFields: never;
         Insert: {
-          created_at?: string
-          id?: string
-          interview_session_id: string
-          is_public_by_admin?: boolean
-          is_public_by_user?: boolean
-          opinions?: Json | null
+          created_at?: string;
+          id?: string;
+          interview_session_id: string;
+          is_public_by_admin?: boolean;
+          is_public_by_user?: boolean;
+          opinions?: Json | null;
           role?:
             | Database["public"]["Enums"]["interview_report_role_enum"]
-            | null
-          role_description?: string | null
-          role_title?: string | null
-          scores?: Json | null
-          stance?: Database["public"]["Enums"]["stance_type_enum"] | null
-          summary?: string | null
-          total_score?: number | null
-          updated_at?: string
-        }
+            | null;
+          role_description?: string | null;
+          role_title?: string | null;
+          scores?: Json | null;
+          stance?: Database["public"]["Enums"]["stance_type_enum"] | null;
+          summary?: string | null;
+          total_score?: never;
+          updated_at?: string;
+        };
         Update: {
-          created_at?: string
-          id?: string
-          interview_session_id?: string
-          is_public_by_admin?: boolean
-          is_public_by_user?: boolean
-          opinions?: Json | null
+          created_at?: string;
+          id?: string;
+          interview_session_id?: string;
+          is_public_by_admin?: boolean;
+          is_public_by_user?: boolean;
+          opinions?: Json | null;
           role?:
             | Database["public"]["Enums"]["interview_report_role_enum"]
-            | null
-          role_description?: string | null
-          role_title?: string | null
-          scores?: Json | null
-          stance?: Database["public"]["Enums"]["stance_type_enum"] | null
-          summary?: string | null
-          total_score?: number | null
-          updated_at?: string
-        }
+            | null;
+          role_description?: string | null;
+          role_title?: string | null;
+          scores?: Json | null;
+          stance?: Database["public"]["Enums"]["stance_type_enum"] | null;
+          summary?: string | null;
+          total_score?: never;
+          updated_at?: string;
+        };
         Relationships: [
           {
-            foreignKeyName: "interview_report_interview_session_id_fkey"
-            columns: ["interview_session_id"]
-            isOneToOne: true
-            referencedRelation: "interview_sessions"
-            referencedColumns: ["id"]
+            foreignKeyName: "interview_report_interview_session_id_fkey";
+            columns: ["interview_session_id"];
+            isOneToOne: true;
+            referencedRelation: "interview_sessions";
+            referencedColumns: ["id"];
           },
-        ]
-      }
+        ];
+      };
       interview_sessions: {
         Row: {
-          archived_at: string | null
-          completed_at: string | null
-          created_at: string
-          id: string
-          interview_config_id: string
-          rating: number | null
-          started_at: string
-          updated_at: string
-          user_id: string
-        }
+          archived_at: string | null;
+          completed_at: string | null;
+          created_at: string;
+          id: string;
+          interview_config_id: string;
+          rating: number | null;
+          started_at: string;
+          updated_at: string;
+          user_id: string;
+        };
+        ComputedFields: never;
         Insert: {
-          archived_at?: string | null
-          completed_at?: string | null
-          created_at?: string
-          id?: string
-          interview_config_id: string
-          rating?: number | null
-          started_at?: string
-          updated_at?: string
-          user_id: string
-        }
+          archived_at?: string | null;
+          completed_at?: string | null;
+          created_at?: string;
+          id?: string;
+          interview_config_id: string;
+          rating?: number | null;
+          started_at?: string;
+          updated_at?: string;
+          user_id: string;
+        };
         Update: {
-          archived_at?: string | null
-          completed_at?: string | null
-          created_at?: string
-          id?: string
-          interview_config_id?: string
-          rating?: number | null
-          started_at?: string
-          updated_at?: string
-          user_id?: string
-        }
+          archived_at?: string | null;
+          completed_at?: string | null;
+          created_at?: string;
+          id?: string;
+          interview_config_id?: string;
+          rating?: number | null;
+          started_at?: string;
+          updated_at?: string;
+          user_id?: string;
+        };
         Relationships: [
           {
-            foreignKeyName: "interview_sessions_interview_config_id_fkey"
-            columns: ["interview_config_id"]
-            isOneToOne: false
-            referencedRelation: "interview_configs"
-            referencedColumns: ["id"]
+            foreignKeyName: "interview_sessions_interview_config_id_fkey";
+            columns: ["interview_config_id"];
+            isOneToOne: false;
+            referencedRelation: "interview_configs";
+            referencedColumns: ["id"];
           },
-        ]
-      }
+        ];
+      };
       interview_topics: {
         Row: {
-          author_display_name: string | null
-          author_faction_name: string | null
-          author_role: string | null
-          author_user_id: string | null
-          body_md: string
-          closed_at: string | null
-          closed_reason: string | null
-          closes_at: string | null
-          created_at: string
-          id: string
-          opened_at: string | null
-          status: string
-          title: string
-          updated_at: string
-          withdrawn_at: string | null
-          withdrawn_reason: string | null
-        }
+          author_display_name: string | null;
+          author_faction_name: string | null;
+          author_role: string | null;
+          author_user_id: string | null;
+          body_md: string;
+          closed_at: string | null;
+          closed_reason: string | null;
+          closes_at: string | null;
+          created_at: string;
+          id: string;
+          opened_at: string | null;
+          status: string;
+          title: string;
+          updated_at: string;
+          withdrawn_at: string | null;
+          withdrawn_reason: string | null;
+        };
+        ComputedFields: never;
         Insert: {
-          author_display_name?: string | null
-          author_faction_name?: string | null
-          author_role?: string | null
-          author_user_id?: string | null
-          body_md?: string
-          closed_at?: string | null
-          closed_reason?: string | null
-          closes_at?: string | null
-          created_at?: string
-          id?: string
-          opened_at?: string | null
-          status?: string
-          title: string
-          updated_at?: string
-          withdrawn_at?: string | null
-          withdrawn_reason?: string | null
-        }
+          author_display_name?: string | null;
+          author_faction_name?: string | null;
+          author_role?: string | null;
+          author_user_id?: string | null;
+          body_md?: string;
+          closed_at?: string | null;
+          closed_reason?: string | null;
+          closes_at?: string | null;
+          created_at?: string;
+          id?: string;
+          opened_at?: string | null;
+          status?: string;
+          title: string;
+          updated_at?: string;
+          withdrawn_at?: string | null;
+          withdrawn_reason?: string | null;
+        };
         Update: {
-          author_display_name?: string | null
-          author_faction_name?: string | null
-          author_role?: string | null
-          author_user_id?: string | null
-          body_md?: string
-          closed_at?: string | null
-          closed_reason?: string | null
-          closes_at?: string | null
-          created_at?: string
-          id?: string
-          opened_at?: string | null
-          status?: string
-          title?: string
-          updated_at?: string
-          withdrawn_at?: string | null
-          withdrawn_reason?: string | null
-        }
+          author_display_name?: string | null;
+          author_faction_name?: string | null;
+          author_role?: string | null;
+          author_user_id?: string | null;
+          body_md?: string;
+          closed_at?: string | null;
+          closed_reason?: string | null;
+          closes_at?: string | null;
+          created_at?: string;
+          id?: string;
+          opened_at?: string | null;
+          status?: string;
+          title?: string;
+          updated_at?: string;
+          withdrawn_at?: string | null;
+          withdrawn_reason?: string | null;
+        };
         Relationships: [
           {
-            foreignKeyName: "interview_topics_author_user_id_fkey"
-            columns: ["author_user_id"]
-            isOneToOne: false
-            referencedRelation: "admin_profiles"
-            referencedColumns: ["user_id"]
+            foreignKeyName: "interview_topics_author_user_id_fkey";
+            columns: ["author_user_id"];
+            isOneToOne: false;
+            referencedRelation: "admin_profiles";
+            referencedColumns: ["user_id"];
           },
-        ]
-      }
+        ];
+      };
       press_conference_items: {
         Row: {
-          created_at: string | null
-          id: string
-          item_type: string
-          material_url: string | null
-          order_index: number
-          press_conference_id: string
-          summary: string | null
-          title: string
-        }
+          created_at: string | null;
+          id: string;
+          item_type: string;
+          material_url: string | null;
+          order_index: number;
+          press_conference_id: string;
+          summary: string | null;
+          title: string;
+        };
+        ComputedFields: never;
         Insert: {
-          created_at?: string | null
-          id?: string
-          item_type: string
-          material_url?: string | null
-          order_index: number
-          press_conference_id: string
-          summary?: string | null
-          title: string
-        }
+          created_at?: string | null;
+          id?: string;
+          item_type: string;
+          material_url?: string | null;
+          order_index: number;
+          press_conference_id: string;
+          summary?: string | null;
+          title: string;
+        };
         Update: {
-          created_at?: string | null
-          id?: string
-          item_type?: string
-          material_url?: string | null
-          order_index?: number
-          press_conference_id?: string
-          summary?: string | null
-          title?: string
-        }
+          created_at?: string | null;
+          id?: string;
+          item_type?: string;
+          material_url?: string | null;
+          order_index?: number;
+          press_conference_id?: string;
+          summary?: string | null;
+          title?: string;
+        };
         Relationships: [
           {
-            foreignKeyName: "press_conference_items_press_conference_id_fkey"
-            columns: ["press_conference_id"]
-            isOneToOne: false
-            referencedRelation: "press_conferences"
-            referencedColumns: ["id"]
+            foreignKeyName: "press_conference_items_press_conference_id_fkey";
+            columns: ["press_conference_id"];
+            isOneToOne: false;
+            referencedRelation: "press_conferences";
+            referencedColumns: ["id"];
           },
-        ]
-      }
+        ];
+      };
       press_conference_turns: {
         Row: {
-          content: string
-          created_at: string | null
-          id: string
-          order_index: number
-          press_conference_item_id: string
-          speaker: string
-          speaker_name: string | null
-        }
+          content: string;
+          created_at: string | null;
+          id: string;
+          order_index: number;
+          press_conference_item_id: string;
+          speaker: string;
+          speaker_name: string | null;
+        };
+        ComputedFields: never;
         Insert: {
-          content: string
-          created_at?: string | null
-          id?: string
-          order_index: number
-          press_conference_item_id: string
-          speaker: string
-          speaker_name?: string | null
-        }
+          content: string;
+          created_at?: string | null;
+          id?: string;
+          order_index: number;
+          press_conference_item_id: string;
+          speaker: string;
+          speaker_name?: string | null;
+        };
         Update: {
-          content?: string
-          created_at?: string | null
-          id?: string
-          order_index?: number
-          press_conference_item_id?: string
-          speaker?: string
-          speaker_name?: string | null
-        }
+          content?: string;
+          created_at?: string | null;
+          id?: string;
+          order_index?: number;
+          press_conference_item_id?: string;
+          speaker?: string;
+          speaker_name?: string | null;
+        };
         Relationships: [
           {
-            foreignKeyName: "press_conference_turns_press_conference_item_id_fkey"
-            columns: ["press_conference_item_id"]
-            isOneToOne: false
-            referencedRelation: "press_conference_items"
-            referencedColumns: ["id"]
+            foreignKeyName: "press_conference_turns_press_conference_item_id_fkey";
+            columns: ["press_conference_item_id"];
+            isOneToOne: false;
+            referencedRelation: "press_conference_items";
+            referencedColumns: ["id"];
           },
-        ]
-      }
+        ];
+      };
       press_conferences: {
         Row: {
-          created_at: string | null
-          held_at: string
-          id: string
-          slug: string
-          status: string
-          title: string
-          updated_at: string | null
-          youtube_url: string | null
-        }
+          created_at: string | null;
+          held_at: string;
+          id: string;
+          slug: string;
+          status: string;
+          title: string;
+          updated_at: string | null;
+          youtube_url: string | null;
+        };
+        ComputedFields: never;
         Insert: {
-          created_at?: string | null
-          held_at: string
-          id?: string
-          slug: string
-          status?: string
-          title: string
-          updated_at?: string | null
-          youtube_url?: string | null
-        }
+          created_at?: string | null;
+          held_at: string;
+          id?: string;
+          slug: string;
+          status?: string;
+          title: string;
+          updated_at?: string | null;
+          youtube_url?: string | null;
+        };
         Update: {
-          created_at?: string | null
-          held_at?: string
-          id?: string
-          slug?: string
-          status?: string
-          title?: string
-          updated_at?: string | null
-          youtube_url?: string | null
-        }
-        Relationships: []
-      }
+          created_at?: string | null;
+          held_at?: string;
+          id?: string;
+          slug?: string;
+          status?: string;
+          title?: string;
+          updated_at?: string | null;
+          youtube_url?: string | null;
+        };
+        Relationships: [];
+      };
       preview_tokens: {
         Row: {
-          bill_id: string
-          created_at: string
-          created_by: string | null
-          expires_at: string
-          id: string
-          token: string
-        }
+          bill_id: string;
+          created_at: string;
+          created_by: string | null;
+          expires_at: string;
+          id: string;
+          token: string;
+        };
+        ComputedFields: never;
         Insert: {
-          bill_id: string
-          created_at?: string
-          created_by?: string | null
-          expires_at: string
-          id?: string
-          token: string
-        }
+          bill_id: string;
+          created_at?: string;
+          created_by?: string | null;
+          expires_at: string;
+          id?: string;
+          token: string;
+        };
         Update: {
-          bill_id?: string
-          created_at?: string
-          created_by?: string | null
-          expires_at?: string
-          id?: string
-          token?: string
-        }
+          bill_id?: string;
+          created_at?: string;
+          created_by?: string | null;
+          expires_at?: string;
+          id?: string;
+          token?: string;
+        };
         Relationships: [
           {
-            foreignKeyName: "preview_tokens_bill_id_fkey"
-            columns: ["bill_id"]
-            isOneToOne: false
-            referencedRelation: "bills"
-            referencedColumns: ["id"]
+            foreignKeyName: "preview_tokens_bill_id_fkey";
+            columns: ["bill_id"];
+            isOneToOne: false;
+            referencedRelation: "bills";
+            referencedColumns: ["id"];
           },
-        ]
-      }
+        ];
+      };
       prompt_versions: {
         Row: {
-          content: string
-          created_at: string
-          created_by: string | null
-          id: string
-          note: string | null
-          prompt_id: string
-          version: number
-        }
+          content: string;
+          created_at: string;
+          created_by: string | null;
+          id: string;
+          note: string | null;
+          prompt_id: string;
+          version: number;
+        };
+        ComputedFields: never;
         Insert: {
-          content: string
-          created_at?: string
-          created_by?: string | null
-          id?: string
-          note?: string | null
-          prompt_id: string
-          version: number
-        }
+          content: string;
+          created_at?: string;
+          created_by?: string | null;
+          id?: string;
+          note?: string | null;
+          prompt_id: string;
+          version: number;
+        };
         Update: {
-          content?: string
-          created_at?: string
-          created_by?: string | null
-          id?: string
-          note?: string | null
-          prompt_id?: string
-          version?: number
-        }
+          content?: string;
+          created_at?: string;
+          created_by?: string | null;
+          id?: string;
+          note?: string | null;
+          prompt_id?: string;
+          version?: number;
+        };
         Relationships: [
           {
-            foreignKeyName: "prompt_versions_prompt_id_fkey"
-            columns: ["prompt_id"]
-            isOneToOne: false
-            referencedRelation: "prompts"
-            referencedColumns: ["id"]
+            foreignKeyName: "prompt_versions_prompt_id_fkey";
+            columns: ["prompt_id"];
+            isOneToOne: false;
+            referencedRelation: "prompts";
+            referencedColumns: ["id"];
           },
-        ]
-      }
+        ];
+      };
       prompts: {
         Row: {
-          active_version_id: string | null
-          created_at: string
-          description: string | null
-          id: string
-          name: string
-          updated_at: string
-        }
+          active_version_id: string | null;
+          created_at: string;
+          description: string | null;
+          id: string;
+          name: string;
+          updated_at: string;
+        };
+        ComputedFields: never;
         Insert: {
-          active_version_id?: string | null
-          created_at?: string
-          description?: string | null
-          id?: string
-          name: string
-          updated_at?: string
-        }
+          active_version_id?: string | null;
+          created_at?: string;
+          description?: string | null;
+          id?: string;
+          name: string;
+          updated_at?: string;
+        };
         Update: {
-          active_version_id?: string | null
-          created_at?: string
-          description?: string | null
-          id?: string
-          name?: string
-          updated_at?: string
-        }
+          active_version_id?: string | null;
+          created_at?: string;
+          description?: string | null;
+          id?: string;
+          name?: string;
+          updated_at?: string;
+        };
         Relationships: [
           {
-            foreignKeyName: "prompts_active_version_fkey"
-            columns: ["active_version_id", "id"]
-            isOneToOne: false
-            referencedRelation: "prompt_versions"
-            referencedColumns: ["id", "prompt_id"]
+            foreignKeyName: "prompts_active_version_fkey";
+            columns: ["active_version_id", "id"];
+            isOneToOne: false;
+            referencedRelation: "prompt_versions";
+            referencedColumns: ["id", "prompt_id"];
           },
-        ]
-      }
+        ];
+      };
       report_reactions: {
         Row: {
-          created_at: string
-          id: string
-          interview_report_id: string
-          reaction_type: string
-          user_id: string
-        }
+          created_at: string;
+          id: string;
+          interview_report_id: string;
+          reaction_type: string;
+          user_id: string;
+        };
+        ComputedFields: never;
         Insert: {
-          created_at?: string
-          id?: string
-          interview_report_id: string
-          reaction_type: string
-          user_id: string
-        }
+          created_at?: string;
+          id?: string;
+          interview_report_id: string;
+          reaction_type: string;
+          user_id: string;
+        };
         Update: {
-          created_at?: string
-          id?: string
-          interview_report_id?: string
-          reaction_type?: string
-          user_id?: string
-        }
+          created_at?: string;
+          id?: string;
+          interview_report_id?: string;
+          reaction_type?: string;
+          user_id?: string;
+        };
         Relationships: [
           {
-            foreignKeyName: "report_reactions_interview_report_id_fkey"
-            columns: ["interview_report_id"]
-            isOneToOne: false
-            referencedRelation: "interview_report"
-            referencedColumns: ["id"]
+            foreignKeyName: "report_reactions_interview_report_id_fkey";
+            columns: ["interview_report_id"];
+            isOneToOne: false;
+            referencedRelation: "interview_report";
+            referencedColumns: ["id"];
           },
-        ]
-      }
+        ];
+      };
       tags: {
         Row: {
-          created_at: string
-          description: string | null
-          featured_priority: number | null
-          id: string
-          label: string
-          updated_at: string
-        }
+          created_at: string;
+          description: string | null;
+          featured_priority: number | null;
+          id: string;
+          label: string;
+          updated_at: string;
+        };
+        ComputedFields: never;
         Insert: {
-          created_at?: string
-          description?: string | null
-          featured_priority?: number | null
-          id?: string
-          label: string
-          updated_at?: string
-        }
+          created_at?: string;
+          description?: string | null;
+          featured_priority?: number | null;
+          id?: string;
+          label: string;
+          updated_at?: string;
+        };
         Update: {
-          created_at?: string
-          description?: string | null
-          featured_priority?: number | null
-          id?: string
-          label?: string
-          updated_at?: string
-        }
-        Relationships: []
-      }
+          created_at?: string;
+          description?: string | null;
+          featured_priority?: number | null;
+          id?: string;
+          label?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
       topic_analysis_classifications: {
         Row: {
-          id: string
-          interview_report_id: string
-          opinion_index: number
-          topic_id: string
-          version_id: string
-        }
+          id: string;
+          interview_report_id: string;
+          opinion_index: number;
+          topic_id: string;
+          version_id: string;
+        };
+        ComputedFields: never;
         Insert: {
-          id?: string
-          interview_report_id: string
-          opinion_index: number
-          topic_id: string
-          version_id: string
-        }
+          id?: string;
+          interview_report_id: string;
+          opinion_index: number;
+          topic_id: string;
+          version_id: string;
+        };
         Update: {
-          id?: string
-          interview_report_id?: string
-          opinion_index?: number
-          topic_id?: string
-          version_id?: string
-        }
+          id?: string;
+          interview_report_id?: string;
+          opinion_index?: number;
+          topic_id?: string;
+          version_id?: string;
+        };
         Relationships: [
           {
-            foreignKeyName: "topic_analysis_classifications_interview_report_id_fkey"
-            columns: ["interview_report_id"]
-            isOneToOne: false
-            referencedRelation: "interview_report"
-            referencedColumns: ["id"]
+            foreignKeyName: "topic_analysis_classifications_interview_report_id_fkey";
+            columns: ["interview_report_id"];
+            isOneToOne: false;
+            referencedRelation: "interview_report";
+            referencedColumns: ["id"];
           },
           {
-            foreignKeyName: "topic_analysis_classifications_topic_id_fkey"
-            columns: ["topic_id"]
-            isOneToOne: false
-            referencedRelation: "topic_analysis_topics"
-            referencedColumns: ["id"]
+            foreignKeyName: "topic_analysis_classifications_topic_id_fkey";
+            columns: ["topic_id"];
+            isOneToOne: false;
+            referencedRelation: "topic_analysis_topics";
+            referencedColumns: ["id"];
           },
           {
-            foreignKeyName: "topic_analysis_classifications_version_id_fkey"
-            columns: ["version_id"]
-            isOneToOne: false
-            referencedRelation: "topic_analysis_versions"
-            referencedColumns: ["id"]
+            foreignKeyName: "topic_analysis_classifications_version_id_fkey";
+            columns: ["version_id"];
+            isOneToOne: false;
+            referencedRelation: "topic_analysis_versions";
+            referencedColumns: ["id"];
           },
-        ]
-      }
+        ];
+      };
       topic_analysis_topics: {
         Row: {
-          created_at: string
-          description_md: string
-          id: string
-          name: string
-          representative_opinions: Json
-          sort_order: number
-          version_id: string
-        }
+          created_at: string;
+          description_md: string;
+          id: string;
+          name: string;
+          representative_opinions: NonNullable<Json>;
+          sort_order: number;
+          version_id: string;
+        };
+        ComputedFields: never;
         Insert: {
-          created_at?: string
-          description_md: string
-          id?: string
-          name: string
-          representative_opinions?: Json
-          sort_order?: number
-          version_id: string
-        }
+          created_at?: string;
+          description_md: string;
+          id?: string;
+          name: string;
+          representative_opinions?: NonNullable<Json>;
+          sort_order?: number;
+          version_id: string;
+        };
         Update: {
-          created_at?: string
-          description_md?: string
-          id?: string
-          name?: string
-          representative_opinions?: Json
-          sort_order?: number
-          version_id?: string
-        }
+          created_at?: string;
+          description_md?: string;
+          id?: string;
+          name?: string;
+          representative_opinions?: NonNullable<Json>;
+          sort_order?: number;
+          version_id?: string;
+        };
         Relationships: [
           {
-            foreignKeyName: "topic_analysis_topics_version_id_fkey"
-            columns: ["version_id"]
-            isOneToOne: false
-            referencedRelation: "topic_analysis_versions"
-            referencedColumns: ["id"]
+            foreignKeyName: "topic_analysis_topics_version_id_fkey";
+            columns: ["version_id"];
+            isOneToOne: false;
+            referencedRelation: "topic_analysis_versions";
+            referencedColumns: ["id"];
           },
-        ]
-      }
+        ];
+      };
       topic_analysis_versions: {
         Row: {
-          bill_id: string | null
-          completed_at: string | null
-          created_at: string
-          current_step: string | null
-          error_message: string | null
-          id: string
-          intermediate_results: Json | null
-          interview_topic_id: string | null
-          phase_data: Json | null
-          started_at: string | null
-          status: string
-          summary_md: string | null
-          updated_at: string
-          version: number
-        }
+          bill_id: string | null;
+          completed_at: string | null;
+          created_at: string;
+          current_step: string | null;
+          error_message: string | null;
+          id: string;
+          intermediate_results: Json | null;
+          interview_topic_id: string | null;
+          phase_data: Json | null;
+          started_at: string | null;
+          status: string;
+          summary_md: string | null;
+          updated_at: string;
+          version: number;
+        };
+        ComputedFields: never;
         Insert: {
-          bill_id?: string | null
-          completed_at?: string | null
-          created_at?: string
-          current_step?: string | null
-          error_message?: string | null
-          id?: string
-          intermediate_results?: Json | null
-          interview_topic_id?: string | null
-          phase_data?: Json | null
-          started_at?: string | null
-          status?: string
-          summary_md?: string | null
-          updated_at?: string
-          version: number
-        }
+          bill_id?: string | null;
+          completed_at?: string | null;
+          created_at?: string;
+          current_step?: string | null;
+          error_message?: string | null;
+          id?: string;
+          intermediate_results?: Json | null;
+          interview_topic_id?: string | null;
+          phase_data?: Json | null;
+          started_at?: string | null;
+          status?: string;
+          summary_md?: string | null;
+          updated_at?: string;
+          version: number;
+        };
         Update: {
-          bill_id?: string | null
-          completed_at?: string | null
-          created_at?: string
-          current_step?: string | null
-          error_message?: string | null
-          id?: string
-          intermediate_results?: Json | null
-          interview_topic_id?: string | null
-          phase_data?: Json | null
-          started_at?: string | null
-          status?: string
-          summary_md?: string | null
-          updated_at?: string
-          version?: number
-        }
+          bill_id?: string | null;
+          completed_at?: string | null;
+          created_at?: string;
+          current_step?: string | null;
+          error_message?: string | null;
+          id?: string;
+          intermediate_results?: Json | null;
+          interview_topic_id?: string | null;
+          phase_data?: Json | null;
+          started_at?: string | null;
+          status?: string;
+          summary_md?: string | null;
+          updated_at?: string;
+          version?: number;
+        };
         Relationships: [
           {
-            foreignKeyName: "topic_analysis_versions_bill_id_fkey"
-            columns: ["bill_id"]
-            isOneToOne: false
-            referencedRelation: "bills"
-            referencedColumns: ["id"]
+            foreignKeyName: "topic_analysis_versions_bill_id_fkey";
+            columns: ["bill_id"];
+            isOneToOne: false;
+            referencedRelation: "bills";
+            referencedColumns: ["id"];
           },
           {
-            foreignKeyName: "topic_analysis_versions_interview_topic_id_fkey"
-            columns: ["interview_topic_id"]
-            isOneToOne: false
-            referencedRelation: "interview_topics"
-            referencedColumns: ["id"]
+            foreignKeyName: "topic_analysis_versions_interview_topic_id_fkey";
+            columns: ["interview_topic_id"];
+            isOneToOne: false;
+            referencedRelation: "interview_topics";
+            referencedColumns: ["id"];
           },
-        ]
-      }
-    }
+        ];
+      };
+    };
     Views: {
-      [_ in never]: never
-    }
+      [_ in never]: never;
+    };
     Functions: {
       count_public_reports_by_bill_ids: {
-        Args: { p_bill_ids: string[] }
+        Args: { p_bill_ids: string[] };
         Returns: {
-          bill_id: string
-          report_count: number
-        }[]
-      }
+          bill_id: string;
+          report_count: number;
+        }[];
+      };
       count_reactions_by_report_ids: {
-        Args: { report_ids: string[] }
+        Args: { report_ids: string[] };
         Returns: {
-          cnt: number
-          interview_report_id: string
-          reaction_type: string
-        }[]
-      }
+          cnt: number;
+          interview_report_id: string;
+          reaction_type: string;
+        }[];
+      };
       create_prompt_version: {
         Args: {
-          p_base_version_id?: string
-          p_content: string
-          p_created_by?: string
-          p_note?: string
-          p_prompt_id: string
-        }
+          p_base_version_id?: string;
+          p_content: string;
+          p_created_by?: string;
+          p_note?: string;
+          p_prompt_id: string;
+        };
         Returns: {
-          content: string
-          created_at: string
-          created_by: string | null
-          id: string
-          note: string | null
-          prompt_id: string
-          version: number
-        }
+          content: string;
+          created_at: string;
+          created_by: string | null;
+          id: string;
+          note: string | null;
+          prompt_id: string;
+          version: number;
+        };
         SetofOptions: {
-          from: "*"
-          to: "prompt_versions"
-          isOneToOne: true
-          isSetofReturn: false
-        }
-      }
+          from: "*";
+          to: "prompt_versions";
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
       delete_expired_chat_logs: {
-        Args: { p_retention_days?: number }
-        Returns: number
-      }
+        Args: { p_retention_days?: number };
+        Returns: number;
+      };
       get_admin_accounts: {
-        Args: never
+        Args: Record<PropertyKey, never>;
         Returns: {
-          created_at: string
-          display_name: string
-          email: string
-          email_confirmed_at: string
-          faction_id: string
-          faction_name: string
-          invited_at: string
-          last_sign_in_at: string
-          role: string
-          user_id: string
-        }[]
-      }
+          created_at: string;
+          display_name: string;
+          email: string;
+          email_confirmed_at: string;
+          faction_id: string;
+          faction_name: string;
+          invited_at: string;
+          last_sign_in_at: string;
+          role: string;
+          user_id: string;
+        }[];
+      };
       get_ai_usage_cost_usd: {
-        Args: { from_ts: string; target_user_id?: string; to_ts: string }
-        Returns: number
-      }
+        Args: { from_ts: string; target_user_id?: string; to_ts: string };
+        Returns: number;
+      };
       get_interview_message_counts: {
-        Args: { session_ids: string[] }
+        Args: { session_ids: string[] };
         Returns: {
-          interview_session_id: string
-          message_count: number
-        }[]
-      }
-      hook_before_user_created: { Args: { event: Json }; Returns: Json }
-      is_admin: { Args: never; Returns: boolean }
+          interview_session_id: string;
+          message_count: number;
+        }[];
+      };
+      hook_before_user_created: { Args: { event: Json }; Returns: Json };
+      is_admin: { Args: Record<PropertyKey, never>; Returns: boolean };
       replace_bill_committees: {
-        Args: { p_bill_id: string; p_committee_ids: string[] }
-        Returns: undefined
-      }
+        Args: { p_bill_id: string; p_committee_ids: string[] };
+        Returns: undefined;
+      };
       set_active_council_session: {
-        Args: { target_session_id: string }
-        Returns: undefined
-      }
-    }
+        Args: { target_session_id: string };
+        Returns: undefined;
+      };
+    };
     Enums: {
-      bill_publish_status: "draft" | "published" | "coming_soon"
+      bill_publish_status: "draft" | "published" | "coming_soon";
       bill_status_enum:
         | "preparing"
         | "submitted"
@@ -1735,18 +1774,18 @@ export type Database = {
         | "rejected"
         | "adopted"
         | "partially_adopted"
-        | "reported"
-      chat_role_enum: "user" | "system" | "assistant"
-      committee_type_enum: "standing" | "parliamentary" | "special"
-      difficulty_level_enum: "normal" | "hard"
-      interview_config_status_enum: "public" | "closed"
-      interview_mode_enum: "loop" | "bulk"
+        | "reported";
+      chat_role_enum: "user" | "system" | "assistant";
+      committee_type_enum: "standing" | "parliamentary" | "special";
+      difficulty_level_enum: "normal" | "hard";
+      interview_config_status_enum: "public" | "closed";
+      interview_mode_enum: "loop" | "bulk";
       interview_report_role_enum:
         | "subject_expert"
         | "work_related"
         | "daily_life_affected"
-        | "general_citizen"
-      interview_role_enum: "assistant" | "user"
+        | "general_citizen";
+      interview_role_enum: "assistant" | "user";
       stance_type_enum:
         | "for"
         | "against"
@@ -1754,34 +1793,37 @@ export type Database = {
         | "conditional_for"
         | "conditional_against"
         | "considering"
-        | "continued_deliberation"
-    }
+        | "continued_deliberation";
+    };
     CompositeTypes: {
-      [_ in never]: never
-    }
-  }
-}
+      [_ in never]: never;
+    };
+  };
+};
 
-type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">
+type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">;
 
-type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "public">]
+type DefaultSchema = DatabaseWithoutInternals[Extract<
+  keyof Database,
+  "public"
+>];
 
 export type Tables<
   DefaultSchemaTableNameOrOptions extends
     | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends (DefaultSchemaTableNameOrOptions extends {
-    schema: keyof DatabaseWithoutInternals
+  TableName extends DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals;
   }
     ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
         DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
-    : never) = never,
+    : never = never,
 > = DefaultSchemaTableNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals
+  schema: keyof DatabaseWithoutInternals;
 }
   ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
       DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
-      Row: infer R
+      Row: infer R;
     }
     ? R
     : never
@@ -1789,95 +1831,95 @@ export type Tables<
         DefaultSchema["Views"])
     ? (DefaultSchema["Tables"] &
         DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
-        Row: infer R
+        Row: infer R;
       }
       ? R
       : never
-    : never
+    : never;
 
 export type TablesInsert<
   DefaultSchemaTableNameOrOptions extends
     | keyof DefaultSchema["Tables"]
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends (DefaultSchemaTableNameOrOptions extends {
-    schema: keyof DatabaseWithoutInternals
+  TableName extends DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals;
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-    : never) = never,
+    : never = never,
 > = DefaultSchemaTableNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals
+  schema: keyof DatabaseWithoutInternals;
 }
   ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
-      Insert: infer I
+      Insert: infer I;
     }
     ? I
     : never
   : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
     ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
-        Insert: infer I
+        Insert: infer I;
       }
       ? I
       : never
-    : never
+    : never;
 
 export type TablesUpdate<
   DefaultSchemaTableNameOrOptions extends
     | keyof DefaultSchema["Tables"]
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends (DefaultSchemaTableNameOrOptions extends {
-    schema: keyof DatabaseWithoutInternals
+  TableName extends DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals;
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-    : never) = never,
+    : never = never,
 > = DefaultSchemaTableNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals
+  schema: keyof DatabaseWithoutInternals;
 }
   ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
-      Update: infer U
+      Update: infer U;
     }
     ? U
     : never
   : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
     ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
-        Update: infer U
+        Update: infer U;
       }
       ? U
       : never
-    : never
+    : never;
 
 export type Enums<
   DefaultSchemaEnumNameOrOptions extends
     | keyof DefaultSchema["Enums"]
     | { schema: keyof DatabaseWithoutInternals },
-  EnumName extends (DefaultSchemaEnumNameOrOptions extends {
-    schema: keyof DatabaseWithoutInternals
+  EnumName extends DefaultSchemaEnumNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals;
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
-    : never) = never,
+    : never = never,
 > = DefaultSchemaEnumNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals
+  schema: keyof DatabaseWithoutInternals;
 }
   ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
   : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
     ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
-    : never
+    : never;
 
 export type CompositeTypes<
   PublicCompositeTypeNameOrOptions extends
     | keyof DefaultSchema["CompositeTypes"]
     | { schema: keyof DatabaseWithoutInternals },
-  CompositeTypeName extends (PublicCompositeTypeNameOrOptions extends {
-    schema: keyof DatabaseWithoutInternals
+  CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals;
   }
     ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
-    : never) = never,
+    : never = never,
 > = PublicCompositeTypeNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals
+  schema: keyof DatabaseWithoutInternals;
 }
   ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
   : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
     ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
-    : never
+    : never;
 
 export const Constants = {
   graphql_public: {
@@ -1920,5 +1962,4 @@ export const Constants = {
       ],
     },
   },
-} as const
-
+} as const;

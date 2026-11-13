@@ -13,7 +13,7 @@
 
 **VPS に持っていく構成を手元で動かし、アプリ側は環境変数の差し替えだけで今と同じように動くことを確かめる。**
 
-いつもの `npx supabase start` も中身は docker だが、ゲートウェイや Studio まで入った全部入りで、
+いつもの `pnpm exec supabase start` も中身は docker だが、ゲートウェイや Studio まで入った全部入りで、
 設定も CLI が面倒を見ている。VPS で使う最小構成の検証にはならない。
 
 特に **`supabase/config.toml` は CLI しか読まない**。匿名サインインや `max_rows` などの設定は、
@@ -128,7 +128,7 @@ Authentication 設定で確認し、違っていれば本番に揃える**。
 - nginx: `127.0.0.1:8000`
 - db: `127.0.0.1:5433`（マイグレーションと dump 用）
 
-どちらも `127.0.0.1` にだけ公開する。メモリを正しく測るため、検証中は `npx supabase stop` しておく。
+どちらも `127.0.0.1` にだけ公開する。メモリを正しく測るため、検証中は `pnpm exec supabase stop` しておく。
 
 #### Postgres のメモリ
 
@@ -193,8 +193,8 @@ rest はテーブルがまだ無いので、手順3のテストで確認する�
 
 ```bash
 # ローカルの compose は SSL 無しなので sslmode=disable が要る（CLI は既定で SSL を要求する）
-npx supabase migration up --include-all \
-  --db-url "postgresql://postgres:$POSTGRES_PASSWORD@127.0.0.1:5433/postgres?sslmode=disable"
+pnpm exec supabase migration up --include-all \
+  --remote="postgresql://postgres:$POSTGRES_PASSWORD@127.0.0.1:5433/postgres?sslmode=disable"
 
 docker compose exec db psql -U postgres \
   -c "select id, public from storage.buckets"     # bill-thumbnails | t

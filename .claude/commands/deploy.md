@@ -75,7 +75,7 @@ main にマージしただけでは VPS は変わらない。Deploy VPS ワー�
 
 | 変更 | 当て方 |
 |---|---|
-| `supabase/migrations/` | 手順8-1・8-2（トンネルと `export`）の後、`main` を checkout して `npx supabase migration up --include-all --db-url "$PROD_DB_URL"`（手順8-3） |
+| `supabase/migrations/` | 手順8-1・8-2（トンネルと `export`）の後、`main` を checkout して `pnpm install --frozen-lockfile` の後に `pnpm exec supabase migration up --include-all --remote="$PROD_DB_URL"`（手順8-3） |
 | `infra/` | §5「`infra/` を直した時」の表。`compose.yml`・`nginx/` だけでなく、`host-nginx/`・`systemd/`・`cron/` は置き直しが要る |
 
 本番 DB・VPS への操作は人が行う（Claude のセッションからは環境の安全チェックで止められることがある）。
